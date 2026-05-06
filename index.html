@@ -216,6 +216,7 @@ body.role-coach .manager-only-el{opacity:0.3;pointer-events:none;cursor:not-allo
       <button class="nav-btn" onclick="goSection('juegos')">🎮 Juegos</button>
       <button class="nav-btn" onclick="goSection('jugadores')">👥 Jugadores</button>
       <button class="nav-btn" onclick="goSection('biblioteca')">📚 Biblioteca</button>
+      <button class="nav-btn" onclick="goSection('missesiones')">📝 Mis Sesiones</button>
       <button class="nav-btn" onclick="goSection('pizarra')">🖊️ Pizarra</button>
     </div>
   </div>
@@ -502,6 +503,24 @@ body.role-coach .manager-only-el{opacity:0.3;pointer-events:none;cursor:not-allo
 </div>
 
 <!-- ═══════════ PIZARRA TÁCTICA ═══════════ -->
+<!-- ═══════════ MIS SESIONES ═══════════ -->
+<div id="sec-missesiones" class="section">
+  <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center">
+    <button class="btn btn-orange" onclick="openAddSesLibre()">+ Nueva Sesión</button>
+    <input id="mses-busca" placeholder="🔍 Buscar sesión..." oninput="renderMisSesiones()" style="flex:1;min-width:150px;border:1px solid #E2E8F0;border-radius:8px;padding:8px 11px;font-size:13px;outline:none">
+    <select id="mses-filtro" onchange="renderMisSesiones()" style="border:1px solid #E2E8F0;border-radius:8px;padding:8px 11px;font-size:13px;outline:none;background:white">
+      <option value="">Todos los tipos</option>
+      <option value="LIBRE">LIBRE</option>
+      <option value="CARGA">CARGA</option>
+      <option value="DESARROLLO">DESARROLLO</option>
+      <option value="PRE-PARTIDO">PRE-PARTIDO</option>
+    </select>
+    <span id="mses-count" style="font-size:11px;color:#94A3B8;white-space:nowrap"></span>
+  </div>
+  <div id="mses-lista" class="g3"></div>
+  <div id="mses-detalle" style="display:none"></div>
+</div>
+
 <div id="sec-pizarra" class="section">
   <!-- TOOLBAR -->
   <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px;align-items:center;padding:8px 10px;background:white;border-radius:10px;border:1px solid #E2E8F0;box-shadow:0 1px 4px rgba(0,0,0,.06)">
@@ -557,10 +576,119 @@ body.role-coach .manager-only-el{opacity:0.3;pointer-events:none;cursor:not-allo
 
 </div><!-- /main -->
 
-<!-- MODAL -->
-<div id="modal-overlay" onclick="closeModal(event)">
+<!-- MODAL -->\n<div id="modal-overlay" onclick="closeModal(event)">
   <div id="modal-box">
     <div id="modal-content"></div>
+  </div>
+</div>
+
+<!-- MODAL MIS SESIONES -->
+<div id="modal-mses" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:2000;align-items:flex-start;justify-content:center;overflow-y:auto;padding:16px 10px">
+  <div style="background:white;border-radius:16px;padding:20px;width:100%;max-width:520px;margin:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <h3 id="modal-mses-title" style="font-size:16px;margin:0">📝 Nueva Sesión</h3>
+      <button onclick="closeModalMses()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#94A3B8;line-height:1">✕</button>
+    </div>
+
+    <!-- INFO GENERAL -->
+    <div style="background:#F8FAFC;border-radius:10px;padding:12px;margin-bottom:10px">
+      <div style="font-size:10px;font-weight:700;color:#94A3B8;text-transform:uppercase;margin-bottom:8px;letter-spacing:1px">📋 Información General</div>
+      <input id="mses-tema" placeholder="Nombre de la sesión *" style="width:100%;border:1px solid #E2E8F0;border-radius:8px;padding:8px 10px;font-size:13px;outline:none;margin-bottom:6px;box-sizing:border-box">
+      <input id="mses-objetivo" placeholder="Objetivo principal" style="width:100%;border:1px solid #E2E8F0;border-radius:8px;padding:8px 10px;font-size:13px;outline:none;margin-bottom:6px;box-sizing:border-box">
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <select id="mses-tipo-sel" style="flex:1;min-width:100px;border:1px solid #E2E8F0;border-radius:8px;padding:8px 10px;font-size:13px;outline:none;background:white">
+          <option value="LIBRE">LIBRE</option>
+          <option value="CARGA">CARGA</option>
+          <option value="DESARROLLO">DESARROLLO</option>
+          <option value="PRE-PARTIDO">PRE-PARTIDO</option>
+        </select>
+        <input id="mses-sistema" placeholder="Sistema (1-4-3-3)" style="flex:1;min-width:100px;border:1px solid #E2E8F0;border-radius:8px;padding:8px 10px;font-size:13px;outline:none">
+        <input type="date" id="mses-fecha" style="flex:1;min-width:120px;border:1px solid #E2E8F0;border-radius:8px;padding:8px 10px;font-size:13px;outline:none">
+      </div>
+    </div>
+
+    <!-- CALENTAMIENTO -->
+    <div style="background:#FFF7ED;border:1px solid #FED7AA;border-radius:10px;padding:12px;margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div style="font-size:10px;font-weight:700;color:#C2410C;text-transform:uppercase;letter-spacing:1px">🔥 Calentamiento *</div>
+        <div style="display:flex;align-items:center;gap:4px">
+          <input type="number" id="mses-cal-min" placeholder="0" min="0" style="width:52px;border:1px solid #FED7AA;border-radius:6px;padding:4px 6px;font-size:12px;outline:none;text-align:center">
+          <span style="font-size:11px;color:#C2410C;font-weight:600">min</span>
+        </div>
+      </div>
+      <textarea id="mses-cal-desc" rows="2" placeholder="Descripción del calentamiento..." style="width:100%;border:1px solid #FED7AA;border-radius:7px;padding:7px 9px;font-size:12px;outline:none;resize:none;font-family:inherit;background:#FFFBF5;box-sizing:border-box"></textarea>
+    </div>
+
+    <!-- EJERCICIO 1 -->
+    <div style="background:white;border:1px solid #E2E8F0;border-radius:10px;padding:12px;margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div style="font-size:10px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:1px">Ejercicio 1</div>
+        <div style="display:flex;align-items:center;gap:4px">
+          <input type="number" id="mses-ej1-min" placeholder="0" min="0" style="width:52px;border:1px solid #E2E8F0;border-radius:6px;padding:4px 6px;font-size:12px;outline:none;text-align:center">
+          <span style="font-size:11px;color:#94A3B8;font-weight:600">min</span>
+        </div>
+      </div>
+      <input id="mses-ej1-nom" placeholder="Nombre del ejercicio" style="width:100%;border:1px solid #E2E8F0;border-radius:7px;padding:7px 9px;font-size:12px;outline:none;margin-bottom:5px;box-sizing:border-box">
+      <textarea id="mses-ej1-desc" rows="2" placeholder="Descripción, espacio, jugadores..." style="width:100%;border:1px solid #E2E8F0;border-radius:7px;padding:7px 9px;font-size:12px;outline:none;resize:none;font-family:inherit;margin-bottom:5px;box-sizing:border-box"></textarea>
+      <input id="mses-ej1-prov" placeholder="🎯 Regla de provocación (opcional)" style="width:100%;border:1px solid #FED7AA;border-radius:7px;padding:7px 9px;font-size:12px;outline:none;background:#FFFBF5;box-sizing:border-box">
+    </div>
+
+    <!-- EJERCICIO 2 -->
+    <div style="background:white;border:1px solid #E2E8F0;border-radius:10px;padding:12px;margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div style="font-size:10px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:1px">Ejercicio 2 <span style="color:#CBD5E1;font-weight:400;text-transform:none;font-size:9px">(opcional)</span></div>
+        <div style="display:flex;align-items:center;gap:4px">
+          <input type="number" id="mses-ej2-min" placeholder="0" min="0" style="width:52px;border:1px solid #E2E8F0;border-radius:6px;padding:4px 6px;font-size:12px;outline:none;text-align:center">
+          <span style="font-size:11px;color:#94A3B8;font-weight:600">min</span>
+        </div>
+      </div>
+      <input id="mses-ej2-nom" placeholder="Nombre del ejercicio" style="width:100%;border:1px solid #E2E8F0;border-radius:7px;padding:7px 9px;font-size:12px;outline:none;margin-bottom:5px;box-sizing:border-box">
+      <textarea id="mses-ej2-desc" rows="2" placeholder="Descripción, espacio, jugadores..." style="width:100%;border:1px solid #E2E8F0;border-radius:7px;padding:7px 9px;font-size:12px;outline:none;resize:none;font-family:inherit;margin-bottom:5px;box-sizing:border-box"></textarea>
+      <input id="mses-ej2-prov" placeholder="🎯 Regla de provocación (opcional)" style="width:100%;border:1px solid #FED7AA;border-radius:7px;padding:7px 9px;font-size:12px;outline:none;background:#FFFBF5;box-sizing:border-box">
+    </div>
+
+    <!-- EJERCICIO 3 -->
+    <div style="background:white;border:1px solid #E2E8F0;border-radius:10px;padding:12px;margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div style="font-size:10px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:1px">Ejercicio 3 <span style="color:#CBD5E1;font-weight:400;text-transform:none;font-size:9px">(opcional)</span></div>
+        <div style="display:flex;align-items:center;gap:4px">
+          <input type="number" id="mses-ej3-min" placeholder="0" min="0" style="width:52px;border:1px solid #E2E8F0;border-radius:6px;padding:4px 6px;font-size:12px;outline:none;text-align:center">
+          <span style="font-size:11px;color:#94A3B8;font-weight:600">min</span>
+        </div>
+      </div>
+      <input id="mses-ej3-nom" placeholder="Nombre del ejercicio" style="width:100%;border:1px solid #E2E8F0;border-radius:7px;padding:7px 9px;font-size:12px;outline:none;margin-bottom:5px;box-sizing:border-box">
+      <textarea id="mses-ej3-desc" rows="2" placeholder="Descripción, espacio, jugadores..." style="width:100%;border:1px solid #E2E8F0;border-radius:7px;padding:7px 9px;font-size:12px;outline:none;resize:none;font-family:inherit;margin-bottom:5px;box-sizing:border-box"></textarea>
+      <input id="mses-ej3-prov" placeholder="🎯 Regla de provocación (opcional)" style="width:100%;border:1px solid #FED7AA;border-radius:7px;padding:7px 9px;font-size:12px;outline:none;background:#FFFBF5;box-sizing:border-box">
+    </div>
+
+    <!-- PARTIDO CONDICIONADO -->
+    <div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:10px;padding:12px;margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div style="font-size:10px;font-weight:700;color:#2563EB;text-transform:uppercase;letter-spacing:1px">⚽ Partido Condicionado <span style="color:#93C5FD;font-weight:400;text-transform:none;font-size:9px">(opcional)</span></div>
+        <div style="display:flex;align-items:center;gap:4px">
+          <input type="number" id="mses-partido-min" placeholder="0" min="0" style="width:52px;border:1px solid #BFDBFE;border-radius:6px;padding:4px 6px;font-size:12px;outline:none;text-align:center">
+          <span style="font-size:11px;color:#2563EB;font-weight:600">min</span>
+        </div>
+      </div>
+      <textarea id="mses-partido-desc" rows="2" placeholder="Descripción del partido condicionado..." style="width:100%;border:1px solid #BFDBFE;border-radius:7px;padding:7px 9px;font-size:12px;outline:none;resize:none;font-family:inherit;background:#F0F8FF;box-sizing:border-box"></textarea>
+    </div>
+
+    <!-- VUELTA A LA CALMA -->
+    <div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:10px;padding:12px;margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div style="font-size:10px;font-weight:700;color:#16A34A;text-transform:uppercase;letter-spacing:1px">🧘 Vuelta a la Calma <span style="color:#86EFAC;font-weight:400;text-transform:none;font-size:9px">(opcional)</span></div>
+        <div style="display:flex;align-items:center;gap:4px">
+          <input type="number" id="mses-vuelta-min" placeholder="0" min="0" style="width:52px;border:1px solid #BBF7D0;border-radius:6px;padding:4px 6px;font-size:12px;outline:none;text-align:center">
+          <span style="font-size:11px;color:#16A34A;font-weight:600">min</span>
+        </div>
+      </div>
+      <textarea id="mses-vuelta-desc" rows="2" placeholder="Estiramientos, reflexión final..." style="width:100%;border:1px solid #BBF7D0;border-radius:7px;padding:7px 9px;font-size:12px;outline:none;resize:none;font-family:inherit;background:#F8FFF8;box-sizing:border-box"></textarea>
+    </div>
+
+    <!-- MATERIAL -->
+    <input id="mses-material" placeholder="🎒 Material necesario (balones, conos, petos...)" style="width:100%;border:1px solid #E2E8F0;border-radius:8px;padding:8px 10px;font-size:13px;outline:none;margin-bottom:14px;box-sizing:border-box">
+
+    <button onclick="guardarSesLibre()" style="width:100%;background:#F97316;color:white;border:none;border-radius:10px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:.3px">💾 Guardar Sesión</button>
   </div>
 </div>
 
@@ -847,6 +975,7 @@ function _loadFromLocalStorage(){
   const asi=load("asistencia");if(asi)ASISTENCIA=asi;
   const a=load("auth");if(a)_authConfig=a;
   const pz=localStorage.getItem('pizarra_boards');if(pz)try{pzSavedBoards=JSON.parse(pz);}catch(e){}
+  const sl=localStorage.getItem('ses_libres');if(sl)try{SES_LIBRES=JSON.parse(sl);}catch(e){}
 }
 
 function loadAll(callback){
@@ -865,7 +994,7 @@ function goSection(id){
   document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
   document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"));
   document.getElementById("sec-"+id).classList.add("active");
-  const map={resumen:0,club:1,calendario:2,partidos:3,sesiones:4,jugadores:5,biblioteca:6,pizarra:7};
+  const map={resumen:0,club:1,calendario:2,partidos:3,sesiones:4,jugadores:5,biblioteca:6,missesiones:7,pizarra:8};
   const btns=document.querySelectorAll(".nav-btn");
   btns.forEach(b=>b.classList.remove("active"));
   if(map[id]!==undefined)btns[map[id]].classList.add("active");
@@ -883,6 +1012,7 @@ function renderSection(id){
   else if(id==="juegos")renderJuegos();
   else if(id==="jugadores")renderJugadores();
   else if(id==="biblioteca")renderBiblioteca();
+  else if(id==="missesiones")renderMisSesiones();
   else if(id==="pizarra")initPizarra();
 }
 
@@ -2206,6 +2336,186 @@ document.addEventListener("DOMContentLoaded",()=>{
 });
 
 // ═══════════════════════════════════════════════════════════════
+// MIS SESIONES LIBRES
+// ═══════════════════════════════════════════════════════════════
+let SES_LIBRES=[];
+let sesLibreAbierta=null;
+let editSesLibreId=null;
+
+function saveSesLibres(){try{localStorage.setItem('ses_libres',JSON.stringify(SES_LIBRES));}catch(e){}}
+
+const MSES_TC={CARGA:{bg:'#FEF3C7',c:'#92400E'},DESARROLLO:{bg:'#D1FAE5',c:'#065F46'},'PRE-PARTIDO':{bg:'#EDE9FE',c:'#5B21B6'},LIBRE:{bg:'#E0F2FE',c:'#0369A1'}};
+
+function renderMisSesiones(){
+  if(sesLibreAbierta!==null){renderSesLibreDetalle();return;}
+  document.getElementById('mses-detalle').style.display='none';
+  document.getElementById('mses-lista').style.display='grid';
+  const bq=(document.getElementById('mses-busca')?.value||'').toLowerCase();
+  const ft=document.getElementById('mses-filtro')?.value||'';
+  const filt=SES_LIBRES.filter(s=>(!ft||s.tipo===ft)&&(!bq||s.tema.toLowerCase().includes(bq)||(s.objetivo||'').toLowerCase().includes(bq)));
+  document.getElementById('mses-count').textContent=`${filt.length} sesión${filt.length!==1?'es':''}`;
+  if(!filt.length){
+    document.getElementById('mses-lista').innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:40px 20px;color:#94A3B8"><div style="font-size:40px;margin-bottom:12px">📝</div><div style="font-size:14px;font-weight:600;margin-bottom:6px">Sin sesiones creadas aún</div><div style="font-size:12px">Pulsa &quot;+ Nueva Sesión&quot; para crear tu primera sesión personalizada</div></div>`;
+    return;
+  }
+  document.getElementById('mses-lista').innerHTML=filt.map(s=>{
+    const tc=MSES_TC[s.tipo]||{bg:'#F1F5F9',c:'#64748B'};
+    const totalMin=(s.cal_min||0)+(s.ej1_min||0)+(s.ej2_min||0)+(s.ej3_min||0)+(s.partido_min||0)+(s.vuelta_min||0);
+    return`<div onclick="openSesLibre('${s.id}')" style="background:white;border:1px solid #E2E8F0;border-radius:10px;padding:13px;cursor:pointer;border-left:3px solid #F97316;transition:background .15s" onmouseover="this.style.background='#F8FAFC'" onmouseout="this.style.background='white'">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
+        <span style="background:${tc.bg};color:${tc.c};font-size:9px;font-weight:700;padding:1px 6px;border-radius:3px">${s.tipo}</span>
+        ${totalMin?`<span style="font-size:10px;color:#F97316;font-weight:700">⏱ ${totalMin} min</span>`:''}
+      </div>
+      <div style="font-weight:600;font-size:12px;color:#1e293b;margin-bottom:3px;line-height:1.3">${s.tema}</div>
+      ${s.objetivo?`<div style="font-size:10px;color:#94A3B8;margin-bottom:2px">${s.objetivo}</div>`:''}
+      ${s.sistema?`<div style="font-size:10px;color:#64748B">⚙️ ${s.sistema}</div>`:''}
+      ${s.fecha?`<div style="font-size:10px;color:#3B82F6;margin-top:3px">📅 ${s.fecha}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+function openSesLibre(id){sesLibreAbierta=id;renderSesLibreDetalle();}
+function closeSesLibre(){sesLibreAbierta=null;renderMisSesiones();}
+
+function renderSesLibreDetalle(){
+  document.getElementById('mses-lista').style.display='none';
+  const det=document.getElementById('mses-detalle');
+  det.style.display='block';
+  const s=SES_LIBRES.find(x=>x.id===sesLibreAbierta);if(!s)return;
+  const tc=MSES_TC[s.tipo]||{bg:'#F1F5F9',c:'#64748B'};
+  const totalMin=(s.cal_min||0)+(s.ej1_min||0)+(s.ej2_min||0)+(s.ej3_min||0)+(s.partido_min||0)+(s.vuelta_min||0);
+  const mb=m=>m?`<span style="font-size:9px;font-weight:700;color:#F97316;background:#FFF7ED;border:1px solid #FED7AA;border-radius:4px;padding:1px 5px;margin-left:6px">⏱ ${m} min</span>`:'';
+  const ejBlock=(nom,desc,prov,min,n)=>nom?`
+    <div style="background:white;border:1px solid #E2E8F0;border-radius:10px;padding:13px">
+      <div style="display:flex;align-items:center;margin-bottom:5px">
+        <div style="font-size:10px;font-weight:700;color:#94A3B8;text-transform:uppercase">Ejercicio ${n}</div>${mb(min)}
+      </div>
+      <div style="font-weight:700;font-size:13px;color:#1e293b;margin-bottom:5px">${nom}</div>
+      ${desc?`<p style="font-size:12px;color:#64748B;margin-bottom:9px;line-height:1.5">${desc}</p>`:''}
+      ${prov?`<div style="background:#FFF7ED;border:1px solid #FED7AA;border-radius:6px;padding:7px 10px"><div style="font-size:9px;font-weight:700;color:#C2410C;text-transform:uppercase;margin-bottom:2px">🎯 Regla de Provocación</div><p style="font-size:12px;color:#C2410C;font-style:italic;margin:0">${prov}</p></div>`:''}
+    </div>`:'';
+  det.innerHTML=`
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:wrap">
+      <button class="btn btn-ghost btn-sm" onclick="closeSesLibre()">← Mis Sesiones</button>
+      <button class="btn btn-wa btn-sm" onclick="sesLibreWA('${s.id}')">📱 WhatsApp</button>
+      <button class="btn btn-ghost btn-sm" onclick="exportSesLibreCSV('${s.id}')" title="Exportar sesión a Excel/CSV">📥 CSV</button>
+      <button class="btn btn-ghost btn-sm" onclick="editSesLibre('${s.id}')">✏️ Editar</button>
+      <button class="btn btn-red btn-sm" onclick="deleteSesLibre('${s.id}')">🗑 Eliminar</button>
+    </div>
+    <div style="background:#FFF7ED;border:1px solid #FED7AA;border-radius:12px;padding:16px;margin-bottom:14px">
+      <div style="display:flex;gap:7px;margin-bottom:7px;flex-wrap:wrap;align-items:center">
+        <span style="background:${tc.bg};color:${tc.c};border:1px solid ${tc.c}40;border-radius:4px;font-size:10px;font-weight:700;padding:2px 7px">${s.tipo}</span>
+        ${s.sistema?`<span style="font-size:10px;color:#94A3B8;font-weight:700">⚙️ ${s.sistema}</span>`:''}
+        ${totalMin?`<span style="font-size:10px;color:#F97316;font-weight:700">⏱ ${totalMin} min totales</span>`:''}
+        ${s.fecha?`<span style="font-size:10px;color:#3B82F6;font-weight:700">📅 ${s.fecha}</span>`:''}
+      </div>
+      <h2 style="font-size:18px;margin-bottom:4px">${s.tema}</h2>
+      ${s.objetivo?`<p style="font-size:13px;color:#64748B;margin:0">${s.objetivo}</p>`:''}
+    </div>
+    <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:14px;margin-bottom:12px">
+      <div style="display:flex;align-items:center;margin-bottom:5px">
+        <div style="font-size:10px;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:1px">🔥 Calentamiento</div>${mb(s.cal_min)}
+      </div>
+      <p style="font-size:13px;color:#374151;margin:0">${s.calentamiento||''}</p>
+    </div>
+    <div class="g3" style="margin-bottom:12px">
+      ${ejBlock(s.ej1_nom,s.ej1_desc,s.ej1_prov,s.ej1_min,1)}
+      ${ejBlock(s.ej2_nom,s.ej2_desc,s.ej2_prov,s.ej2_min,2)}
+      ${ejBlock(s.ej3_nom,s.ej3_desc,s.ej3_prov,s.ej3_min,3)}
+    </div>
+    <div class="g2" style="margin-bottom:12px">
+      ${s.partido?`<div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:10px;padding:13px"><div style="display:flex;align-items:center;margin-bottom:5px"><div style="font-size:10px;font-weight:700;color:#2563EB;text-transform:uppercase">⚽ Partido Condicionado</div>${mb(s.partido_min)}</div><p style="font-size:13px;color:#1E3A5F;margin:0">${s.partido}</p></div>`:''}
+      ${s.vuelta?`<div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:10px;padding:13px"><div style="display:flex;align-items:center;margin-bottom:5px"><div style="font-size:10px;font-weight:700;color:#16A34A;text-transform:uppercase">🧘 Vuelta a la Calma</div>${mb(s.vuelta_min)}</div><p style="font-size:13px;color:#166534;margin:0">${s.vuelta}</p></div>`:''}
+    </div>
+    <div class="g2">
+      ${s.material?`<div style="background:#F9FAFB;border:1px solid #E2E8F0;border-radius:10px;padding:13px"><div style="font-size:10px;font-weight:700;color:#94A3B8;text-transform:uppercase;margin-bottom:5px">🎒 Material</div><p style="font-size:13px;margin:0">${s.material}</p></div>`:''}
+      <div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:13px">
+        <div style="font-size:10px;font-weight:700;color:#D97706;text-transform:uppercase;margin-bottom:5px">📝 Notas</div>
+        <textarea rows="3" oninput="updSesLibreNota('${s.id}',this.value)" placeholder="Observaciones de la sesión…" style="width:100%;border:1px solid #FDE68A;border-radius:6px;padding:6px 9px;font-size:12px;background:transparent;outline:none;resize:none;font-family:inherit">${esc(s.notas||'')}</textarea>
+      </div>
+    </div>`;
+}
+
+function updSesLibreNota(id,v){const s=SES_LIBRES.find(x=>x.id===id);if(s){s.notas=v;saveSesLibres();}}
+
+function deleteSesLibre(id){
+  if(!confirm('¿Eliminar esta sesión?'))return;
+  SES_LIBRES=SES_LIBRES.filter(x=>x.id!==id);
+  saveSesLibres();closeSesLibre();
+}
+
+function sesLibreWA(id){
+  const s=SES_LIBRES.find(x=>x.id===id);if(!s)return;
+  let txt=`📋 *${s.tipo} – ${s.tema}*\n`;
+  if(s.objetivo)txt+=`🎯 ${s.objetivo}\n`;
+  if(s.sistema)txt+=`⚙️ Sistema: ${s.sistema}\n`;
+  txt+='\n';
+  if(s.calentamiento)txt+=`🔥 *Calentamiento${s.cal_min?' ('+s.cal_min+' min)':''}:*\n${s.calentamiento}\n\n`;
+  if(s.ej1_nom)txt+=`1️⃣ *${s.ej1_nom}${s.ej1_min?' ('+s.ej1_min+' min)':''}*\n${s.ej1_desc||''}\n${s.ej1_prov?'🎯 '+s.ej1_prov:''}\n\n`;
+  if(s.ej2_nom)txt+=`2️⃣ *${s.ej2_nom}${s.ej2_min?' ('+s.ej2_min+' min)':''}*\n${s.ej2_desc||''}\n${s.ej2_prov?'🎯 '+s.ej2_prov:''}\n\n`;
+  if(s.ej3_nom)txt+=`3️⃣ *${s.ej3_nom}${s.ej3_min?' ('+s.ej3_min+' min)':''}*\n${s.ej3_desc||''}\n${s.ej3_prov?'🎯 '+s.ej3_prov:''}\n\n`;
+  if(s.partido)txt+=`⚽ *Partido${s.partido_min?' ('+s.partido_min+' min)':''}:* ${s.partido}\n`;
+  if(s.vuelta)txt+=`🧘 *Vuelta a la calma${s.vuelta_min?' ('+s.vuelta_min+' min)':''}:* ${s.vuelta}\n`;
+  if(s.material)txt+=`🎒 *Material:* ${s.material}`;
+  window.open('https://wa.me/?text='+encodeURIComponent(txt),'_blank');
+}
+
+function openAddSesLibre(id){
+  editSesLibreId=id||null;
+  const s=id?SES_LIBRES.find(x=>x.id===id):null;
+  const v=f=>s?(s[f]||''):'';
+  document.getElementById('modal-mses-title').textContent=id?'✏️ Editar Sesión':'📝 Nueva Sesión';
+  document.getElementById('modal-mses').style.display='flex';
+  ['tema','objetivo','sistema','fecha'].forEach(f=>document.getElementById('mses-'+f).value=v(f));
+  document.getElementById('mses-tipo-sel').value=v('tipo')||'LIBRE';
+  document.getElementById('mses-cal-desc').value=v('calentamiento');
+  document.getElementById('mses-cal-min').value=s?(s.cal_min||''):'';
+  ['ej1','ej2','ej3'].forEach(e=>{
+    ['nom','desc','prov'].forEach(f=>document.getElementById(`mses-${e}-${f}`).value=v(`${e}_${f}`));
+    document.getElementById(`mses-${e}-min`).value=s?(s[`${e}_min`]||''):'';
+  });
+  document.getElementById('mses-partido-desc').value=v('partido');
+  document.getElementById('mses-partido-min').value=s?(s.partido_min||''):'';
+  document.getElementById('mses-vuelta-desc').value=v('vuelta');
+  document.getElementById('mses-vuelta-min').value=s?(s.vuelta_min||''):'';
+  document.getElementById('mses-material').value=v('material');
+}
+
+function editSesLibre(id){openAddSesLibre(id);}
+function closeModalMses(){document.getElementById('modal-mses').style.display='none';}
+
+function _gv(id){return(document.getElementById(id)?.value||'').trim();}
+function _gn(id){return parseInt(document.getElementById(id)?.value)||0;}
+
+function guardarSesLibre(){
+  const tema=_gv('mses-tema');
+  if(!tema){alert('El nombre de la sesión es obligatorio');return;}
+  const cal=_gv('mses-cal-desc');
+  if(!cal){alert('La descripción del calentamiento es obligatoria');return;}
+  const sesion={
+    id:editSesLibreId||('sl_'+Date.now()),
+    tema,objetivo:_gv('mses-objetivo'),
+    tipo:_gv('mses-tipo-sel')||'LIBRE',
+    sistema:_gv('mses-sistema'),
+    fecha:_gv('mses-fecha'),
+    calentamiento:cal,cal_min:_gn('mses-cal-min'),
+    ej1_nom:_gv('mses-ej1-nom'),ej1_desc:_gv('mses-ej1-desc'),ej1_prov:_gv('mses-ej1-prov'),ej1_min:_gn('mses-ej1-min'),
+    ej2_nom:_gv('mses-ej2-nom'),ej2_desc:_gv('mses-ej2-desc'),ej2_prov:_gv('mses-ej2-prov'),ej2_min:_gn('mses-ej2-min'),
+    ej3_nom:_gv('mses-ej3-nom'),ej3_desc:_gv('mses-ej3-desc'),ej3_prov:_gv('mses-ej3-prov'),ej3_min:_gn('mses-ej3-min'),
+    partido:_gv('mses-partido-desc'),partido_min:_gn('mses-partido-min'),
+    vuelta:_gv('mses-vuelta-desc'),vuelta_min:_gn('mses-vuelta-min'),
+    material:_gv('mses-material'),
+    notas:editSesLibreId?(SES_LIBRES.find(x=>x.id===editSesLibreId)?.notas||''):'',
+    creadaEn:editSesLibreId?(SES_LIBRES.find(x=>x.id===editSesLibreId)?.creadaEn||Date.now()):Date.now()
+  };
+  if(editSesLibreId){const idx=SES_LIBRES.findIndex(x=>x.id===editSesLibreId);if(idx!==-1)SES_LIBRES[idx]=sesion;}
+  else{SES_LIBRES.unshift(sesion);}
+  saveSesLibres();
+  closeModalMses();
+  if(editSesLibreId){renderSesLibreDetalle();}else{renderMisSesiones();}
+}
+
+// ═══════════════════════════════════════════════════════════════
 // PIZARRA TÁCTICA
 // ═══════════════════════════════════════════════════════════════
 let pzCanvas,pzCtx,pzDrawing=false,pzTool='lapiz',pzBgMode='campo';
@@ -2587,6 +2897,22 @@ function pzExportImg(){
 // ═══════════════════════════════════════════════════════════════
 // EXPORTAR CSV
 // ═══════════════════════════════════════════════════════════════
+function exportSesLibreCSV(id){
+  const s=SES_LIBRES.find(x=>x.id===id);if(!s)return;
+  const totalMin=(s.cal_min||0)+(s.ej1_min||0)+(s.ej2_min||0)+(s.ej3_min||0)+(s.partido_min||0)+(s.vuelta_min||0);
+  const rows=[
+    ["Campo","Valor"],["Nombre",s.tema],["Objetivo",s.objetivo||""],["Tipo",s.tipo||""],
+    ["Sistema",s.sistema||""],["Fecha",fmtFecha(s.fecha||"")],["Duraci\u00f3n total (min)",totalMin||""],
+    ["",""],["\uD83D\uDD25 CALENTAMIENTO",""],["Descripci\u00f3n",s.calentamiento||""],["Duraci\u00f3n (min)",s.cal_min||""],
+    ["",""],["EJERCICIO 1",""],["Nombre",s.ej1_nom||""],["Descripci\u00f3n",s.ej1_desc||""],["Regla provocaci\u00f3n",s.ej1_prov||""],["Duraci\u00f3n (min)",s.ej1_min||""],
+    ["",""],["EJERCICIO 2",""],["Nombre",s.ej2_nom||""],["Descripci\u00f3n",s.ej2_desc||""],["Regla provocaci\u00f3n",s.ej2_prov||""],["Duraci\u00f3n (min)",s.ej2_min||""],
+    ["",""],["EJERCICIO 3",""],["Nombre",s.ej3_nom||""],["Descripci\u00f3n",s.ej3_desc||""],["Regla provocaci\u00f3n",s.ej3_prov||""],["Duraci\u00f3n (min)",s.ej3_min||""],
+    ["",""],["\u26BD PARTIDO CONDICIONADO",""],["Descripci\u00f3n",s.partido||""],["Duraci\u00f3n (min)",s.partido_min||""],
+    ["",""],["\uD83E\uDDD8 VUELTA A LA CALMA",""],["Descripci\u00f3n",s.vuelta||""],["Duraci\u00f3n (min)",s.vuelta_min||""],
+    ["",""],["Material",s.material||""],["Notas",s.notas||""]
+  ];
+  downloadCSV(rows,"sesion_libre_"+s.tema.replace(/[^a-zA-Z0-9]/g,"_")+".csv");
+}
 function exportSesionCSV(num){
   const s=SESIONES.find(x=>x.num===num);if(!s)return;
   const rows=[
