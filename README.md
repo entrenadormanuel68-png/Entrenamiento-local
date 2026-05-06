@@ -1,4 +1,7 @@
 ⚽ Entrenamiento Total – Local
+🌐 **Prueba la app en directo:** https://entrenadormanuel68-png.github.io/Entrenamiento-local/
+
+---
 > Aplicación web de gestión de equipos de fútbol. Funciona **100% offline** sin necesidad de servidor. Todo se guarda en el dispositivo. Empaquetable como app Android con Capacitor.
 ![Estado](https://img.shields.io/badge/estado-activo-brightgreen)
 ![Versión](https://img.shields.io/badge/versión-1.0-blue)
