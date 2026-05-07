@@ -14,6 +14,14 @@ button{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;}
 /* Evitar menú contextual en toda la app en móvil */
 body{-webkit-touch-callout:none;font-family:'Segoe UI',system-ui,sans-serif;background:#F1F5F9;color:#1e293b;min-height:100vh}
 button,input,select,textarea{font-family:inherit}
+
+/* SPLASH SCREEN */
+#splash{position:fixed;inset:0;background:#1E3A5F;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity 0.5s ease}
+#splash.hide{opacity:0;pointer-events:none}
+#splash img{width:90px;height:90px;object-fit:contain;border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,0.4)}
+#splash h1{font-size:26px;font-weight:800;color:#fff;letter-spacing:1px}
+#splash p{font-size:13px;color:#93C5FD}
+#splash .version{font-size:11px;color:#64748B;margin-top:8px}
 /* NAV */
 #topbar{background:#1E3A5F;color:#fff;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,0.2)}
 #topbar-inner{max-width:1280px;margin:0 auto;padding:0 16px}
@@ -135,6 +143,17 @@ body.role-coach .manager-only-el{opacity:0.3;pointer-events:none;cursor:not-allo
 </style>
 </head>
 <body>
+
+<!-- SPLASH SCREEN -->
+<div id="splash">
+  <img src="data:image/png;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUkBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADY=" style="width:90px;height:90px;object-fit:contain;border-radius:16px;" alt="EP Club">
+  <h1>⚽ E.P Club</h1>
+  <p>Entrenamiento Total · Fútbol Base</p>
+  <p>Creada por <strong style="color:#F97316">Manuel Pérez</strong></p>
+  <div class="version">v1.0 · 2026</div>
+</div>
+
+
 
 <!-- LOGIN OVERLAY -->
 <div id="login-overlay">
@@ -266,8 +285,8 @@ body.role-coach .manager-only-el{opacity:0.3;pointer-events:none;cursor:not-allo
     <div class="g2">
       <div class="card">
         <div class="card-title">Información General</div>
-        <div class="field"><label>Club / Equipo</label><input id="c-nombre" oninput="saveClub()"></div>
-        <div class="field"><label>Categoría</label><input id="c-cat" oninput="saveClub()"></div>
+        <div class="field"><label>Club / Equipo</label><input id="c-nombre" oninput="saveClub()" placeholder="Ej: C.D. Tu Club"></div>
+        <div class="field"><label>Categoría</label><input id="c-cat" oninput="saveClub()" placeholder="Ej: Alevín A, Infantil B..."></div>
         <div class="field"><label>Temporada</label><input id="c-temp" oninput="saveClub()"></div>
         <div class="field"><label>Entrenador</label>
           <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
@@ -869,7 +888,7 @@ function genSesiones(){
 // ═══════════════════════════════════════════════════════════════
 // ESTADO GLOBAL
 // ═══════════════════════════════════════════════════════════════
-let CLUB={nombre:"A.D Enrique Pérez",categoria:"Alevín B",temporada:"2025/26",entrenador:"",auxiliar:"",campo:"",sistema:"1-3-3-1",variante:"1-2-3-2",
+let CLUB={nombre:"Tu Equipo",categoria:"Tu Categoría",temporada:"2025/26",entrenador:"",auxiliar:"",campo:"",sistema:"1-3-3-1",variante:"1-2-3-2",
   numDias:3,
   diasConfig:[
     {dia:"Lunes",tipo:"CARGA"},
@@ -3219,6 +3238,15 @@ function savePasswords(){
       // No preventDefault aquí para no romper el scroll, solo bloqueamos el hold
     }
   }, {passive:true});
+</script>
+
+<script>
+  window.addEventListener('load', function() {
+    setTimeout(function() {
+      var s = document.getElementById('splash');
+      if(s){ s.classList.add('hide'); setTimeout(function(){ s.style.display='none'; }, 500); }
+    }, 1500);
+  });
 </script>
 </body>
 </html>
