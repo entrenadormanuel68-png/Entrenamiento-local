@@ -2424,6 +2424,8 @@ document.addEventListener("DOMContentLoaded",()=>{
     // Update club name on login screen
     document.getElementById('login-club-name').textContent=CLUB.nombre||'Entrenamiento Total';
     document.getElementById('login-club-sub').textContent=`${CLUB.categoria||''} ${CLUB.temporada?'· '+CLUB.temporada:''} · Selecciona tu perfil`;
+    // Cargar logo guardado
+    cargarLogo();
     // Check if already logged in this session
     const savedRole=localStorage.getItem('bib_role');
     if(savedRole==='manager'||savedRole==='coach'){
