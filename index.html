@@ -1336,31 +1336,27 @@ function aplicarLogo(src){
   const navImg=document.querySelector('#club-logo img');
   const prevImg=document.getElementById('logo-preview-img');
   const delBtn=document.getElementById('btn-logo-del');
-  const splashImg=document.getElementById('splash')?.querySelector('img');
-  const fallback='⚽';
   if(src){
-    if(navImg){navImg.src=src;navImg.style.display='block';}
-    document.getElementById('club-logo').textContent='';
-    document.getElementById('club-logo').appendChild(navImg||Object.assign(document.createElement('img'),{src,style:'width:36px;height:36px;object-fit:contain;border-radius:6px'}));
+    if(navImg)navImg.src=src;
     if(prevImg)prevImg.src=src;
     if(delBtn)delBtn.style.display='inline-block';
-    if(splashImg)splashImg.src=src;
   } else {
-    const logo=document.getElementById('club-logo');
-    if(logo){logo.innerHTML='⚽';logo.style.fontSize='22px';}
-    if(prevImg)prevImg.src=DEFAULT_LOGO||'';
+    // Restaurar el src original guardado al inicio
+    if(navImg&&window._defaultLogoSrc)navImg.src=window._defaultLogoSrc;
+    if(prevImg&&window._defaultLogoSrc)prevImg.src=window._defaultLogoSrc;
     if(delBtn)delBtn.style.display='none';
   }
 }
 
 function cargarLogo(){
-  const saved=localStorage.getItem('clubLogo');
+  // Guardar el src por defecto la primera vez
+  const navImg=document.querySelector('#club-logo img');
+  if(navImg&&!window._defaultLogoSrc)window._defaultLogoSrc=navImg.src;
   const prevImg=document.getElementById('logo-preview-img');
+  const saved=localStorage.getItem('clubLogo');
   if(saved){
     aplicarLogo(saved);
   } else {
-    // Mostrar el logo por defecto en la preview
-    const navImg=document.querySelector('#club-logo img');
     if(prevImg&&navImg)prevImg.src=navImg.src;
     const delBtn=document.getElementById('btn-logo-del');
     if(delBtn)delBtn.style.display='none';
