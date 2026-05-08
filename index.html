@@ -22,6 +22,17 @@ button,input,select,textarea{font-family:inherit}
 #splash h1{font-size:26px;font-weight:800;color:#fff;letter-spacing:1px}
 #splash p{font-size:13px;color:#93C5FD}
 #splash .version{font-size:11px;color:#64748B;margin-top:8px}
+
+/* LOGO UPLOAD */
+#logo-upload-section{margin-top:16px;background:#F8FAFC;border-radius:12px;padding:16px;text-align:center;border:2px dashed #E2E8F0}
+#logo-upload-section label{font-weight:600;color:#64748B;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:12px}
+#logo-preview-wrap{margin-bottom:12px}
+#logo-preview-wrap img{width:80px;height:80px;object-fit:contain;border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,0.1);background:#fff;padding:6px}
+.btn-logo-upload{display:inline-block;background:#1E3A5F;color:white;padding:9px 18px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;margin:4px;transition:opacity .2s}
+.btn-logo-upload:hover{opacity:0.85}
+.btn-logo-del{background:#EF4444;color:white;border:none;padding:9px 18px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;margin:4px}
+#club-logo-input{display:none}
+#logo-upload-hint{font-size:11px;color:#94A3B8;margin-top:8px}
 /* NAV */
 #topbar{background:#1E3A5F;color:#fff;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,0.2)}
 #topbar-inner{max-width:1280px;margin:0 auto;padding:0 16px}
@@ -321,6 +332,17 @@ body.role-coach .manager-only-el{opacity:0.3;pointer-events:none;cursor:not-allo
           </div>
         </div>
         <div class="field"><label>Campo de entrenamiento</label><input id="c-campo" oninput="saveClub()"></div>
+        <!-- ESCUDO DEL CLUB -->
+        <div id="logo-upload-section">
+          <label>📷 Escudo del Club</label>
+          <div id="logo-preview-wrap">
+            <img id="logo-preview-img" src="" alt="Escudo">
+          </div>
+          <label for="club-logo-input" class="btn-logo-upload">📁 Cambiar escudo</label>
+          <input type="file" id="club-logo-input" accept="image/*" onchange="cambiarEscudo(this)">
+          <button id="btn-logo-del" class="btn-logo-del" onclick="eliminarEscudo()" style="display:none">🗑️ Eliminar</button>
+          <div id="logo-upload-hint">JPG, PNG · Máx 2MB · Se guarda en este dispositivo</div>
+        </div>
       </div>
       <div class="card">
         <div class="card-title">⚽ Sistemas de Juego</div>
@@ -1279,6 +1301,70 @@ function renderClub(){
     if(btn){btn.className=i===n?'btn btn-primary':'btn btn-ghost';btn.style.cssText='font-size:13px;font-weight:700;border-radius:8px;padding:8px 18px;';}
   });
   renderDiasConfig();
+}
+
+
+// ═══ ESCUDO DEL CLUB ═══
+const DEFAULT_LOGO = document.getElementById('club-logo')?.querySelector('img')?.src || '';
+
+function cambiarEscudo(input){
+  if(!isManager())return;
+  if(!input.files||!input.files[0])return;
+  const file=input.files[0];
+  if(file.size>2*1024*1024){alert('La imagen no debe superar 2MB');input.value='';return;}
+  if(!file.type.startsWith('image/')){alert('Por favor selecciona una imagen válida');input.value='';return;}
+  const reader=new FileReader();
+  reader.onload=function(e){
+    const b64=e.target.result;
+    localStorage.setItem('clubLogo',b64);
+    aplicarLogo(b64);
+    input.value='';
+    toast('✅ Escudo actualizado');
+  };
+  reader.readAsDataURL(file);
+}
+
+function eliminarEscudo(){
+  if(!isManager())return;
+  if(!confirm('¿Eliminar el escudo personalizado?'))return;
+  localStorage.removeItem('clubLogo');
+  aplicarLogo(null);
+  toast('🗑️ Escudo eliminado');
+}
+
+function aplicarLogo(src){
+  const navImg=document.querySelector('#club-logo img');
+  const prevImg=document.getElementById('logo-preview-img');
+  const delBtn=document.getElementById('btn-logo-del');
+  const splashImg=document.getElementById('splash')?.querySelector('img');
+  const fallback='⚽';
+  if(src){
+    if(navImg){navImg.src=src;navImg.style.display='block';}
+    document.getElementById('club-logo').textContent='';
+    document.getElementById('club-logo').appendChild(navImg||Object.assign(document.createElement('img'),{src,style:'width:36px;height:36px;object-fit:contain;border-radius:6px'}));
+    if(prevImg)prevImg.src=src;
+    if(delBtn)delBtn.style.display='inline-block';
+    if(splashImg)splashImg.src=src;
+  } else {
+    const logo=document.getElementById('club-logo');
+    if(logo){logo.innerHTML='⚽';logo.style.fontSize='22px';}
+    if(prevImg)prevImg.src=DEFAULT_LOGO||'';
+    if(delBtn)delBtn.style.display='none';
+  }
+}
+
+function cargarLogo(){
+  const saved=localStorage.getItem('clubLogo');
+  const prevImg=document.getElementById('logo-preview-img');
+  if(saved){
+    aplicarLogo(saved);
+  } else {
+    // Mostrar el logo por defecto en la preview
+    const navImg=document.querySelector('#club-logo img');
+    if(prevImg&&navImg)prevImg.src=navImg.src;
+    const delBtn=document.getElementById('btn-logo-del');
+    if(delBtn)delBtn.style.display='none';
+  }
 }
 
 function saveClub(){
