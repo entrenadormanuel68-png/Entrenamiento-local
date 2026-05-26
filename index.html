@@ -888,7 +888,7 @@ function genSesiones(){
   const numDias=CLUB.numDias||3;
   const tipos=getTiposSesion(numDias);
   const ses=[];let n=1;const ti={1:0,2:0,3:0,4:0,5:0,6:0};
-  const sis={1:"1-3-3-1",2:"1-3-3-1",3:"1-3-3-1 / 1-2-3-2",4:"1-3-3-1",5:"F11 – 1-3-3-1",6:"1-3-3-1"};
+  const _sis=CLUB.sistema||"1-3-2-1";const _var=CLUB.variante||_sis;const sis={1:_sis,2:_sis,3:_sis+" / "+_var,4:_sis,5:_sis,6:_sis};
   const totalSems=50;
   for(let s=1;s<=totalSems;s++){
     const f=s<=6?1:s<=15?2:s<=25?3:s<=35?4:s<=44?5:6;
@@ -1885,7 +1885,7 @@ function renderSesiones(){
         <span style="font-size:10px;font-weight:700;color:#94A3B8">S${String(s.num).padStart(3,"0")}</span>
       </div>
       <div style="font-weight:600;font-size:12px;color:#1e293b;margin-bottom:3px;line-height:1.3">${s.tema}</div>
-      <div style="font-size:10px;color:#94A3B8">Sem ${s.sem} · ${s.sistema}</div>
+      <div style="font-size:10px;color:#94A3B8">Sem ${s.sem} · ${CLUB.sistema||s.sistema}</div>
       ${s.fechaReal?`<div style="font-size:10px;color:#3B82F6;margin-top:3px">📅 ${s.fechaReal}</div>`:""}
     </div>`;}).join("");
 }
@@ -1913,7 +1913,7 @@ function renderSesionDetalle(){
       </div>
       <h2 style="font-size:18px;margin-bottom:4px">${s.tema}</h2>
       <p style="font-size:13px;color:#64748B;margin:0">${s.objetivo}</p>
-      <div style="font-size:11px;color:${fi.c};margin-top:5px;font-weight:600">Sistema: ${s.sistema}</div>
+      <div style="font-size:11px;color:${fi.c};margin-top:5px;font-weight:600">Sistema: ${CLUB.sistema||s.sistema}</div>
     </div>
     <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:14px;margin-bottom:12px">
       <div style="font-size:10px;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:1px;margin-bottom:5px">🔥 Calentamiento</div>
@@ -2475,7 +2475,7 @@ function renderMisSesiones(){
       </div>
       <div style="font-weight:600;font-size:12px;color:#1e293b;margin-bottom:3px;line-height:1.3">${s.tema}</div>
       ${s.objetivo?`<div style="font-size:10px;color:#94A3B8;margin-bottom:2px">${s.objetivo}</div>`:''}
-      ${s.sistema?`<div style="font-size:10px;color:#64748B">⚙️ ${s.sistema}</div>`:''}
+      ${(CLUB.sistema||s.sistema)?`<div style="font-size:10px;color:#64748B">⚙️ ${CLUB.sistema||s.sistema}</div>`:''}
       ${s.fecha?`<div style="font-size:10px;color:#3B82F6;margin-top:3px">📅 ${s.fecha}</div>`:''}
     </div>`;
   }).join('');
@@ -2512,7 +2512,7 @@ function renderSesLibreDetalle(){
     <div style="background:#FFF7ED;border:1px solid #FED7AA;border-radius:12px;padding:16px;margin-bottom:14px">
       <div style="display:flex;gap:7px;margin-bottom:7px;flex-wrap:wrap;align-items:center">
         <span style="background:${tc.bg};color:${tc.c};border:1px solid ${tc.c}40;border-radius:4px;font-size:10px;font-weight:700;padding:2px 7px">${s.tipo}</span>
-        ${s.sistema?`<span style="font-size:10px;color:#94A3B8;font-weight:700">⚙️ ${s.sistema}</span>`:''}
+        ${(CLUB.sistema||s.sistema)?`<span style="font-size:10px;color:#94A3B8;font-weight:700">⚙️ ${CLUB.sistema||s.sistema}</span>`:''}
         ${totalMin?`<span style="font-size:10px;color:#F97316;font-weight:700">⏱ ${totalMin} min totales</span>`:''}
         ${s.fecha?`<span style="font-size:10px;color:#3B82F6;font-weight:700">📅 ${s.fecha}</span>`:''}
       </div>
@@ -2555,7 +2555,7 @@ function sesLibreWA(id){
   const s=SES_LIBRES.find(x=>x.id===id);if(!s)return;
   let txt=`📋 *${s.tipo} – ${s.tema}*\n`;
   if(s.objetivo)txt+=`🎯 ${s.objetivo}\n`;
-  if(s.sistema)txt+=`⚙️ Sistema: ${s.sistema}\n`;
+  if(s.sistema)txt+=`⚙️ Sistema: ${CLUB.sistema||s.sistema}\n`;
   txt+='\n';
   if(s.calentamiento)txt+=`🔥 *Calentamiento${s.cal_min?' ('+s.cal_min+' min)':''}:*\n${s.calentamiento}\n\n`;
   if(s.ej1_nom)txt+=`1️⃣ *${s.ej1_nom}${s.ej1_min?' ('+s.ej1_min+' min)':''}*\n${s.ej1_desc||''}\n${s.ej1_prov?'🎯 '+s.ej1_prov:''}\n\n`;
