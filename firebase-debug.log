@@ -1,0 +1,91 @@
+[debug] [2026-05-28T05:05:57.959Z] ----------------------------------------------------------------------
+[debug] [2026-05-28T05:05:57.961Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\entre\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy --only hosting
+[debug] [2026-05-28T05:05:57.961Z] CLI Version:   15.18.0
+[debug] [2026-05-28T05:05:57.961Z] Platform:      win32
+[debug] [2026-05-28T05:05:57.961Z] Node Version:  v24.14.1
+[debug] [2026-05-28T05:05:57.961Z] Time:          Thu May 28 2026 07:05:57 GMT+0200 (hora de verano de Europa central)
+[debug] [2026-05-28T05:05:57.961Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-05-28T05:05:58.885Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-05-28T05:05:58.885Z] > authorizing via signed-in user (entrenadormanuel68@gmail.com)
+[debug] [2026-05-28T05:05:58.886Z] [iam] checking project mp-coach-dab2b for permissions ["firebase.projects.get","firebasehosting.sites.update"]
+[debug] [2026-05-28T05:05:58.886Z] Checked if tokens are valid: true, expires at: 1779947283191
+[debug] [2026-05-28T05:05:58.886Z] Checked if tokens are valid: true, expires at: 1779947283191
+[debug] [2026-05-28T05:05:58.887Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/mp-coach-dab2b:testIamPermissions [none]
+[debug] [2026-05-28T05:05:58.887Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/mp-coach-dab2b:testIamPermissions  x-goog-user-project=mp-coach-dab2b
+[debug] [2026-05-28T05:05:58.887Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/mp-coach-dab2b:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2026-05-28T05:05:59.975Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/mp-coach-dab2b:testIamPermissions 200
+[debug] [2026-05-28T05:05:59.975Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/mp-coach-dab2b:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2026-05-28T05:05:59.976Z] Checked if tokens are valid: true, expires at: 1779947283191
+[debug] [2026-05-28T05:05:59.976Z] Checked if tokens are valid: true, expires at: 1779947283191
+[debug] [2026-05-28T05:05:59.976Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/mp-coach-dab2b [none]
+[debug] [2026-05-28T05:06:00.687Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/mp-coach-dab2b 200
+[debug] [2026-05-28T05:06:00.687Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/mp-coach-dab2b {"projectId":"mp-coach-dab2b","projectNumber":"1096691298028","displayName":" MP-Coach","name":"projects/mp-coach-dab2b","resources":{"hostingSite":"mp-coach-dab2b","realtimeDatabaseInstance":"mp-coach-dab2b-default-rtdb"},"state":"ACTIVE","etag":"1_8fce36c6-cd55-4404-8875-e5df917ae5be"}
+[info] 
+[info] === Deploying to 'mp-coach-dab2b'...
+[info] 
+[info] i  deploying hosting 
+[debug] [2026-05-28T05:06:00.692Z] Checked if tokens are valid: true, expires at: 1779947283191
+[debug] [2026-05-28T05:06:00.692Z] Checked if tokens are valid: true, expires at: 1779947283191
+[debug] [2026-05-28T05:06:00.692Z] >>> [apiv2][query] GET https://firebasehosting.googleapis.com/v1beta1/projects/mp-coach-dab2b/sites/mp-coach-dab2b [none]
+[debug] [2026-05-28T05:06:02.145Z] <<< [apiv2][status] GET https://firebasehosting.googleapis.com/v1beta1/projects/mp-coach-dab2b/sites/mp-coach-dab2b 200
+[debug] [2026-05-28T05:06:02.146Z] <<< [apiv2][body] GET https://firebasehosting.googleapis.com/v1beta1/projects/mp-coach-dab2b/sites/mp-coach-dab2b {"name":"projects/mp-coach-dab2b/sites/mp-coach-dab2b","defaultUrl":"https://mp-coach-dab2b.web.app","appId":"1:1096691298028:web:6d5a7a8d7f057135bb3fc9","type":"DEFAULT_SITE"}
+[debug] [2026-05-28T05:06:02.150Z] Checked if tokens are valid: true, expires at: 1779947283191
+[debug] [2026-05-28T05:06:02.150Z] Checked if tokens are valid: true, expires at: 1779947283191
+[debug] [2026-05-28T05:06:02.150Z] >>> [apiv2][query] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/mp-coach-dab2b/versions [none]
+[debug] [2026-05-28T05:06:02.150Z] >>> [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/mp-coach-dab2b/versions {"status":"CREATED","labels":{"deployment-tool":"cli-firebase"}}
+[debug] [2026-05-28T05:06:04.096Z] <<< [apiv2][status] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/mp-coach-dab2b/versions 200
+[debug] [2026-05-28T05:07:09.170Z] ----------------------------------------------------------------------
+[debug] [2026-05-28T05:07:09.173Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\entre\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy --only hosting
+[debug] [2026-05-28T05:07:09.173Z] CLI Version:   15.18.0
+[debug] [2026-05-28T05:07:09.173Z] Platform:      win32
+[debug] [2026-05-28T05:07:09.173Z] Node Version:  v24.14.1
+[debug] [2026-05-28T05:07:09.173Z] Time:          Thu May 28 2026 07:07:09 GMT+0200 (hora de verano de Europa central)
+[debug] [2026-05-28T05:07:09.173Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-05-28T05:07:10.135Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-05-28T05:07:10.136Z] > authorizing via signed-in user (entrenadormanuel68@gmail.com)
+[debug] [2026-05-28T05:07:10.136Z] [iam] checking project mp-coach-dab2b for permissions ["firebase.projects.get","firebasehosting.sites.update"]
+[debug] [2026-05-28T05:07:10.136Z] Checked if tokens are valid: true, expires at: 1779947283191
+[debug] [2026-05-28T05:07:10.136Z] Checked if tokens are valid: true, expires at: 1779947283191
+[debug] [2026-05-28T05:07:10.137Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/mp-coach-dab2b:testIamPermissions [none]
+[debug] [2026-05-28T05:07:10.137Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/mp-coach-dab2b:testIamPermissions  x-goog-user-project=mp-coach-dab2b
+[debug] [2026-05-28T05:07:10.137Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/mp-coach-dab2b:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2026-05-28T05:07:10.627Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/mp-coach-dab2b:testIamPermissions 200
+[debug] [2026-05-28T05:07:10.627Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/mp-coach-dab2b:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2026-05-28T05:07:10.628Z] Checked if tokens are valid: true, expires at: 1779947283191
+[debug] [2026-05-28T05:07:10.628Z] Checked if tokens are valid: true, expires at: 1779947283191
+[debug] [2026-05-28T05:07:10.628Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/mp-coach-dab2b [none]
+[debug] [2026-05-28T05:07:11.245Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/mp-coach-dab2b 200
+[debug] [2026-05-28T05:07:11.245Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/mp-coach-dab2b {"projectId":"mp-coach-dab2b","projectNumber":"1096691298028","displayName":" MP-Coach","name":"projects/mp-coach-dab2b","resources":{"hostingSite":"mp-coach-dab2b","realtimeDatabaseInstance":"mp-coach-dab2b-default-rtdb"},"state":"ACTIVE","etag":"1_8fce36c6-cd55-4404-8875-e5df917ae5be"}
+[info] 
+[info] === Deploying to 'mp-coach-dab2b'...
+[info] 
+[info] i  deploying hosting 
+[debug] [2026-05-28T05:07:11.250Z] Checked if tokens are valid: true, expires at: 1779947283191
+[debug] [2026-05-28T05:07:11.250Z] Checked if tokens are valid: true, expires at: 1779947283191
+[debug] [2026-05-28T05:07:11.250Z] >>> [apiv2][query] GET https://firebasehosting.googleapis.com/v1beta1/projects/mp-coach-dab2b/sites/mp-coach-dab2b [none]
+[debug] [2026-05-28T05:07:12.548Z] <<< [apiv2][status] GET https://firebasehosting.googleapis.com/v1beta1/projects/mp-coach-dab2b/sites/mp-coach-dab2b 200
+[debug] [2026-05-28T05:07:12.548Z] <<< [apiv2][body] GET https://firebasehosting.googleapis.com/v1beta1/projects/mp-coach-dab2b/sites/mp-coach-dab2b {"name":"projects/mp-coach-dab2b/sites/mp-coach-dab2b","defaultUrl":"https://mp-coach-dab2b.web.app","appId":"1:1096691298028:web:6d5a7a8d7f057135bb3fc9","type":"DEFAULT_SITE"}
+[debug] [2026-05-28T05:07:12.552Z] Checked if tokens are valid: true, expires at: 1779947283191
+[debug] [2026-05-28T05:07:12.552Z] Checked if tokens are valid: true, expires at: 1779947283191
+[debug] [2026-05-28T05:07:12.552Z] >>> [apiv2][query] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/mp-coach-dab2b/versions [none]
+[debug] [2026-05-28T05:07:12.552Z] >>> [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/mp-coach-dab2b/versions {"status":"CREATED","labels":{"deployment-tool":"cli-firebase"}}
+[debug] [2026-05-28T05:07:14.440Z] <<< [apiv2][status] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/mp-coach-dab2b/versions 200
+[debug] [2026-05-28T05:07:14.441Z] <<< [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/mp-coach-dab2b/versions {"name":"projects/1096691298028/sites/mp-coach-dab2b/versions/85c7338696e4215b","status":"CREATED","config":{},"labels":{"deployment-tool":"cli-firebase"}}
+[info] i  hosting[mp-coach-dab2b]: beginning deploy... 
+[info] i  hosting[mp-coach-dab2b]: found 236763 files in . 
+[debug] [2026-05-28T05:07:33.892Z] [hosting] uploading with 200 concurrency
+[debug] [2026-05-28T05:07:33.892Z] [hosting] hash cache [] not populated
+[debug] [2026-05-28T05:07:33.929Z] Error: EBUSY: resource busy or locked, open 'C:\Users\entre\ntuser.dat.LOG2'
+[error] 
+[error] Error: An unexpected error has occurred.
+[debug] [2026-05-28T05:07:33.930Z] Error: EBUSY: resource busy or locked, open 'C:\Users\entre\ntuser.dat.LOG1'
+[error] 
+[error] Error: An unexpected error has occurred.
+[debug] [2026-05-28T05:07:33.931Z] Error: EBUSY: resource busy or locked, open 'C:\Users\entre\NTUSER.DAT'
+[error] 
+[error] Error: An unexpected error has occurred.
+[debug] [2026-05-28T05:07:34.034Z] Error: EISDIR: illegal operation on a directory, read
+[error] 
+[error] Error: An unexpected error has occurred.
