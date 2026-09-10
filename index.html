@@ -432,6 +432,31 @@ body.role-coach .manager-only-el{opacity:0.3;pointer-events:none;cursor:not-allo
           </div>
         </div>
 
+        <div style="margin-top:18px;padding-top:14px;border-top:1px solid #E2E8F0">
+          <div class="card-title">🗓️ Inicio Real de Temporada</div>
+          <p style="font-size:12px;color:#64748B;margin-bottom:10px">Indica el lunes de la primera semana de entrenamiento. El calendario asignará fechas automáticamente a cada sesión.</p>
+          <div class="field" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+            <label style="font-size:12px;font-weight:600;color:#374151">Primer lunes de entrenamiento:</label>
+            <input type="date" id="c-inicio-temp" style="border:1px solid #E2E8F0;border-radius:8px;padding:7px 11px;font-size:13px;outline:none" onchange="saveInicioTemp()">
+          </div>
+          <div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:8px;padding:10px 12px;margin-top:10px;font-size:11px;color:#15803D">
+            📌 Una vez guardado, cada sesión del calendario mostrará su fecha real calculada automáticamente. Puedes ajustar fechas individuales directamente en el Calendario.
+          </div>
+        </div>
+
+        <div style="margin-top:18px;padding-top:14px;border-top:1px solid #E2E8F0">
+          <div class="card-title">🚫 Días Festivos / Sin Entrenamiento</div>
+          <p style="font-size:12px;color:#64748B;margin-bottom:10px">Añade fechas en las que no hay entrenamiento (festivos, vacaciones, lluvia…). El calendario saltará esos días automáticamente.</p>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
+            <input type="date" id="input-festivo" style="border:1px solid #E2E8F0;border-radius:8px;padding:7px 11px;font-size:13px;outline:none">
+            <button class="btn btn-primary btn-sm" onclick="addFestivo()">➕ Añadir festivo</button>
+          </div>
+          <div id="lista-festivos" style="display:flex;flex-wrap:wrap;gap:6px;min-height:28px"></div>
+          <div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:8px;padding:10px 12px;margin-top:10px;font-size:11px;color:#92400E">
+            ⚠️ Tras añadir o eliminar festivos, pulsa <strong>"Aplicar y regenerar calendario"</strong> para recalcular las fechas.
+          </div>
+        </div>
+
         <div style="margin-top:20px;padding-top:16px;border-top:1px solid #E2E8F0">
           <div class="card-title" style="color:#DC2626">⚠️ Reset de Datos</div>
           <p style="font-size:12px;color:#64748B;margin-bottom:10px">Elimina todos los datos para empezar una nueva temporada.</p>
@@ -446,11 +471,16 @@ body.role-coach .manager-only-el{opacity:0.3;pointer-events:none;cursor:not-allo
       <button class="btn btn-ghost btn-sm" onclick="plantillaCSV()">📥 CSV</button>
     </div>
     <div class="card">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center">
+        <button class="btn btn-primary btn-sm manager-only-el" onclick="addJugador()">➕ Añadir jugador</button>
+        <span style="font-size:11px;color:#64748B">Jugadores: <strong id="cnt-jugadores">0</strong> total · <strong id="cnt-activos">0</strong> activos</span>
+      </div>
       <div class="scroll-x">
         <table id="tbl-plantilla">
           <thead><tr>
             <th>Nº</th><th>Nombre</th><th>Posición</th><th>Dorsal</th><th>Pierna</th>
             <th>Teléfono 1</th><th>Teléfono 2</th><th>Fecha Nac.</th><th>Notas</th>
+            <th>Estado</th><th>Acción</th>
           </tr></thead>
           <tbody id="plantilla-body"></tbody>
         </table>
@@ -989,7 +1019,9 @@ let CLUB={nombre:"Tu Equipo",categoria:"Tu Categoría",temporada:"2025/26",entre
   diaPartido:"Sábado",
   dia1:"Lunes",dia2:"Miércoles",dia3:"Jueves"
 };
-let JUGADORES=Array.from({length:15},(_,i)=>({id:i+1,nombre:`Jugador ${i+1}`,posicion:POS_DEF[i],dorsal:i+1,pierna:i%3===0?"Izquierda":"Derecha",telefono1:"",telefono2:"",fechaNacimiento:"",notas:"",evaluaciones:Object.fromEntries(PEVAL.map(p=>[p,Object.fromEntries(ALL_HAB.map(h=>[h,0]))]))}));
+let JUGADORES=Array.from({length:15},(_,i)=>({id:i+1,nombre:`Jugador ${i+1}`,posicion:POS_DEF[i],dorsal:i+1,pierna:i%3===0?"Izquierda":"Derecha",telefono1:"",telefono2:"",fechaNacimiento:"",notas:"",activo:true,evaluaciones:Object.fromEntries(PEVAL.map(p=>[p,Object.fromEntries(ALL_HAB.map(h=>[h,0]))]))}));
+// FESTIVOS: array de strings "YYYY-MM-DD" con días sin entrenamiento
+let FESTIVOS=[];
 let SESIONES=genSesiones();
 let PARTIDOS=Array.from({length:40},(_,i)=>({id:i+1,rival:"",fecha:"",hora:"",local:true,tipo:"Amistoso",lugarConvocatoria:"",horaConvocatoria:"",formatoCampo:"F7",formacion:"1-3-2-1",convocados:[],suplentes:[],periodos:Array.from({length:4},()=>({alineacion:{},goles:[],golesRival:0,formacion:""})),notas:""}));
 let BIBLIOTECA=[
@@ -1086,6 +1118,9 @@ function _loadFromLocalStorage(){
   const a=load("auth");if(a)_authConfig=a;
   const pz=localStorage.getItem('pizarra_boards');if(pz)try{pzSavedBoards=JSON.parse(pz);}catch(e){}
   const sl=localStorage.getItem('ses_libres');if(sl)try{SES_LIBRES=JSON.parse(sl);}catch(e){}
+  const fes=load("festivos");if(fes)FESTIVOS=fes;
+  // Compatibilidad: asegurar campo activo en jugadores cargados
+  JUGADORES=JUGADORES.map(j=>({activo:true,...j}));
 }
 
 function loadAll(callback){
@@ -1351,6 +1386,12 @@ function aplicarConfigDias(){
   SESIONES=genSesiones();
   // Try to restore data for matching session numbers
   SESIONES.forEach(s=>{if(prevComp[s.num])s.completada=true;if(prevNotas[s.num])s.notas=prevNotas[s.num];if(prevFechas[s.num])s.fechaReal=prevFechas[s.num];});
+  // Calcular fechas reales si hay inicio de temporada configurado
+  if(CLUB.inicioTemp){
+    // Limpiar fechas para recalcular con el nuevo calendario
+    SESIONES.forEach(s=>{if(!prevFechas[s.num])s.fechaReal="";});
+    calcularFechasReales();
+  }
   save("sesiones",SESIONES);
   updateHeader();
   if(document.getElementById('sec-calendario').classList.contains('active'))renderCalendario();
@@ -1371,6 +1412,89 @@ function renderClub(){
     if(btn){btn.className=i===n?'btn btn-primary':'btn btn-ghost';btn.style.cssText='font-size:13px;font-weight:700;border-radius:8px;padding:8px 18px;';}
   });
   renderDiasConfig();
+  // Inicio de temporada
+  const iniEl=document.getElementById('c-inicio-temp');
+  if(iniEl)iniEl.value=CLUB.inicioTemp||"";
+  // Festivos
+  renderListaFestivos();
+}
+
+// ═══ INICIO REAL DE TEMPORADA ═══
+function saveInicioTemp(){
+  if(!isManager())return;
+  const v=document.getElementById('c-inicio-temp')?.value||"";
+  CLUB.inicioTemp=v;
+  save("club",CLUB);
+  toast("✅ Fecha de inicio guardada");
+}
+
+// ═══ FESTIVOS ═══
+function renderListaFestivos(){
+  const el=document.getElementById('lista-festivos');if(!el)return;
+  if(!FESTIVOS.length){el.innerHTML='<span style="font-size:11px;color:#94A3B8;font-style:italic">Sin días festivos añadidos</span>';return;}
+  el.innerHTML=FESTIVOS.sort().map(f=>`
+    <span style="display:inline-flex;align-items:center;gap:5px;background:#FEE2E2;color:#DC2626;border-radius:20px;padding:4px 10px;font-size:11px;font-weight:600">
+      🚫 ${f}
+      <button onclick="removeFestivo('${f}')" style="border:none;background:none;cursor:pointer;color:#DC2626;font-size:13px;line-height:1;padding:0 2px" title="Eliminar">×</button>
+    </span>`).join("");
+}
+function addFestivo(){
+  if(!isManager())return;
+  const inp=document.getElementById('input-festivo');if(!inp)return;
+  const v=inp.value;
+  if(!v){toast("⚠️ Selecciona una fecha primero");return;}
+  if(FESTIVOS.includes(v)){toast("⚠️ Ese día ya está en la lista");return;}
+  FESTIVOS.push(v);FESTIVOS.sort();
+  save("festivos",FESTIVOS);
+  inp.value="";
+  renderListaFestivos();
+  toast(`🚫 Festivo añadido: ${v}`);
+}
+function removeFestivo(f){
+  if(!isManager())return;
+  FESTIVOS=FESTIVOS.filter(x=>x!==f);
+  save("festivos",FESTIVOS);
+  renderListaFestivos();
+  toast(`✅ Festivo eliminado: ${f}`);
+}
+
+// ═══ CÁLCULO DE FECHAS REALES CON FESTIVOS ═══
+function calcularFechasReales(){
+  if(!CLUB.inicioTemp)return; // sin fecha de inicio no hacemos nada
+  const diasSemana={Lunes:1,Martes:2,Miércoles:3,Jueves:4,Viernes:5,Sábado:6,Domingo:0};
+  const diasCfg=CLUB.diasConfig||[{dia:"Lunes"},{dia:"Miércoles"},{dia:"Jueves"}];
+  const diasNum=diasCfg.map(d=>diasSemana[d.dia]||1);
+  const festSet=new Set(FESTIVOS);
+  // Fecha del lunes de inicio
+  const [y,m,d]=CLUB.inicioTemp.split('-').map(Number);
+  let cursor=new Date(y,m-1,d);
+  // Asegurarnos que es lunes
+  while(cursor.getDay()!==1)cursor=new Date(cursor.getTime()+86400000);
+  // Asignar fechas sesión a sesión
+  let semActual=0;
+  let sesPorSem=0;
+  const numDias=diasNum.length;
+  SESIONES.forEach(s=>{
+    // Calcular a qué lunes corresponde esta sesión
+    const luneSem=new Date(cursor.getTime()+(s.sem-1)*7*86400000);
+    // Día de entrenamiento dentro de esa semana
+    const diaIdx=sesPorSem%numDias;
+    const diaNum=diasNum[diaIdx];
+    let fechaSes=new Date(luneSem);
+    // Avanzar al día correcto dentro de la semana
+    while(fechaSes.getDay()!==diaNum)fechaSes=new Date(fechaSes.getTime()+86400000);
+    // Si es festivo, saltar al siguiente día de entrenamiento disponible en esa semana
+    let intentos=0;
+    while(festSet.has(fechaSes.toISOString().slice(0,10))&&intentos<14){
+      fechaSes=new Date(fechaSes.getTime()+86400000);intentos++;
+    }
+    const fechaStr=fechaSes.toISOString().slice(0,10);
+    // Solo asignar si la sesión no tiene fecha manual ya guardada
+    if(!s.fechaReal)s.fechaReal=fechaStr;
+    sesPorSem++;
+    if(sesPorSem>=numDias)sesPorSem=0;
+  });
+  save("sesiones",SESIONES);
 }
 
 
@@ -1447,9 +1571,17 @@ const POSICIONES_FIJAS=["Portero","Lateral D","Lateral I","Central","Pivote","Li
 
 function renderPlantilla(){
   const tbody=document.getElementById("plantilla-body");
-  tbody.innerHTML=JUGADORES.map(j=>`<tr>
+  const cntEl=document.getElementById("cnt-jugadores");
+  const cntAct=document.getElementById("cnt-activos");
+  const activos=JUGADORES.filter(j=>j.activo!==false);
+  if(cntEl)cntEl.textContent=JUGADORES.length;
+  if(cntAct)cntAct.textContent=activos.length;
+  tbody.innerHTML=JUGADORES.map(j=>{
+    const inactivo=j.activo===false;
+    const rowStyle=inactivo?"opacity:0.45;background:#F8FAFC;":"";
+    return`<tr style="${rowStyle}">
     <td style="font-weight:700;color:#94A3B8">${j.id}</td>
-    <td><input value="${esc(j.nombre)}" oninput="updJ(${j.id},'nombre',this.value)" style="width:110px;border:1px solid #E2E8F0;border-radius:5px;padding:3px 7px;font-size:12px;outline:none"></td>
+    <td><input value="${esc(j.nombre)}" oninput="updJ(${j.id},'nombre',this.value)" style="width:110px;border:1px solid #E2E8F0;border-radius:5px;padding:3px 7px;font-size:12px;outline:none${inactivo?";color:#94A3B8":""}""></td>
     <td><select onchange="updJ(${j.id},'posicion',this.value)" style="width:110px;border:1px solid #E2E8F0;border-radius:5px;padding:3px 5px;font-size:12px;outline:none">
       ${POSICIONES_FIJAS.map(p=>`<option ${esc(j.posicion)===p?"selected":""}>${p}</option>`).join("")}
     </select></td>
@@ -1469,7 +1601,41 @@ function renderPlantilla(){
     </div></td>
     <td><input type="date" value="${j.fechaNacimiento||""}" onchange="updJ(${j.id},'fechaNacimiento',this.value)" style="width:120px;border:1px solid #E2E8F0;border-radius:5px;padding:3px 7px;font-size:12px;outline:none"></td>
     <td><input value="${esc(j.notas||"")}" oninput="updJ(${j.id},'notas',this.value)" placeholder="Notas" style="width:100px;border:1px solid #E2E8F0;border-radius:5px;padding:3px 7px;font-size:12px;outline:none"></td>
-  </tr>`).join("");
+    <td style="text-align:center">
+      <button onclick="toggleActivoJug(${j.id})" style="border:none;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:11px;font-weight:600;background:${inactivo?"#FEE2E2":"#DCFCE7"};color:${inactivo?"#DC2626":"#16A34A"}">${inactivo?"❌ Baja":"✅ Activo"}</button>
+    </td>
+    <td style="text-align:center" class="manager-only-el">
+      <button onclick="eliminarJugador(${j.id})" title="Eliminar jugador" style="border:none;background:#FEE2E2;color:#DC2626;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:12px">🗑️</button>
+    </td>
+  </tr>`;
+  }).join("");
+}
+function toggleActivoJug(id){
+  if(!isManager())return;
+  const j=JUGADORES.find(x=>x.id===id);if(!j)return;
+  j.activo=(j.activo===false)?true:false;
+  save("jugadores",JUGADORES);
+  renderPlantilla();
+  toast(j.activo===false?"⚪ Jugador marcado como baja":"✅ Jugador reactivado");
+}
+function addJugador(){
+  if(!isManager())return;
+  const maxId=JUGADORES.length>0?Math.max(...JUGADORES.map(j=>j.id)):0;
+  const newId=maxId+1;
+  const newJ={id:newId,nombre:`Jugador ${newId}`,posicion:"Libre",dorsal:newId,pierna:"Derecha",telefono1:"",telefono2:"",fechaNacimiento:"",notas:"",activo:true,evaluaciones:Object.fromEntries(PEVAL.map(p=>[p,Object.fromEntries(ALL_HAB.map(h=>[h,0]))]))};
+  JUGADORES.push(newJ);
+  save("jugadores",JUGADORES);
+  renderPlantilla();
+  toast(`✅ Jugador ${newId} añadido`);
+}
+function eliminarJugador(id){
+  if(!isManager())return;
+  const j=JUGADORES.find(x=>x.id===id);if(!j)return;
+  if(!confirm(`¿Eliminar a "${j.nombre}" de la plantilla?\n\nEsta acción no se puede deshacer.`))return;
+  JUGADORES=JUGADORES.filter(x=>x.id!==id);
+  save("jugadores",JUGADORES);
+  renderPlantilla();
+  toast("🗑️ Jugador eliminado");
 }
 function updJ(id,k,v){
   if(!isManager())return;
@@ -1479,7 +1645,6 @@ function updJ(id,k,v){
   const textKeys=['nombre','telefono1','telefono2','notas','dorsal'];
   if(!textKeys.includes(k))renderPlantilla();
   else{
-    // Bloquear re-render de Firebase mientras escribe
     window._isTypingJ=true;
     clearTimeout(window._typingTimerJ);
     window._typingTimerJ=setTimeout(()=>{window._isTypingJ=false;},1500);
@@ -1645,11 +1810,12 @@ function renderPartidoDetalle(){
 
   if(partidoTab==="conv"){
     const conv=p.convocados.map(id=>JUGADORES.find(j=>j.id===id)).filter(Boolean);
-    const noConv=JUGADORES.filter(j=>!p.convocados.includes(j.id));
+    const jugsActivos=JUGADORES.filter(j=>j.activo!==false);
+    const noConv=jugsActivos.filter(j=>!p.convocados.includes(j.id));
     html+=`<div class="g2">
       <div>
         <div class="card-title">Selecciona convocados</div>
-        ${JUGADORES.map(j=>{
+        ${jugsActivos.map(j=>{
           const isC=p.convocados.includes(j.id);
           return`<div style="display:flex;align-items:center;gap:8px;padding:5px 9px;border-radius:6px;margin-bottom:3px;background:${isC?"#F0FDF4":"#F9FAFB"};border:1px solid ${isC?"#BBF7D0":"#E2E8F0"}">
             <input type="checkbox" ${isC?"checked":""} onchange="toggleConv(${p.id},${j.id})" style="cursor:pointer;width:15px;height:15px">
@@ -2177,8 +2343,9 @@ function renderAsistencia(){
   }
   const ses=SESIONES.find(s=>s.num===num);
   const asist=ASISTENCIA[num]||{};
-  const presentes=JUGADORES.filter(j=>asist[j.id]===true).length;
-  const total=JUGADORES.length;
+  const jugsActivos=JUGADORES.filter(j=>j.activo!==false);
+  const presentes=jugsActivos.filter(j=>asist[j.id]===true).length;
+  const total=jugsActivos.length;
 
   body.innerHTML=`
     <div class="card">
@@ -2197,7 +2364,7 @@ function renderAsistencia(){
         <button class="btn btn-ghost btn-sm" onclick="marcarTodos(${num},false)">❌ Todos ausentes</button>
       </div>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px">
-        ${JUGADORES.map(j=>{
+        ${jugsActivos.map(j=>{
           const p=asist[j.id]===true;
           return`<div onclick="toggleAsist(${num},${j.id})" style="cursor:pointer;padding:10px 12px;border-radius:10px;border:2px solid ${p?'#16A34A':'#E2E8F0'};background:${p?'#DCFCE7':'white'};display:flex;align-items:center;gap:8px;transition:all .15s">
             <div style="width:28px;height:28px;border-radius:50%;background:${p?'#16A34A':'#E2E8F0'};display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">${p?'✅':'❌'}</div>
@@ -2219,7 +2386,7 @@ function renderAsistencia(){
             <th style="padding:6px 10px;text-align:center;border-bottom:2px solid #E2E8F0">Asistencia</th>
             <th style="padding:6px 10px;text-align:left;border-bottom:2px solid #E2E8F0"></th>
           </tr></thead>
-          <tbody>${JUGADORES.map(j=>{
+          <tbody>${JUGADORES.filter(j=>j.activo!==false).map(j=>{
             const sesConReg=Object.keys(ASISTENCIA).filter(n=>ASISTENCIA[n][j.id]!==undefined);
             const asistio=sesConReg.filter(n=>ASISTENCIA[n][j.id]===true).length;
             const total2=sesConReg.length;
@@ -2242,7 +2409,7 @@ function toggleAsist(sesNum,jugId){
 }
 function marcarTodos(sesNum,val){
   if(!ASISTENCIA[sesNum])ASISTENCIA[sesNum]={};
-  JUGADORES.forEach(j=>{ASISTENCIA[sesNum][j.id]=val;});
+  JUGADORES.filter(j=>j.activo!==false).forEach(j=>{ASISTENCIA[sesNum][j.id]=val;});
   renderAsistencia();
 }
 function guardarAsistencia(){
