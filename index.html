@@ -1381,15 +1381,16 @@ function updateDiaConfig(idx,field,val){
 function aplicarConfigDias(){
   saveClub();
   // Preserve completed/notes from existing sessions
-  const prevComp={},prevNotas={},prevFechas={};
-  SESIONES.forEach(s=>{prevComp[s.num]=s.completada;prevNotas[s.num]=s.notas;prevFechas[s.num]=s.fechaReal;});
+  const prevData={};
+  const CAMPOS_EDIT=['completada','notas','fechaReal','calentamiento','ej1_nom','ej1_desc','ej1_prov','ej2_nom','ej2_desc','ej2_prov','ej3_nom','ej3_desc','ej3_prov','partido','vuelta','material'];
+  SESIONES.forEach(s=>{prevData[s.num]={};CAMPOS_EDIT.forEach(c=>{if(s[c]!==undefined)prevData[s.num][c]=s[c];});});
   SESIONES=genSesiones();
   // Try to restore data for matching session numbers
-  SESIONES.forEach(s=>{if(prevComp[s.num])s.completada=true;if(prevNotas[s.num])s.notas=prevNotas[s.num];if(prevFechas[s.num])s.fechaReal=prevFechas[s.num];});
+  SESIONES.forEach(s=>{if(prevData[s.num])CAMPOS_EDIT.forEach(c=>{if(prevData[s.num][c]!==undefined&&prevData[s.num][c]!==false&&prevData[s.num][c]!=="")s[c]=prevData[s.num][c];});});
   // Calcular fechas reales si hay inicio de temporada configurado
   if(CLUB.inicioTemp){
     // Limpiar fechas para recalcular con el nuevo calendario
-    SESIONES.forEach(s=>{if(!prevFechas[s.num])s.fechaReal="";});
+    SESIONES.forEach(s=>{if(!prevData[s.num]?.fechaReal)s.fechaReal="";});
     calcularFechasReales();
   }
   save("sesiones",SESIONES);
@@ -2234,34 +2235,34 @@ function renderSesionDetalle(){
     </div>
     <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:14px;margin-bottom:12px">
       <div style="font-size:10px;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:1px;margin-bottom:5px">🔥 Calentamiento</div>
-      <p style="font-size:13px;color:#374151;margin:0">${s.calentamiento}</p>
+      <textarea rows="3" oninput="updSesField(${s.num},'calentamiento',this.value)" style="width:100%;border:1px solid #E2E8F0;border-radius:6px;padding:6px 9px;font-size:13px;color:#374151;background:transparent;outline:none;resize:vertical;font-family:inherit;box-sizing:border-box">${esc(s.calentamiento||"")}</textarea>
     </div>
     <div class="g3" style="margin-bottom:12px">
-      ${[[s.ej1_nom,s.ej1_desc,s.ej1_prov,1],[s.ej2_nom,s.ej2_desc,s.ej2_prov,2],[s.ej3_nom,s.ej3_desc,s.ej3_prov,3]].map(([nom,desc,prov,n])=>`
+      ${[[1,'ej1_nom','ej1_desc','ej1_prov'],[2,'ej2_nom','ej2_desc','ej2_prov'],[3,'ej3_nom','ej3_desc','ej3_prov']].map(([n,kn,kd,kp])=>`
         <div style="background:white;border:1px solid #E2E8F0;border-radius:10px;padding:13px">
           <div style="font-size:10px;font-weight:700;color:#94A3B8;text-transform:uppercase;margin-bottom:5px">Ejercicio ${n}</div>
-          <div style="font-weight:700;font-size:13px;color:#1e293b;margin-bottom:5px">${nom}</div>
-          <p style="font-size:12px;color:#64748B;margin-bottom:9px;line-height:1.5">${desc}</p>
+          <input value="${esc(s[kn]||"")}" oninput="updSesField(${s.num},'${kn}',this.value)" placeholder="Nombre del ejercicio" style="width:100%;font-weight:700;font-size:13px;color:#1e293b;border:none;border-bottom:1px solid #E2E8F0;margin-bottom:6px;padding:2px 4px;outline:none;background:transparent;box-sizing:border-box;font-family:inherit">
+          <textarea rows="3" oninput="updSesField(${s.num},'${kd}',this.value)" placeholder="Descripción…" style="width:100%;font-size:12px;color:#64748B;border:1px solid #E2E8F0;border-radius:5px;padding:5px 7px;margin-bottom:6px;outline:none;resize:vertical;font-family:inherit;box-sizing:border-box;line-height:1.5">${esc(s[kd]||"")}</textarea>
           <div style="background:#FFF7ED;border:1px solid #FED7AA;border-radius:6px;padding:7px 10px">
             <div style="font-size:9px;font-weight:700;color:#C2410C;text-transform:uppercase;margin-bottom:2px">🎯 Regla de Provocación</div>
-            <p style="font-size:12px;color:#C2410C;font-style:italic;margin:0">${prov}</p>
+            <textarea rows="2" oninput="updSesField(${s.num},'${kp}',this.value)" placeholder="Regla de provocación…" style="width:100%;font-size:12px;color:#C2410C;font-style:italic;border:none;border-bottom:1px dotted #FED7AA;outline:none;background:transparent;resize:none;font-family:inherit;box-sizing:border-box">${esc(s[kp]||"")}</textarea>
           </div>
         </div>`).join("")}
     </div>
     <div class="g2" style="margin-bottom:12px">
       <div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:10px;padding:13px">
         <div style="font-size:10px;font-weight:700;color:#2563EB;text-transform:uppercase;margin-bottom:5px">⚽ Partido Condicionado</div>
-        <p style="font-size:13px;color:#1E3A5F;margin:0">${s.partido}</p>
+        <textarea rows="3" oninput="updSesField(${s.num},'partido',this.value)" placeholder="Descripción del partido condicionado…" style="width:100%;font-size:13px;color:#1E3A5F;border:1px solid #BFDBFE;border-radius:6px;padding:5px 7px;outline:none;resize:vertical;background:transparent;font-family:inherit;box-sizing:border-box">${esc(s.partido||"")}</textarea>
       </div>
       <div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:10px;padding:13px">
         <div style="font-size:10px;font-weight:700;color:#16A34A;text-transform:uppercase;margin-bottom:5px">🧘 Vuelta a la Calma</div>
-        <p style="font-size:13px;color:#166534;margin:0">${s.vuelta}</p>
+        <textarea rows="2" oninput="updSesField(${s.num},'vuelta',this.value)" placeholder="Estiramientos, reflexión…" style="width:100%;font-size:13px;color:#166534;border:1px solid #BBF7D0;border-radius:6px;padding:5px 7px;outline:none;resize:vertical;background:transparent;font-family:inherit;box-sizing:border-box">${esc(s.vuelta||"")}</textarea>
       </div>
     </div>
     <div class="g2">
       <div style="background:#F9FAFB;border:1px solid #E2E8F0;border-radius:10px;padding:13px">
         <div style="font-size:10px;font-weight:700;color:#94A3B8;text-transform:uppercase;margin-bottom:5px">🎒 Material</div>
-        <p style="font-size:13px;margin:0">${s.material}</p>
+        <input value="${esc(s.material||"")}" oninput="updSesField(${s.num},'material',this.value)" placeholder="Material necesario…" style="width:100%;font-size:13px;border:1px solid #E2E8F0;border-radius:6px;padding:5px 7px;outline:none;background:transparent;font-family:inherit;box-sizing:border-box">
       </div>
       <div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:13px">
         <div style="font-size:10px;font-weight:700;color:#D97706;text-transform:uppercase;margin-bottom:5px">📝 Notas del entrenador</div>
@@ -2276,6 +2277,7 @@ function sesWA(num){
 }
 function toggleSesComp2(num){const s=SESIONES.find(x=>x.num===num);if(s){s.completada=!s.completada;save("sesiones",SESIONES);updateHeader();renderSesionDetalle();}}
 function updSesNota(num,v){const s=SESIONES.find(x=>x.num===num);if(s){s.notas=v;save("sesiones",SESIONES);}}
+function updSesField(num,campo,v){const s=SESIONES.find(x=>x.num===num);if(s){s[campo]=v;save("sesiones",SESIONES);}}
 
 // ═══════════════════════════════════════════════════════════════
 // JUGADORES
