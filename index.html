@@ -291,7 +291,7 @@ body.role-coach .manager-only-el{opacity:0.3;pointer-events:none;cursor:not-allo
 <div id="sec-club" class="section">
   <div class="tabs">
     <button class="tab-btn active" onclick="clubTab('datos')">⚽ Datos del Club</button>
-    <button class="tab-btn" onclick="clubTab('plantilla')">👥 Plantilla (15 jugadores)</button>
+    <button class="tab-btn" id="tab-plantilla-label" onclick="clubTab('plantilla')">👥 Plantilla</button>
   </div>
   <div id="club-datos">
     <div class="g2">
@@ -532,6 +532,11 @@ body.role-coach .manager-only-el{opacity:0.3;pointer-events:none;cursor:not-allo
 
 <!-- ═══════════ JUGADORES ═══════════ -->
 <div id="sec-jugadores" class="section">
+  <div id="jug-filtro-bar" style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;align-items:center">
+    <button id="jug-btn-activos" onclick="setJugFiltro('activos')" style="padding:6px 14px;border-radius:8px;border:none;background:#16A34A;color:white;font-size:12px;font-weight:700;cursor:pointer">✅ Solo activos</button>
+    <button id="jug-btn-todos" onclick="setJugFiltro('todos')" style="padding:6px 14px;border-radius:8px;border:1px solid #E2E8F0;background:white;color:#64748B;font-size:12px;font-weight:700;cursor:pointer">👥 Todos</button>
+    <button onclick="addJugador()" style="padding:6px 14px;border-radius:8px;border:none;background:#1E3A5F;color:white;font-size:12px;font-weight:700;cursor:pointer;margin-left:auto">➕ Añadir jugador</button>
+  </div>
   <div id="jug-lista" class="g3"></div>
   <div id="jug-detalle" style="display:none"></div>
 </div>
@@ -1019,7 +1024,7 @@ let CLUB={nombre:"Tu Equipo",categoria:"Tu Categoría",temporada:"2025/26",entre
   diaPartido:"Sábado",
   dia1:"Lunes",dia2:"Miércoles",dia3:"Jueves"
 };
-let JUGADORES=Array.from({length:15},(_,i)=>({id:i+1,nombre:`Jugador ${i+1}`,posicion:POS_DEF[i],dorsal:i+1,pierna:i%3===0?"Izquierda":"Derecha",telefono1:"",telefono2:"",fechaNacimiento:"",notas:"",activo:true,evaluaciones:Object.fromEntries(PEVAL.map(p=>[p,Object.fromEntries(ALL_HAB.map(h=>[h,0]))]))}));
+let JUGADORES=Array.from({length:20},(_,i)=>({id:i+1,nombre:`Jugador ${i+1}`,posicion:POS_DEF[i]||"Lateral D",dorsal:i+1,pierna:i%3===0?"Izquierda":"Derecha",telefono1:"",telefono2:"",fechaNacimiento:"",notas:"",activo:true,evaluaciones:Object.fromEntries(PEVAL.map(p=>[p,Object.fromEntries(ALL_HAB.map(h=>[h,0]))]))}));
 // FESTIVOS: array de strings "YYYY-MM-DD" con días sin entrenamiento
 let FESTIVOS=[];
 let SESIONES=genSesiones();
@@ -1577,6 +1582,8 @@ function renderPlantilla(){
   const activos=JUGADORES.filter(j=>j.activo!==false);
   if(cntEl)cntEl.textContent=JUGADORES.length;
   if(cntAct)cntAct.textContent=activos.length;
+  const lbl=document.getElementById("tab-plantilla-label");
+  if(lbl)lbl.textContent=`👥 Plantilla (${activos.length} activos)`;
   tbody.innerHTML=JUGADORES.map(j=>{
     const inactivo=j.activo===false;
     const rowStyle=inactivo?"opacity:0.45;background:#F8FAFC;":"";
@@ -1623,10 +1630,13 @@ function addJugador(){
   if(!isManager())return;
   const maxId=JUGADORES.length>0?Math.max(...JUGADORES.map(j=>j.id)):0;
   const newId=maxId+1;
-  const newJ={id:newId,nombre:`Jugador ${newId}`,posicion:"Libre",dorsal:newId,pierna:"Derecha",telefono1:"",telefono2:"",fechaNacimiento:"",notas:"",activo:true,evaluaciones:Object.fromEntries(PEVAL.map(p=>[p,Object.fromEntries(ALL_HAB.map(h=>[h,0]))]))};
+  const newJ={id:newId,nombre:`Jugador ${newId}`,posicion:"Lateral D",dorsal:newId,pierna:"Derecha",telefono1:"",telefono2:"",fechaNacimiento:"",notas:"",activo:true,evaluaciones:Object.fromEntries(PEVAL.map(p=>[p,Object.fromEntries(ALL_HAB.map(h=>[h,0]))]))};
   JUGADORES.push(newJ);
   save("jugadores",JUGADORES);
   renderPlantilla();
+  jugFiltro="todos";
+  goSection("jugadores");
+  setTimeout(()=>{setJugFiltro("todos");openJug(JUGADORES.length-1);},100);
   toast(`✅ Jugador ${newId} añadido`);
 }
 function eliminarJugador(id){
@@ -2282,20 +2292,37 @@ function updSesField(num,campo,v){const s=SESIONES.find(x=>x.num===num);if(s){s[
 // ═══════════════════════════════════════════════════════════════
 // JUGADORES
 // ═══════════════════════════════════════════════════════════════
+let jugFiltro='activos';
+function setJugFiltro(f){
+  jugFiltro=f;
+  const ba=document.getElementById('jug-btn-activos');
+  const bt=document.getElementById('jug-btn-todos');
+  if(ba&&bt){
+    ba.style.background=f==='activos'?'#16A34A':'white';
+    ba.style.color=f==='activos'?'white':'#64748B';
+    ba.style.border=f==='activos'?'none':'1px solid #E2E8F0';
+    bt.style.background=f==='todos'?'#1E3A5F':'white';
+    bt.style.color=f==='todos'?'white':'#64748B';
+    bt.style.border=f==='todos'?'none':'1px solid #E2E8F0';
+  }
+  renderJugadores();
+}
 function renderJugadores(){
   if(jugadorAbierto!==null){renderJugadorDetalle();return;}
   document.getElementById("jug-detalle").style.display="none";
   document.getElementById("jug-lista").style.display="grid";
-  document.getElementById("jug-lista").innerHTML=JUGADORES.map((j,idx)=>{
+  const filtrados=jugFiltro==='activos'?JUGADORES.filter(j=>j.activo!==false):JUGADORES;
+  document.getElementById("jug-lista").innerHTML=filtrados.map((j)=>{
+    const idxReal=JUGADORES.indexOf(j);
     const medias=PEVAL.map(p=>{const v=Object.values(j.evaluaciones[p]||{}).filter(x=>x>0);return v.length?v.reduce((a,b)=>a+b,0)/v.length:0;});
     const mediaTotal=medias.filter(m=>m>0);
     const mt=mediaTotal.length?(mediaTotal.reduce((a,b)=>a+b,0)/mediaTotal.length).toFixed(1):"—";
-    // Goles del jugador
     const goles=PARTIDOS.flatMap(p=>p.periodos.flatMap(pe=>pe.goles.filter(g=>g.jugadorId===j.id&&!g.esPropio))).length;
-    return`<div onclick="openJug(${idx})" style="background:white;border:1px solid #E2E8F0;border-radius:10px;padding:14px;cursor:pointer;transition:all .15s" onmouseover="this.style.background='#F8FAFC';this.style.transform='translateY(-1px)'" onmouseout="this.style.background='white';this.style.transform='none'">
+    const inactivo=j.activo===false;
+    return`<div onclick="openJug(${idxReal})" style="background:white;border:1px solid #E2E8F0;border-radius:10px;padding:14px;cursor:pointer;transition:all .15s;${inactivo?"opacity:.5":""}" onmouseover="this.style.background='#F8FAFC';this.style.transform='translateY(-1px)'" onmouseout="this.style.background='white';this.style.transform='none'">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
         <div>
-          <div style="font-weight:700;font-size:14px">${j.nombre}</div>
+          <div style="font-weight:700;font-size:14px">${j.nombre}${inactivo?` <span style="font-size:9px;font-weight:700;color:#94A3B8;background:#F1F5F9;border-radius:4px;padding:1px 5px;vertical-align:middle">VACÍO</span>`:""}</div>
           <div style="font-size:11px;color:#64748B">${j.posicion}</div>
           <div style="font-size:10px;color:#94A3B8">#${j.dorsal} · ${j.pierna}${goles>0?` · ⚽${goles}`:""}</div>
         </div>
