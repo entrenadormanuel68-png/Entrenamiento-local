@@ -282,6 +282,13 @@ body.role-coach .manager-only-el{opacity:0.3;pointer-events:none;cursor:not-allo
     <div id="res-minutos" style="overflow-x:auto"></div>
   </div>
   <div class="card" style="margin-top:0">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+      <div class="card-title" style="margin:0">📋 Asistencia a Entrenamientos</div>
+      <button onclick="asistenciaResumenWA()" style="background:#25D366;color:white;border:none;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer">📱 Compartir WhatsApp</button>
+    </div>
+    <div id="res-asistencia" style="overflow-x:auto"></div>
+  </div>
+  <div class="card" style="margin-top:0">
     <div class="card-title">📋 Info del Equipo</div>
     <div id="res-info" class="g3"></div>
   </div>
@@ -1289,6 +1296,44 @@ function renderResumen(){
             <td style="padding:6px 4px">
               <div style="background:#E2E8F0;border-radius:4px;height:8px;min-width:60px">
                 <div style="background:#1E3A5F;height:8px;border-radius:4px;width:${pct}%"></div>
+              </div>
+            </td>
+          </tr>`;
+        }).join("")}</tbody>
+      </table>`;
+  }
+
+  // ── ASISTENCIA POR JUGADOR ──
+  const sesRealizadas=SESIONES.filter(s=>s.completada);
+  const totalSes=sesRealizadas.length;
+  if(totalSes===0){
+    document.getElementById("res-asistencia").innerHTML=`<p style="color:#94A3B8;font-size:12px;text-align:center;padding:20px">Aún no hay sesiones completadas con registro de asistencia</p>`;
+  }else{
+    const statsAsist=JUGADORES.filter(j=>j.activo!==false).map(j=>{
+      const asistio=sesRealizadas.filter(s=>ASISTENCIA[s.num]&&ASISTENCIA[s.num][j.id]===true).length;
+      const falta=totalSes-asistio;
+      const pct=totalSes>0?Math.round(asistio/totalSes*100):0;
+      return{...j,asistio,falta,pct};
+    }).sort((a,b)=>b.asistio-a.asistio);
+    document.getElementById("res-asistencia").innerHTML=`
+      <table style="width:100%;border-collapse:collapse;font-size:12px">
+        <thead><tr style="background:#F8FAFC">
+          <th style="padding:6px 8px;text-align:left;font-weight:700;color:#64748B;border-bottom:2px solid #E2E8F0">Jugador</th>
+          <th style="padding:6px 8px;text-align:center;font-weight:700;color:#64748B;border-bottom:2px solid #E2E8F0">✅ Asist.</th>
+          <th style="padding:6px 8px;text-align:center;font-weight:700;color:#64748B;border-bottom:2px solid #E2E8F0">❌ Faltas</th>
+          <th style="padding:6px 8px;text-align:center;font-weight:700;color:#64748B;border-bottom:2px solid #E2E8F0">%</th>
+          <th style="padding:6px 4px;border-bottom:2px solid #E2E8F0;min-width:80px"></th>
+        </tr></thead>
+        <tbody>${statsAsist.map((j,i)=>{
+          const color=j.pct>=90?'#16A34A':j.pct>=70?'#F97316':'#DC2626';
+          return`<tr style="border-bottom:1px solid #F1F5F9;background:${i%2===0?'white':'#FAFAFA'}">
+            <td style="padding:6px 8px;font-weight:600">${j.dorsal} ${j.nombre}</td>
+            <td style="padding:6px 8px;text-align:center;font-weight:800;color:#1E3A5F">${j.asistio}/${totalSes}</td>
+            <td style="padding:6px 8px;text-align:center;font-weight:700;color:#DC2626">${j.falta}</td>
+            <td style="padding:6px 8px;text-align:center;font-weight:800;color:${color}">${j.pct}%</td>
+            <td style="padding:6px 4px">
+              <div style="background:#E2E8F0;border-radius:4px;height:8px;min-width:60px">
+                <div style="background:${color};height:8px;border-radius:4px;width:${j.pct}%"></div>
               </div>
             </td>
           </tr>`;
@@ -2344,6 +2389,13 @@ function renderJugadorDetalle(){
   const medias=PEVAL.map(p=>{const v=Object.values(j.evaluaciones[p]||{}).filter(x=>x>0);return v.length?v.reduce((a,b)=>a+b,0)/v.length:0;});
   const mt=medias.filter(m=>m>0);
   const mediaTotal=mt.length?(mt.reduce((a,b)=>a+b,0)/mt.length).toFixed(1):"—";
+  // Asistencia del jugador
+  const sesRealizadasJ=SESIONES.filter(s=>s.completada);
+  const totalSesJ=sesRealizadasJ.length;
+  const asistioJ=sesRealizadasJ.filter(s=>ASISTENCIA[s.num]&&ASISTENCIA[s.num][j.id]===true).length;
+  const faltasJ=totalSesJ-asistioJ;
+  const pctAsistJ=totalSesJ>0?Math.round(asistioJ/totalSesJ*100):0;
+  const colorAsistJ=pctAsistJ>=90?'#86EFAC':pctAsistJ>=70?'#FED7AA':'#FECACA';
   // Historial de posiciones en partidos
   const posHistorial=[];
   PARTIDOS.forEach(p=>{
@@ -2381,9 +2433,16 @@ function renderJugadorDetalle(){
         ${j.fechaNacimiento?`<div style="font-size:12px;color:#93C5FD">Nacimiento: ${j.fechaNacimiento}</div>`:""}
         ${j.notas?`<div style="margin-top:6px;font-size:12px;color:#FDE68A;background:rgba(0,0,0,0.2);border-radius:6px;padding:5px 10px;max-width:400px">📝 ${esc(j.notas)}</div>`:""}
       </div>
-      <div style="text-align:right">
-        <div style="font-size:28px;font-weight:800;color:#F97316">${mediaTotal}</div>
-        <div style="font-size:11px;color:#93C5FD">Media general</div>
+      <div style="text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+        <div>
+          <div style="font-size:28px;font-weight:800;color:#F97316">${mediaTotal}</div>
+          <div style="font-size:11px;color:#93C5FD">Media general</div>
+        </div>
+        ${totalSesJ>0?`<div style="background:rgba(255,255,255,0.1);border-radius:8px;padding:8px 12px;text-align:center">
+          <div style="font-size:11px;color:#93C5FD;margin-bottom:4px">📋 Asistencia</div>
+          <div style="font-size:18px;font-weight:800;color:${colorAsistJ}">${asistioJ}/${totalSesJ}</div>
+          <div style="font-size:10px;color:${colorAsistJ}">${pctAsistJ}% · ${faltasJ} falta${faltasJ!==1?'s':''}</div>
+        </div>`:''}
       </div>
     </div>
     <!-- OBJETIVOS INDIVIDUALES -->
@@ -3524,6 +3583,31 @@ function asistenciaWA(){
     ausentes.forEach((j,i)=>txt+=`  ${i+1}. #${j.dorsal} ${j.nombre}\n`);
   }
   txt+=`\n📊 Asistencia: ${presentes.length}/${JUGADORES.length} (${Math.round(presentes.length/JUGADORES.length*100)}%)`;
+  window.open('https://wa.me/?text='+encodeURIComponent(txt),'_blank');
+}
+
+function asistenciaResumenWA(){
+  const sesRealizadas=SESIONES.filter(s=>s.completada);
+  const totalSes=sesRealizadas.length;
+  if(totalSes===0){alert('Aún no hay sesiones completadas con registro de asistencia');return;}
+  const jugActivos=JUGADORES.filter(j=>j.activo!==false);
+  const stats=jugActivos.map(j=>{
+    const asistio=sesRealizadas.filter(s=>ASISTENCIA[s.num]&&ASISTENCIA[s.num][j.id]===true).length;
+    const falta=totalSes-asistio;
+    const pct=Math.round(asistio/totalSes*100);
+    return{...j,asistio,falta,pct};
+  }).sort((a,b)=>b.asistio-a.asistio);
+  let txt=`📋 *RESUMEN DE ASISTENCIA — ${CLUB.nombre||'Equipo'}*\n`;
+  txt+=`📊 Total entrenamientos: ${totalSes}\n`;
+  txt+=`━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
+  stats.forEach(j=>{
+    const emoji=j.pct>=90?'🟢':j.pct>=70?'🟡':'🔴';
+    txt+=`${emoji} #${j.dorsal} ${j.nombre}: ${j.asistio}/${totalSes} (${j.pct}%)`;
+    if(j.falta>0)txt+=` — ${j.falta} falta${j.falta!==1?'s':''}`;
+    txt+=`\n`;
+  });
+  const mediaGlobal=Math.round(stats.reduce((s,j)=>s+j.pct,0)/(stats.length||1));
+  txt+=`\n📈 Media del equipo: ${mediaGlobal}%`;
   window.open('https://wa.me/?text='+encodeURIComponent(txt),'_blank');
 }
 
