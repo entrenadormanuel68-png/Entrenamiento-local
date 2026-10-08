@@ -781,6 +781,7 @@ body.role-coach .manager-only-el{opacity:0.3;pointer-events:none;cursor:not-allo
           <span style="font-size:11px;color:#94A3B8;font-weight:600">min</span>
         </div>
       </div>
+      <button type="button" onclick="abrirPickerBib('mses',1)" style="border:1px solid #BFDBFE;background:#EFF6FF;color:#2563EB;border-radius:6px;font-size:11px;font-weight:700;padding:4px 9px;cursor:pointer;margin-bottom:6px">📚 Elegir de la biblioteca</button>
       <input id="mses-ej1-nom" placeholder="Nombre del ejercicio" style="width:100%;border:1px solid #E2E8F0;border-radius:7px;padding:7px 9px;font-size:12px;outline:none;margin-bottom:5px;box-sizing:border-box">
       <textarea id="mses-ej1-desc" rows="2" placeholder="Descripción, espacio, jugadores..." style="width:100%;border:1px solid #E2E8F0;border-radius:7px;padding:7px 9px;font-size:12px;outline:none;resize:none;font-family:inherit;margin-bottom:5px;box-sizing:border-box"></textarea>
       <input id="mses-ej1-prov" placeholder="🎯 Regla de provocación (opcional)" style="width:100%;border:1px solid #FED7AA;border-radius:7px;padding:7px 9px;font-size:12px;outline:none;background:#FFFBF5;box-sizing:border-box">
@@ -795,6 +796,7 @@ body.role-coach .manager-only-el{opacity:0.3;pointer-events:none;cursor:not-allo
           <span style="font-size:11px;color:#94A3B8;font-weight:600">min</span>
         </div>
       </div>
+      <button type="button" onclick="abrirPickerBib('mses',2)" style="border:1px solid #BFDBFE;background:#EFF6FF;color:#2563EB;border-radius:6px;font-size:11px;font-weight:700;padding:4px 9px;cursor:pointer;margin-bottom:6px">📚 Elegir de la biblioteca</button>
       <input id="mses-ej2-nom" placeholder="Nombre del ejercicio" style="width:100%;border:1px solid #E2E8F0;border-radius:7px;padding:7px 9px;font-size:12px;outline:none;margin-bottom:5px;box-sizing:border-box">
       <textarea id="mses-ej2-desc" rows="2" placeholder="Descripción, espacio, jugadores..." style="width:100%;border:1px solid #E2E8F0;border-radius:7px;padding:7px 9px;font-size:12px;outline:none;resize:none;font-family:inherit;margin-bottom:5px;box-sizing:border-box"></textarea>
       <input id="mses-ej2-prov" placeholder="🎯 Regla de provocación (opcional)" style="width:100%;border:1px solid #FED7AA;border-radius:7px;padding:7px 9px;font-size:12px;outline:none;background:#FFFBF5;box-sizing:border-box">
@@ -809,6 +811,7 @@ body.role-coach .manager-only-el{opacity:0.3;pointer-events:none;cursor:not-allo
           <span style="font-size:11px;color:#94A3B8;font-weight:600">min</span>
         </div>
       </div>
+      <button type="button" onclick="abrirPickerBib('mses',3)" style="border:1px solid #BFDBFE;background:#EFF6FF;color:#2563EB;border-radius:6px;font-size:11px;font-weight:700;padding:4px 9px;cursor:pointer;margin-bottom:6px">📚 Elegir de la biblioteca</button>
       <input id="mses-ej3-nom" placeholder="Nombre del ejercicio" style="width:100%;border:1px solid #E2E8F0;border-radius:7px;padding:7px 9px;font-size:12px;outline:none;margin-bottom:5px;box-sizing:border-box">
       <textarea id="mses-ej3-desc" rows="2" placeholder="Descripción, espacio, jugadores..." style="width:100%;border:1px solid #E2E8F0;border-radius:7px;padding:7px 9px;font-size:12px;outline:none;resize:none;font-family:inherit;margin-bottom:5px;box-sizing:border-box"></textarea>
       <input id="mses-ej3-prov" placeholder="🎯 Regla de provocación (opcional)" style="width:100%;border:1px solid #FED7AA;border-radius:7px;padding:7px 9px;font-size:12px;outline:none;background:#FFFBF5;box-sizing:border-box">
@@ -1433,7 +1436,7 @@ function aplicarConfigDias(){
   saveClub();
   // Preserve completed/notes from existing sessions
   const prevData={};
-  const CAMPOS_EDIT=['completada','notas','fechaReal','calentamiento','ej1_nom','ej1_desc','ej1_prov','ej2_nom','ej2_desc','ej2_prov','ej3_nom','ej3_desc','ej3_prov','partido','vuelta','material'];
+  const CAMPOS_EDIT=['completada','notas','fechaReal','calentamiento','ej1_nom','ej1_desc','ej1_prov','ej2_nom','ej2_desc','ej2_prov','ej3_nom','ej3_desc','ej3_prov','partido','vuelta','material','estado','fechaOriginal'];
   SESIONES.forEach(s=>{prevData[s.num]={};CAMPOS_EDIT.forEach(c=>{if(s[c]!==undefined)prevData[s.num][c]=s[c];});});
   SESIONES=genSesiones();
   // Try to restore data for matching session numbers
@@ -1501,6 +1504,9 @@ function addFestivo(){
   inp.value="";
   renderListaFestivos();
   toast(`🚫 Festivo añadido: ${v}`);
+  if(SESIONES.some(s=>s.fechaReal===v&&!s.estado&&!s.completada)){
+    if(ofrecerCorrer(v,`Hay una sesión el ${fmtFecha(v)}, que ahora es día sin entreno.`,false))_refrescarSes();
+  }
 }
 function removeFestivo(f){
   if(!isManager())return;
@@ -1508,6 +1514,9 @@ function removeFestivo(f){
   save("festivos",FESTIVOS);
   renderListaFestivos();
   toast(`✅ Festivo eliminado: ${f}`);
+  if(SESIONES.some(s=>s.fechaReal&&s.fechaReal>f&&!s.estado&&!s.completada)){
+    if(ofrecerCorrer(f,`Vuelve a haber entreno el ${fmtFecha(f)}.`,true))_refrescarSes();
+  }
 }
 
 // ═══ CÁLCULO DE FECHAS REALES CON FESTIVOS ═══
@@ -1537,10 +1546,10 @@ function calcularFechasReales(){
     while(fechaSes.getDay()!==diaNum)fechaSes=new Date(fechaSes.getTime()+86400000);
     // Si es festivo, saltar al siguiente día de entrenamiento disponible en esa semana
     let intentos=0;
-    while(festSet.has(fechaSes.toISOString().slice(0,10))&&intentos<14){
+    while(festSet.has(_isoL(fechaSes))&&intentos<14){
       fechaSes=new Date(fechaSes.getTime()+86400000);intentos++;
     }
-    const fechaStr=fechaSes.toISOString().slice(0,10);
+    const fechaStr=_isoL(fechaSes);
     // Solo asignar si la sesión no tiene fecha manual ya guardada
     if(!s.fechaReal)s.fechaReal=fechaStr;
     sesPorSem++;
@@ -1737,17 +1746,18 @@ function renderCalendario(){
     sesSem.slice(0,numDias).forEach((s,idx)=>{
       const dc=diasCfg[idx]||{dia:"–",tipo:s.tipo};
       const tc=TIPO_COLORES[s.tipo]||TIPO_C[s.tipo]||{bg:"#F1F5F9",c:"#64748B"};
-      html+=`<div style="padding:9px 12px;border-right:${idx<numDias-1?`1px solid ${fi.c}15`:"none"};background:${s.completada?"#F0FDF4":"white"}">
+      html+=`<div style="padding:9px 12px;border-right:${idx<numDias-1?`1px solid ${fi.c}15`:"none"};background:${s.estado==='anulada'?"#FEF2F2":s.estado==='aplazada'?"#FFFBEB":s.completada?"#F0FDF4":"white"}">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
           <div style="display:flex;gap:5px;align-items:center">
             <span style="font-size:9px;font-weight:700;color:#94A3B8">S${String(s.num).padStart(2,"0")}</span>
             <span style="background:${tc.bg};color:${tc.c};font-size:8px;font-weight:700;padding:1px 5px;border-radius:3px">${s.tipo}</span>
           </div>
-          <button onclick="toggleSesComp(${s.num})" style="border:none;background:none;cursor:pointer;font-size:13px;padding:0">${s.completada?"✅":"⬜"}</button>
+          <span style="display:flex;gap:4px;align-items:center"><button onclick="abrirEstadoSesion(${s.num})" title="Anular / aplazar" style="border:none;background:none;cursor:pointer;font-size:12px;padding:0">⚙️</button><button onclick="toggleSesComp(${s.num})" style="border:none;background:none;cursor:pointer;font-size:13px;padding:0">${s.completada?"✅":"⬜"}</button></span>
         </div>
-        <div style="font-size:11px;font-weight:600;color:#1e293b;margin-bottom:5px;line-height:1.3">${s.tema}</div>
+        <div style="font-size:11px;font-weight:600;color:#1e293b;margin-bottom:5px;line-height:1.3;${s.estado==='anulada'?'text-decoration:line-through;opacity:.6':''}">${s.tema}</div>
+        ${s.estado?`<div style="margin-bottom:4px">${estadoBadge(s)}</div>`:""}
         <div style="display:flex;align-items:center;gap:5px">
-          <span style="font-size:9px;color:${tc.c};font-weight:600">${dc.dia}</span>
+          <span style="font-size:9px;color:${tc.c};font-weight:600">${s.fechaReal?_diaDeFecha(s.fechaReal):dc.dia}</span>
           <input type="date" value="${s.fechaReal||""}" onchange="updSesFecha(${s.num},this.value)" style="border:1px solid #E2E8F0;border-radius:5px;padding:2px 5px;font-size:10px;color:#3B82F6;background:#EFF6FF;outline:none">
         </div>
       </div>`;
@@ -2276,6 +2286,7 @@ function renderSesionDetalle(){
     <div style="display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:wrap">
       <button class="btn btn-ghost btn-sm" onclick="closeSes()">← Sesiones</button>
       <button class="btn btn-wa btn-sm" onclick="sesWA(${s.num})">📱 WhatsApp</button>
+      <button class="btn btn-ghost btn-sm" onclick="abrirEstadoSesion(${s.num})">📅 Anular / mover</button>${estadoBadge(s)}
       <button class="btn btn-ghost btn-sm" onclick="exportSesionCSV(${s.num})" title="Exportar sesión a Excel/CSV">📥 CSV</button>
       <button onclick="toggleSesComp2(${s.num})" style="padding:5px 13px;border:none;border-radius:7px;cursor:pointer;font-weight:600;font-size:12px;background:${s.completada?"#16A34A":"#E2E8F0"};color:${s.completada?"white":"#374151"}">${s.completada?"✅ Completada":"Marcar completada"}</button>
     </div>
@@ -2296,7 +2307,7 @@ function renderSesionDetalle(){
     <div class="g3" style="margin-bottom:12px">
       ${[[1,'ej1_nom','ej1_desc','ej1_prov'],[2,'ej2_nom','ej2_desc','ej2_prov'],[3,'ej3_nom','ej3_desc','ej3_prov']].map(([n,kn,kd,kp])=>`
         <div style="background:white;border:1px solid #E2E8F0;border-radius:10px;padding:13px">
-          <div style="font-size:10px;font-weight:700;color:#94A3B8;text-transform:uppercase;margin-bottom:5px">Ejercicio ${n}</div>
+          <div style="font-size:10px;font-weight:700;color:#94A3B8;text-transform:uppercase;margin-bottom:5px;display:flex;justify-content:space-between;align-items:center">Ejercicio ${n}<button onclick="abrirPickerBib('ses',${n})" style="border:1px solid #BFDBFE;background:#EFF6FF;color:#2563EB;border-radius:5px;font-size:10px;font-weight:700;padding:2px 7px;cursor:pointer;text-transform:none">📚 Biblioteca</button></div>
           <input value="${esc(s[kn]||"")}" oninput="updSesField(${s.num},'${kn}',this.value)" placeholder="Nombre del ejercicio" style="width:100%;font-weight:700;font-size:13px;color:#1e293b;border:none;border-bottom:1px solid #E2E8F0;margin-bottom:6px;padding:2px 4px;outline:none;background:transparent;box-sizing:border-box;font-family:inherit">
           <textarea rows="3" oninput="updSesField(${s.num},'${kd}',this.value)" placeholder="Descripción…" style="width:100%;font-size:12px;color:#64748B;border:1px solid #E2E8F0;border-radius:5px;padding:5px 7px;margin-bottom:6px;outline:none;resize:vertical;font-family:inherit;box-sizing:border-box;line-height:1.5">${esc(s[kd]||"")}</textarea>
           <div style="background:#FFF7ED;border:1px solid #FED7AA;border-radius:6px;padding:7px 10px">
@@ -4046,6 +4057,247 @@ function doLogout(){
   document.getElementById('login-overlay').style.display='flex';
   document.body.classList.remove('role-coach');
 }
+// ═══════════════════════════════════════════════════════════════
+// BIBLIOTECA → SESIÓN (copia independiente) 
+// ═══════════════════════════════════════════════════════════════
+let _pickerCtx=null;
+function abrirPickerBib(modo,n){
+  _pickerCtx={modo,n};
+  let ov=document.getElementById('picker-bib-ov');
+  if(!ov){
+    ov=document.createElement('div');ov.id='picker-bib-ov';
+    ov.style.cssText='position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:3000;display:flex;align-items:center;justify-content:center;padding:14px';
+    ov.onclick=e=>{if(e.target===ov)cerrarPickerBib();};
+    document.body.appendChild(ov);
+  }
+  const cats=[...new Set(BIBLIOTECA.map(e=>e.categoria).filter(Boolean))].sort();
+  ov.style.display='flex';
+  ov.innerHTML=`<div style="background:white;border-radius:14px;width:100%;max-width:560px;max-height:88vh;display:flex;flex-direction:column;overflow:hidden">
+    <div style="padding:14px 16px;border-bottom:1px solid #E2E8F0;display:flex;justify-content:space-between;align-items:center">
+      <div style="font-weight:800;font-size:15px">📚 Elegir ejercicio de la biblioteca <span style="font-weight:600;font-size:11px;color:#94A3B8">→ Ejercicio ${n}</span></div>
+      <button onclick="cerrarPickerBib()" style="border:none;background:none;font-size:18px;cursor:pointer;color:#64748B">✕</button>
+    </div>
+    <div style="padding:10px 16px;display:flex;gap:8px;flex-wrap:wrap;border-bottom:1px solid #F1F5F9">
+      <input id="picker-bib-q" oninput="renderPickerBib()" placeholder="Buscar…" style="flex:1;min-width:140px;border:1px solid #E2E8F0;border-radius:7px;padding:7px 9px;font-size:13px;outline:none">
+      <select id="picker-bib-cat" onchange="renderPickerBib()" style="border:1px solid #E2E8F0;border-radius:7px;padding:7px 9px;font-size:13px;outline:none"><option value="">Todas las categorías</option>${cats.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('')}</select>
+    </div>
+    <div id="picker-bib-list" style="overflow-y:auto;padding:10px 16px;flex:1"></div>
+    <div style="padding:8px 16px;font-size:10px;color:#94A3B8;border-top:1px solid #F1F5F9">Se copia el ejercicio a la sesión: después puedes editarlo sin cambiar la biblioteca.</div>
+  </div>`;
+  renderPickerBib();
+  setTimeout(()=>{const q=document.getElementById('picker-bib-q');if(q)q.focus();},50);
+}
+function renderPickerBib(){
+  const el=document.getElementById('picker-bib-list');if(!el)return;
+  const q=(document.getElementById('picker-bib-q')?.value||'').toLowerCase().trim();
+  const cat=document.getElementById('picker-bib-cat')?.value||'';
+  const res=[];
+  BIBLIOTECA.forEach((e,i)=>{
+    if(!e||!e.nombre)return;
+    if(cat&&e.categoria!==cat)return;
+    if(q&&!((e.nombre||'').toLowerCase().includes(q)||(e.descripcion||'').toLowerCase().includes(q)))return;
+    res.push([e,i]);
+  });
+  if(!res.length){el.innerHTML='<div style="text-align:center;color:#94A3B8;padding:24px;font-size:13px">Sin resultados</div>';return;}
+  el.innerHTML=res.slice(0,100).map(([e,i])=>`<div onclick="elegirDeBib(${i})" style="border:1px solid #E2E8F0;border-radius:9px;padding:9px 11px;margin-bottom:7px;cursor:pointer;background:white">
+    <div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><span style="font-weight:700;font-size:13px;color:#1e293b">${esc(e.nombre)}</span><span style="font-size:10px;color:#64748B;background:#F1F5F9;border-radius:4px;padding:1px 6px;white-space:nowrap">${esc(e.categoria||'')}</span></div>
+    <div style="font-size:11px;color:#64748B;margin-top:3px;line-height:1.4">${esc((e.descripcion||'').slice(0,140))}${(e.descripcion||'').length>140?'…':''}</div></div>`).join('')
+    +(res.length>100?`<div style="text-align:center;font-size:11px;color:#94A3B8">Mostrando 100 de ${res.length}; afina la búsqueda</div>`:'');
+}
+function cerrarPickerBib(){const ov=document.getElementById('picker-bib-ov');if(ov){ov.style.display='none';ov.innerHTML='';}_pickerCtx=null;}
+function elegirDeBib(i){
+  const e=BIBLIOTECA[i];if(!e||!_pickerCtx)return;
+  const {modo,n}=_pickerCtx;
+  const nom=e.nombre||'',desc=e.descripcion||'',prov=e.provocacion||'',mat=(e.material||'').trim();
+  if(modo==='mses'){
+    const g=id=>document.getElementById(id);
+    const act=(g('mses-ej'+n+'-nom')?.value||'').trim();
+    if(act&&act!==nom&&!confirm(`Se sustituirá «${act}» por «${nom}».\n¿Continuar?`))return;
+    g('mses-ej'+n+'-nom').value=nom;
+    g('mses-ej'+n+'-desc').value=desc;
+    g('mses-ej'+n+'-prov').value=prov;
+    const m=g('mses-material');
+    if(m&&mat&&!(m.value||'').toLowerCase().includes(mat.toLowerCase()))m.value=(m.value?m.value+', ':'')+mat;
+  }else{
+    const s=SESIONES.find(x=>x.num===sesionAbierta);if(!s)return;
+    const act=(s['ej'+n+'_nom']||'').trim();
+    if(act&&act!==nom&&!confirm(`Se sustituirá «${act}» por «${nom}» en la sesión ${s.num}.\n(Copia independiente: la biblioteca no cambia.)\n¿Continuar?`))return;
+    s['ej'+n+'_nom']=nom;s['ej'+n+'_desc']=desc;s['ej'+n+'_prov']=prov;
+    if(mat&&!(s.material||'').toLowerCase().includes(mat.toLowerCase()))s.material=(s.material?s.material+', ':'')+mat;
+    save("sesiones",SESIONES);
+    renderSesionDetalle();
+  }
+  cerrarPickerBib();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ESTADO DE SESIÓN: anular día y correr sesiones · anular sin recuperar · aplazar una sesión
+// (usa la lista de festivos para los días sin entreno)
+// ═══════════════════════════════════════════════════════════════
+if(typeof window.toast!=='function'){
+  window.toast=function(m){
+    let t=document.getElementById('toast-simple');
+    if(!t){t=document.createElement('div');t.id='toast-simple';t.style.cssText='position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#1E293B;color:white;padding:9px 16px;border-radius:9px;font-size:13px;z-index:4000;box-shadow:0 4px 14px rgba(0,0,0,.3)';document.body.appendChild(t);}
+    t.textContent=m;t.style.display='block';clearTimeout(t._t);t._t=setTimeout(()=>{t.style.display='none';},2600);
+  };
+}
+const _NOMBRES_DIA=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+function _parseISO(iso){const p=iso.split('-').map(Number);return new Date(p[0],p[1]-1,p[2]);}
+function _isoL(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function _diaDeFecha(iso){if(!iso)return '';return _NOMBRES_DIA[_parseISO(iso).getDay()];}
+function estadoBadge(s){
+  if(s.estado==='anulada')return '<span style="background:#FEE2E2;color:#B91C1C;font-size:9px;font-weight:700;padding:1px 6px;border-radius:4px">🚫 ANULADA</span>';
+  if(s.estado==='aplazada')return `<span style="background:#FEF3C7;color:#B45309;font-size:9px;font-weight:700;padding:1px 6px;border-radius:4px">📅 APLAZADA${s.fechaOriginal?' (antes '+fmtFecha(s.fechaOriginal)+')':''}</span>`;
+  return '';
+}
+function _refrescarSes(){
+  updateHeader();
+  const cal=document.getElementById('sec-calendario');
+  if(cal&&cal.classList.contains('active'))renderCalendario();
+  if(sesionAbierta!==null&&sesionAbierta!==undefined)renderSesionDetalle();
+  else{const ss=document.getElementById('sec-sesiones');if(ss&&ss.classList.contains('active'))renderSesiones();}
+}
+function cerrarEstadoSesion(){const ov=document.getElementById('estado-ses-ov');if(ov){ov.style.display='none';ov.innerHTML='';}}
+
+// Planificador: reasigna fechas, en orden, a los próximos días de entreno libres desde "desdeISO" (incluido).
+// Mueve solo sesiones con fecha >= desdeISO, sin estado especial y no completadas.
+// Devuelve {plan:[{s,de,a}], bloqueo:'' }
+function planCorrer(desdeISO){
+  const nombres=(CLUB.diasConfig||[]).map(d=>d.dia);
+  if(!nombres.length)return {plan:[],bloqueo:'No hay días de entreno configurados.'};
+  const fest=new Set(FESTIVOS);
+  const todas=SESIONES.filter(s=>s.fechaReal&&s.fechaReal>=desdeISO);
+  const compl=todas.filter(s=>s.completada&&!s.estado);
+  const mov=todas.filter(s=>!s.completada&&!s.estado).sort((a,b)=>a.fechaReal<b.fechaReal?-1:a.fechaReal>b.fechaReal?1:a.num-b.num);
+  const movSet=new Set(mov.map(s=>s.num));
+  const ocupadas=new Set();
+  SESIONES.forEach(s=>{if(s.fechaReal&&!movSet.has(s.num))ocupadas.add(s.fechaReal);});
+  const plan=[];let cur=_parseISO(desdeISO),guard=0;
+  for(const s of mov){
+    let ok=false;
+    while(!ok&&guard<20000){
+      guard++;
+      const iso=_isoL(cur);
+      if(nombres.includes(_NOMBRES_DIA[cur.getDay()])&&!fest.has(iso)&&!ocupadas.has(iso)){plan.push({s,de:s.fechaReal,a:iso});ocupadas.add(iso);ok=true;}
+      cur.setDate(cur.getDate()+1);
+    }
+  }
+  return {plan,bloqueo:'',completadasAfectadas:compl};
+}
+function _textoPlan(plan,max){
+  const cam=plan.filter(p=>p.de!==p.a);
+  return {n:cam.length,cam,txt:cam.slice(0,max||6).map(p=>`  S${String(p.s.num).padStart(2,'0')}: ${fmtFecha(p.de)} → ${fmtFecha(p.a)}`).join('\n')+(cam.length>(max||6)?`\n  … y ${cam.length-(max||6)} más`:'')};
+}
+function _avisosPlan(plan){
+  const av=[];
+  const pf=new Set(PARTIDOS.map(p=>p.fecha).filter(Boolean));
+  plan.filter(p=>p.de!==p.a).forEach(p=>{if(pf.has(p.a))av.push(`El ${fmtFecha(p.a)} hay un partido programado (S${p.s.num})`);});
+  return av.slice(0,5);
+}
+function aplicarPlan(plan){plan.forEach(p=>{p.s.fechaReal=p.a;});save("sesiones",SESIONES);}
+// Ofrece correr (o compactar) las sesiones desde una fecha. Devuelve true si aplicó.
+function ofrecerCorrer(desdeISO,motivo,compactar){
+  const {plan}=planCorrer(desdeISO);
+  const t=_textoPlan(plan,6);
+  if(!t.n)return false;
+  const av=_avisosPlan(plan);
+  const ult=plan[plan.length-1];
+  const msg=`${motivo}\n${t.n} sesiones se ${compactar?'adelantan':'desplazan'}:\n${t.txt}\n\nÚltima sesión (S${ult.s.num}): ${fmtFecha(ult.de)} → ${fmtFecha(ult.a)}`+(av.length?`\n\n⚠️ Avisos:\n- ${av.join('\n- ')}`:'')+'\n\n¿Aplicar?';
+  if(!confirm(msg))return false;
+  aplicarPlan(plan);
+  return true;
+}
+function abrirEstadoSesion(num){
+  const s=SESIONES.find(x=>x.num===num);if(!s)return;
+  let ov=document.getElementById('estado-ses-ov');
+  if(!ov){
+    ov=document.createElement('div');ov.id='estado-ses-ov';
+    ov.style.cssText='position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:3000;display:flex;align-items:center;justify-content:center;padding:14px';
+    ov.onclick=e=>{if(e.target===ov)cerrarEstadoSesion();};
+    document.body.appendChild(ov);
+  }
+  ov.style.display='flex';
+  const hayFecha=!!s.fechaReal;
+  const btn=(col,bg,bd)=>`width:100%;text-align:left;border:1px solid ${bd};background:${bg};color:${col};border-radius:9px;padding:10px 12px;margin-bottom:8px;cursor:pointer;font-size:13px;font-weight:700;font-family:inherit`;
+  const sub='font-weight:500;font-size:11px;color:#64748B;display:block;margin-top:2px';
+  let cuerpo='';
+  if(s.completada){
+    cuerpo=`<div style="font-size:13px;color:#B45309;background:#FFFBEB;border:1px solid #FDE68A;border-radius:8px;padding:10px">Esta sesión está marcada como completada. Desmárcala primero si quieres anularla o aplazarla.</div>`;
+  }else if(s.estado){
+    cuerpo=`<div style="margin-bottom:10px">${estadoBadge(s)}</div>
+      <button onclick="restaurarEstadoSesion(${s.num})" style="${btn('#166534','#F0FDF4','#BBF7D0')}">↩️ Restaurar a su estado normal<span style="${sub}">${s.estado==='aplazada'?'Vuelve a su fecha original.':'Vuelve a ser una sesión normal.'}</span></button>`;
+  }else{
+    cuerpo=`
+      <button ${hayFecha?'':'disabled'} onclick="anularDiaYCorrer(${s.num})" style="${btn('#1D4ED8','#EFF6FF','#BFDBFE')}${hayFecha?'':';opacity:.45;cursor:not-allowed'}">🌧️ Anular este día y correr las sesiones<span style="${sub}">${hayFecha?`El ${fmtFecha(s.fechaReal)} se añade a los días sin entreno. Esta sesión y todas las siguientes pasan al siguiente día de entreno libre. Verás un resumen antes de aplicar.`:'Esta sesión no tiene fecha: asigna primero una fecha (Calendario o Club → inicio de temporada).'}</span></button>
+      <button onclick="anularSinRecuperar(${s.num})" style="${btn('#B91C1C','#FEF2F2','#FECACA')}">🚫 Anular esta sesión sin recuperarla<span style="${sub}">Se marca como anulada, no cuenta como realizada y el resto no se mueve.</span></button>
+      <div style="border:1px solid #FDE68A;background:#FFFBEB;border-radius:9px;padding:10px 12px">
+        <div style="font-size:13px;font-weight:700;color:#B45309;margin-bottom:6px">📅 Aplazar solo esta sesión a otra fecha</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><input type="date" id="estado-ses-fecha" style="flex:1;min-width:140px;border:1px solid #E2E8F0;border-radius:7px;padding:7px 9px;font-size:13px;outline:none"><button class="btn btn-primary btn-sm" onclick="aplazarSesion(${s.num})">Aplazar</button></div>
+        <span style="${sub}">El resto de sesiones no se mueve. Se comprueban festivos, otras sesiones y partidos.</span>
+      </div>`;
+  }
+  ov.innerHTML=`<div style="background:white;border-radius:14px;width:100%;max-width:460px;max-height:88vh;overflow-y:auto;padding:16px">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+      <div><div style="font-weight:800;font-size:15px">Sesión ${String(s.num).padStart(2,'0')} · estado</div>
+      <div style="font-size:12px;color:#64748B;margin-top:2px">${esc(s.tema||'')}${s.fechaReal?` · ${_diaDeFecha(s.fechaReal)} ${fmtFecha(s.fechaReal)}`:''}</div></div>
+      <button onclick="cerrarEstadoSesion()" style="border:none;background:none;font-size:18px;cursor:pointer;color:#64748B">✕</button>
+    </div>${cuerpo}</div>`;
+}
+function anularDiaYCorrer(num){
+  if(!isManager())return;
+  const s=SESIONES.find(x=>x.num===num);
+  if(!s||!s.fechaReal)return;
+  if(s.completada){alert('La sesión está completada: no se puede anular.');return;}
+  const dia=s.fechaReal;
+  if(FESTIVOS.includes(dia)){alert('Ese día ya está en la lista de días sin entreno.');return;}
+  FESTIVOS.push(dia);FESTIVOS.sort();
+  const pl=planCorrer(dia);
+  const bloq=pl.completadasAfectadas.filter(c=>pl.plan.some(p=>p.a===c.fechaReal));
+  if(bloq.length){FESTIVOS=FESTIVOS.filter(f=>f!==dia);alert('No se puede: chocaría con sesiones ya completadas ('+bloq.map(x=>'S'+x.num).join(', ')+').');return;}
+  const ok=ofrecerCorrer(dia,`Se anula el ${_diaDeFecha(dia)} ${fmtFecha(dia)} (se añade a días sin entreno).`,false);
+  if(!ok){FESTIVOS=FESTIVOS.filter(f=>f!==dia);return;}
+  save("festivos",FESTIVOS);
+  renderListaFestivos();
+  cerrarEstadoSesion();_refrescarSes();
+  toast('🌧️ Día anulado y sesiones desplazadas');
+}
+function anularSinRecuperar(num){
+  if(!isManager())return;
+  const s=SESIONES.find(x=>x.num===num);if(!s)return;
+  if(s.completada){alert('La sesión está completada: no se puede anular.');return;}
+  if(!confirm(`Anular la sesión ${s.num} sin recuperarla.\nNo se moverá ninguna otra sesión.\n¿Continuar?`))return;
+  s.estado='anulada';
+  save("sesiones",SESIONES);
+  cerrarEstadoSesion();_refrescarSes();
+}
+function aplazarSesion(num){
+  if(!isManager())return;
+  const s=SESIONES.find(x=>x.num===num);if(!s)return;
+  const v=document.getElementById('estado-ses-fecha')?.value||'';
+  if(s.completada){alert('La sesión está completada.');return;}
+  if(!v){alert('Elige la nueva fecha.');return;}
+  if(v===s.fechaReal){alert('Esa ya es la fecha de la sesión.');return;}
+  if(FESTIVOS.includes(v)){alert('Ese día está en la lista de días sin entreno.');return;}
+  const av=[];
+  const dn=_diaDeFecha(v);
+  if(!(CLUB.diasConfig||[]).some(d=>d.dia===dn))av.push(`El ${dn} no es un día de entreno habitual`);
+  const otras=SESIONES.filter(x=>x.num!==s.num&&x.fechaReal===v&&x.estado!=='anulada');
+  if(otras.length)av.push(`Ese día ya hay sesión (S${otras.map(x=>x.num).join(', S')})`);
+  if(PARTIDOS.some(p=>p.fecha===v))av.push('Ese día hay un partido programado');
+  if(!confirm(`Aplazar la sesión ${s.num}${s.fechaReal?` del ${fmtFecha(s.fechaReal)}`:''} al ${dn} ${fmtFecha(v)}.\nEl resto de sesiones no se mueve.`+(av.length?`\n\n⚠️ Avisos:\n- ${av.join('\n- ')}`:'')+'\n\n¿Aplicar?'))return;
+  s.fechaOriginal=s.fechaReal||'';s.fechaReal=v;s.estado='aplazada';
+  save("sesiones",SESIONES);
+  cerrarEstadoSesion();_refrescarSes();
+}
+function restaurarEstadoSesion(num){
+  if(!isManager())return;
+  const s=SESIONES.find(x=>x.num===num);if(!s)return;
+  if(s.estado==='aplazada'&&s.fechaOriginal)s.fechaReal=s.fechaOriginal;
+  delete s.estado;delete s.fechaOriginal;
+  save("sesiones",SESIONES);
+  cerrarEstadoSesion();_refrescarSes();
+}
+
 function openPassModal(){
   if(!isManager())return;
   document.getElementById('new-pass-mgr').value='';
