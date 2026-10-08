@@ -769,6 +769,7 @@ body.role-coach .manager-only-el{opacity:0.3;pointer-events:none;cursor:not-allo
           <span style="font-size:11px;color:#C2410C;font-weight:600">min</span>
         </div>
       </div>
+      <button type="button" onclick="abrirPickerBib('mses',0)" style="border:1px solid #FED7AA;background:#FFF7ED;color:#C2410C;border-radius:6px;font-size:11px;font-weight:700;padding:4px 9px;cursor:pointer;margin-bottom:6px">📚 Elegir de la biblioteca</button>
       <textarea id="mses-cal-desc" rows="2" placeholder="Descripción del calentamiento..." style="width:100%;border:1px solid #FED7AA;border-radius:7px;padding:7px 9px;font-size:12px;outline:none;resize:none;font-family:inherit;background:#FFFBF5;box-sizing:border-box"></textarea>
     </div>
 
@@ -2301,7 +2302,7 @@ function renderSesionDetalle(){
       <div style="font-size:11px;color:${fi.c};margin-top:5px;font-weight:600">Sistema: ${CLUB.sistema||s.sistema}</div>
     </div>
     <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:14px;margin-bottom:12px">
-      <div style="font-size:10px;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:1px;margin-bottom:5px">🔥 Calentamiento</div>
+      <div style="font-size:10px;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;display:flex;justify-content:space-between;align-items:center">🔥 Calentamiento<button onclick="abrirPickerBib('ses',0)" style="border:1px solid #BFDBFE;background:#EFF6FF;color:#2563EB;border-radius:5px;font-size:10px;font-weight:700;padding:2px 7px;cursor:pointer;text-transform:none">📚 Biblioteca</button></div>
       <textarea rows="3" oninput="updSesField(${s.num},'calentamiento',this.value)" style="width:100%;border:1px solid #E2E8F0;border-radius:6px;padding:6px 9px;font-size:13px;color:#374151;background:transparent;outline:none;resize:vertical;font-family:inherit;box-sizing:border-box">${esc(s.calentamiento||"")}</textarea>
     </div>
     <div class="g3" style="margin-bottom:12px">
@@ -4074,7 +4075,7 @@ function abrirPickerBib(modo,n){
   ov.style.display='flex';
   ov.innerHTML=`<div style="background:white;border-radius:14px;width:100%;max-width:560px;max-height:88vh;display:flex;flex-direction:column;overflow:hidden">
     <div style="padding:14px 16px;border-bottom:1px solid #E2E8F0;display:flex;justify-content:space-between;align-items:center">
-      <div style="font-weight:800;font-size:15px">📚 Elegir ejercicio de la biblioteca <span style="font-weight:600;font-size:11px;color:#94A3B8">→ Ejercicio ${n}</span></div>
+      <div style="font-weight:800;font-size:15px">📚 Elegir ejercicio de la biblioteca <span style="font-weight:600;font-size:11px;color:#94A3B8">→ ${n===0?'Calentamiento':'Ejercicio '+n}</span></div>
       <button onclick="cerrarPickerBib()" style="border:none;background:none;font-size:18px;cursor:pointer;color:#64748B">✕</button>
     </div>
     <div style="padding:10px 16px;display:flex;gap:8px;flex-wrap:wrap;border-bottom:1px solid #F1F5F9">
@@ -4084,6 +4085,7 @@ function abrirPickerBib(modo,n){
     <div id="picker-bib-list" style="overflow-y:auto;padding:10px 16px;flex:1"></div>
     <div style="padding:8px 16px;font-size:10px;color:#94A3B8;border-top:1px solid #F1F5F9">Se copia el ejercicio a la sesión: después puedes editarlo sin cambiar la biblioteca.</div>
   </div>`;
+  if(n===0){const sc=document.getElementById('picker-bib-cat');if(sc&&[...sc.options].some(o=>o.value==='Calentamiento'))sc.value='Calentamiento';}
   renderPickerBib();
   setTimeout(()=>{const q=document.getElementById('picker-bib-q');if(q)q.focus();},50);
 }
@@ -4109,6 +4111,23 @@ function elegirDeBib(i){
   const e=BIBLIOTECA[i];if(!e||!_pickerCtx)return;
   const {modo,n}=_pickerCtx;
   const nom=e.nombre||'',desc=e.descripcion||'',prov=e.provocacion||'',mat=(e.material||'').trim();
+  const textoCal=nom+(desc?'. '+desc:'');
+  if(n===0){
+    if(modo==='mses'){
+      const c=document.getElementById('mses-cal-desc');
+      if(c){if((c.value||'').trim()&&!confirm('Se sustituirá el calentamiento actual por «'+nom+'».\n¿Continuar?'))return;c.value=textoCal;}
+      const m=document.getElementById('mses-material');
+      if(m&&mat&&!(m.value||'').toLowerCase().includes(mat.toLowerCase()))m.value=(m.value?m.value+', ':'')+mat;
+    }else{
+      const s=SESIONES.find(x=>x.num===sesionAbierta);if(!s)return;
+      if((s.calentamiento||'').trim()&&!confirm('Se sustituirá el calentamiento de la sesión '+s.num+' por «'+nom+'».\n(Copia independiente: la biblioteca no cambia.)\n¿Continuar?'))return;
+      s.calentamiento=textoCal;
+      if(mat&&!(s.material||'').toLowerCase().includes(mat.toLowerCase()))s.material=(s.material?s.material+', ':'')+mat;
+      save("sesiones",SESIONES);
+      renderSesionDetalle();
+    }
+    cerrarPickerBib();return;
+  }
   if(modo==='mses'){
     const g=id=>document.getElementById(id);
     const act=(g('mses-ej'+n+'-nom')?.value||'').trim();
