@@ -4932,22 +4932,31 @@ function savePasswords(){
 // ═══════════ BIBLIOTECA DEL CLUB — carga automática desde ejercicios.json ═══════════
 // Al abrir la app descarga ejercicios.json (alojado junto a index.html) y añade
 // a la biblioteca local los ejercicios que falten. No borra ni pisa lo del entrenador.
-var CLUB_LIB_URLS=['https://entrenadormanuel68-png.github.io/Entrenamiento-local/ejercicios.json','ejercicios.json'];
-function _clubKey(e){return String(e.categoria||'').toLowerCase()+'|'+String(e.nombre||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,' ').trim();}
+var CLUB_LIB_BASES=['https://entrenadormanuel68-png.github.io/Entrenamiento-local/',''];
+var CLUB_LIB_MAX=40;   // máximo de archivos: ejercicios.json, ejercicios-2.json ... ejercicios-40.json
+function _clubKey(e){return String(e.categoria||'').toLowerCase()+'|'+String(e.nombre||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,' ').trim();}
 function _clubDeleted(){try{return new Set(JSON.parse(localStorage.getItem('bib_club_del')||'[]'));}catch(e){return new Set();}}
-async function clubSync(){
-  let data=null;
-  for(const u of CLUB_LIB_URLS){
+async function _clubFetch(nombre){
+  for(const base of CLUB_LIB_BASES){
     try{
-      const r=await fetch(u,{cache:'no-cache'});
+      const r=await fetch(base+nombre,{cache:'no-cache'});
       if(!r.ok)continue;
-      data=await r.json();
-      if(data)break;
+      const d=await r.json();
+      const a=Array.isArray(d)?d:(d&&(d.ejercicios||d.biblioteca));
+      if(Array.isArray(a))return a;
     }catch(e){}
   }
-  if(!data)return;                       // sin conexión: se usa lo que ya hay guardado
-  const arr=Array.isArray(data)?data:(data.ejercicios||data.biblioteca||[]);
-  if(!Array.isArray(arr)||!arr.length)return;
+  return null;
+}
+async function clubSync(){
+  // Lee ejercicios.json, ejercicios-2.json, ejercicios-3.json... y se para en el primero que no exista
+  let arr=[];
+  for(let n=1;n<=CLUB_LIB_MAX;n++){
+    const a=await _clubFetch(n===1?'ejercicios.json':'ejercicios-'+n+'.json');
+    if(!a)break;
+    arr=arr.concat(a);
+  }
+  if(!arr.length)return;                 // sin conexión: se usa lo que ya hay guardado
   const CATS=['Calentamiento','Físico','Técnica','Táctica','Juego dinámico','Portero','Otro'];
   const del=_clubDeleted(),byId=new Map(),byName=new Map();
   BIBLIOTECA.forEach((e,i)=>{if(e.id)byId.set(e.id,i);byName.set(_clubKey(e),i);});
