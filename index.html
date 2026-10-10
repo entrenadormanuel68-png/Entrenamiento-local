@@ -562,6 +562,7 @@ body.role-coach .manager-only-el{opacity:0.3;pointer-events:none;cursor:not-allo
     </select>
     <input id="bib-busca" placeholder="🔍 Buscar..." oninput="renderBiblioteca()" style="flex:1;min-width:140px;border:1px solid #E2E8F0;border-radius:8px;padding:8px 11px;font-size:13px;outline:none">
   </div>
+  <div id="bib-espacio" style="display:none;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:10px 12px;margin-bottom:14px"></div>
   <div id="bib-body" class="g3"></div>
 </div>
 
@@ -4988,6 +4989,31 @@ async function clubSync(){
   try{etToast('📚 Biblioteca del club: '+add+' nuevos'+(upd?', '+upd+' actualizados':''));}catch(e){}
 }
 document.addEventListener('DOMContentLoaded',()=>{setTimeout(clubSync,600);});
+</script>
+<script>
+// ═══════════ INDICADOR DE ESPACIO (Biblioteca) ═══════════
+// El navegador guarda los datos de la app en localStorage (unos 5 millones de caracteres).
+var ET_CUPO=5000000;
+function etMB(n){return (n/1e6).toFixed(1).replace('.',',');}
+function etEspacio(){
+  var el=document.getElementById('bib-espacio');if(!el)return;
+  var t=0,bib=0;
+  try{
+    for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);t+=k.length+(localStorage.getItem(k)||'').length;}
+    bib=(localStorage.getItem('bib_biblioteca')||'').length;
+  }catch(e){el.style.display='none';return;}
+  var pc=Math.min(100,Math.round(t*100/ET_CUPO));
+  var col=pc<60?'#16A34A':(pc<85?'#F59E0B':'#DC2626');
+  var libre=Math.max(0,ET_CUPO-t);
+  el.style.display='block';
+  el.innerHTML='<div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:12px;color:#334155;margin-bottom:5px">'
+    +'<span>💾 <b>Espacio usado: '+etMB(t)+' MB</b> de unos 5 MB ('+pc+'%)</span>'
+    +'<span>Quedan unos <b>'+etMB(libre)+' MB</b> · Biblioteca: '+etMB(bib)+' MB</span></div>'
+    +'<div style="height:8px;background:#E2E8F0;border-radius:6px;overflow:hidden"><div style="height:100%;width:'+Math.max(pc,1)+'%;background:'+col+'"></div></div>'
+    +(pc>=85?'<div style="font-size:11px;color:#B91C1C;margin-top:5px">⚠️ Casi lleno: haz una copia con «Exportar JSON» y evita añadir imágenes grandes.</div>'
+      :(pc>=60?'<div style="font-size:11px;color:#B45309;margin-top:5px">Empieza a llenarse: evita imágenes pesadas.</div>':''));
+}
+(function(){var _rb=renderBiblioteca;renderBiblioteca=function(){_rb.apply(this,arguments);etEspacio();};})();
 </script>
 <!-- Bloqueo pulsación larga en móvil -->
 <script>
