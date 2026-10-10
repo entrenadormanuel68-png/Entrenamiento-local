@@ -4,10 +4,10 @@
 
 ---
 
-> Aplicación web de gestión de equipos de fútbol. Funciona **100% offline** sin necesidad de servidor. Todo se guarda en el dispositivo. Empaquetable como app Android con Capacitor.
+> Aplicación web de gestión de equipos de fútbol. Funciona **100% offline** sin necesidad de servidor. Todo se guarda en el dispositivo. Con internet, descarga además las novedades de la biblioteca del club. Empaquetable como app Android con Capacitor.
 
 ![Estado](https://img.shields.io/badge/estado-activo-brightgreen)
-![Versión](https://img.shields.io/badge/versión-1.1-blue)
+![Versión](https://img.shields.io/badge/versión-1.2-blue)
 ![Contribuciones](https://img.shields.io/badge/contribuciones-bienvenidas-orange)
 ![Sin dependencias](https://img.shields.io/badge/dependencias-ninguna-success)
 ![Licencia](https://img.shields.io/badge/licencia-MIT-purple)
@@ -34,12 +34,31 @@ Está construida en un único archivo HTML con JavaScript vanilla. Sin framework
 | ✅ Asistencia | Control de presencia por jugador y sesión (solo jugadores activos) |
 | 🎮 Juegos | Ejercicios y juegos de entrenamiento |
 | 👥 Jugadores | Ficha de cada jugador con valoración, minutos y cuartos jugados |
-| 📚 Biblioteca | Base de ejercicios técnicos y tácticos |
+| 📚 Biblioteca | Biblioteca del club con 261 ejercicios en 7 categorías (se actualiza sola al abrir la app con internet), más los ejercicios propios de cada entrenador |
 | 🖊️ Pizarra | Pizarra táctica interactiva con campo de fútbol |
 
 **Roles de acceso:**
 - 🛡️ **Manager** — Control total de la app, puede cambiar contraseñas
 - 📋 **Entrenador** — Acceso limitado a las funciones de uso diario
+
+---
+
+## 🆕 Novedades v1.2
+
+### 📚 Biblioteca del club con carga automática
+- Nueva **biblioteca compartida de 261 ejercicios** en 7 categorías: Calentamiento, Físico, Técnica, Táctica, Juego dinámico, Portero y Otro
+- Al abrir la app con internet, descarga `ejercicios.json`, `ejercicios-2.json`, `ejercicios-3.json`… (en orden, hasta el primero que no exista) y **añade los ejercicios que falten**
+- Respeta lo del entrenador: no pisa los ejercicios creados por él, ni los que haya editado, y **no vuelve a mostrar** los que haya borrado
+- Una corrección del club se aplica poniendo `"rev": 1` (y 2, 3…) al ejercicio en el JSON
+- Sin conexión sigue funcionando con lo ya guardado en el dispositivo
+- Los ejercicios importados incluyen objetivo, pasos, variantes, precauciones, edades y duración dentro de la descripción
+- Botones **Importar JSON** y **Exportar JSON** en la Biblioteca (importar solo para el manager)
+
+### ➕ Cómo ampliar la biblioteca del club
+1. Prepara un archivo con los ejercicios nuevos (mismo formato, ids que no existan y una de las 7 categorías)
+2. Nómbralo `ejercicios-2.json` (después `-3`, `-4`…, sin saltar números)
+3. Súbelo a este repositorio, junto al `index.html`
+4. En uno o dos minutos GitHub Pages lo publica y los dispositivos lo reciben al abrir la app
 
 ---
 
@@ -102,6 +121,7 @@ npx cap open android
 ## 🗺️ Roadmap — Áreas donde puedes contribuir
 
 ### 📚 Biblioteca de ejercicios
+- [x] Biblioteca del club de 261 ejercicios con actualización automática (v1.2)
 - [ ] Ampliar con más ejercicios técnicos (conducción, pase, tiro, regate)
 - [ ] Añadir ejercicios tácticos por categoría (presión, salida de balón, ataque posicional)
 - [ ] Incluir ejercicios con imágenes o diagramas en SVG
