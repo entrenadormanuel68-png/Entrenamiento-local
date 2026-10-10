@@ -2790,7 +2790,7 @@ function renderBiblioteca(){
 }
 function catColor(c){const m={Calentamiento:"#F97316",Físico:"#DC2626",Técnica:"#2563EB",Táctica:"#16A34A","Juego dinámico":"#7C3AED",Portero:"#0891B2",Otro:"#6B7280"};return m[c]||"#94A3B8";}
 function catBg(c){const m={Calentamiento:"#FFF7ED",Físico:"#FEE2E2",Técnica:"#EFF6FF",Táctica:"#F0FDF4","Juego dinámico":"#F5F3FF",Portero:"#ECFEFF",Otro:"#F9FAFB"};return m[c]||"#F9FAFB";}
-function delBib(i){if(confirm("¿Eliminar este ejercicio?")){{BIBLIOTECA.splice(i,1);save("biblioteca",BIBLIOTECA);renderBiblioteca();}}}
+function delBib(i){if(confirm("¿Eliminar este ejercicio?")){{const _id=(BIBLIOTECA[i]||{}).id;if(_id){try{const d=JSON.parse(localStorage.getItem("bib_club_del")||"[]");if(d.indexOf(_id)<0)d.push(_id);localStorage.setItem("bib_club_del",JSON.stringify(d));}catch(e){}}BIBLIOTECA.splice(i,1);save("biblioteca",BIBLIOTECA);renderBiblioteca();}}}
 function openAddEj(){
   document.getElementById("modal-content").innerHTML=`
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
@@ -2864,7 +2864,8 @@ function saveEditEj(i){
     descripcion:desc,
     provocacion:document.getElementById("ej-prov").value.trim(),
     material:document.getElementById("ej-mat").value.trim(),
-    imagen:nuevaImg||BIBLIOTECA[i].imagen||""
+    imagen:nuevaImg||BIBLIOTECA[i].imagen||"",
+    editado:true
   };
   save("biblioteca",BIBLIOTECA);
   closeModal();renderBiblioteca();
@@ -4926,6 +4927,55 @@ function savePasswords(){
   setTimeout(()=>{document.getElementById('pass-saved-ok').style.display='none';closePassModal();},1800);
 }
 
+</script>
+<script>
+// ═══════════ BIBLIOTECA DEL CLUB — carga automática desde ejercicios.json ═══════════
+// Al abrir la app descarga ejercicios.json (alojado junto a index.html) y añade
+// a la biblioteca local los ejercicios que falten. No borra ni pisa lo del entrenador.
+var CLUB_LIB_URLS=['https://entrenadormanuel68-png.github.io/Entrenamiento-local/ejercicios.json','ejercicios.json'];
+function _clubKey(e){return String(e.categoria||'').toLowerCase()+'|'+String(e.nombre||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,' ').trim();}
+function _clubDeleted(){try{return new Set(JSON.parse(localStorage.getItem('bib_club_del')||'[]'));}catch(e){return new Set();}}
+async function clubSync(){
+  let data=null;
+  for(const u of CLUB_LIB_URLS){
+    try{
+      const r=await fetch(u,{cache:'no-cache'});
+      if(!r.ok)continue;
+      data=await r.json();
+      if(data)break;
+    }catch(e){}
+  }
+  if(!data)return;                       // sin conexión: se usa lo que ya hay guardado
+  const arr=Array.isArray(data)?data:(data.ejercicios||data.biblioteca||[]);
+  if(!Array.isArray(arr)||!arr.length)return;
+  const CATS=['Calentamiento','Físico','Técnica','Táctica','Juego dinámico','Portero','Otro'];
+  const del=_clubDeleted(),byId=new Map(),byName=new Map();
+  BIBLIOTECA.forEach((e,i)=>{if(e.id)byId.set(e.id,i);byName.set(_clubKey(e),i);});
+  let add=0,upd=0,cambio=false;
+  arr.forEach(it=>{
+    if(!it||!it.nombre||!it.descripcion||CATS.indexOf(it.categoria)<0)return;
+    if(it.id&&del.has(it.id))return;     // el entrenador lo borró a propósito
+    const k=_clubKey(it);
+    let idx=(it.id&&byId.has(it.id))?byId.get(it.id):(byName.has(k)?byName.get(k):-1);
+    if(idx<0){
+      BIBLIOTECA.push(Object.assign({},it));
+      const n=BIBLIOTECA.length-1;if(it.id)byId.set(it.id,n);byName.set(k,n);
+      add++;cambio=true;return;
+    }
+    const loc=BIBLIOTECA[idx];
+    if(!loc.id&&it.id){loc.id=it.id;cambio=true;}
+    // Corrección del club: solo si sube "rev" y el entrenador no lo ha editado
+    if(!loc.editado&&(+it.rev||0)>(+loc.rev||0)){
+      BIBLIOTECA[idx]=Object.assign({},loc,it,{imagen:it.imagen||loc.imagen||'',dibujo:it.dibujo||loc.dibujo||''});
+      upd++;cambio=true;
+    }
+  });
+  if(!cambio)return;
+  save("biblioteca",BIBLIOTECA);
+  try{if(document.getElementById('sec-biblioteca').classList.contains('active'))renderBiblioteca();}catch(e){}
+  try{etToast('📚 Biblioteca del club: '+add+' nuevos'+(upd?', '+upd+' actualizados':''));}catch(e){}
+}
+document.addEventListener('DOMContentLoaded',()=>{setTimeout(clubSync,600);});
 </script>
 <!-- Bloqueo pulsación larga en móvil -->
 <script>
