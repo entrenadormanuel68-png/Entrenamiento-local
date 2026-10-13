@@ -2978,5 +2978,19 @@
   "nombre": "Sistema 1-3-2-1 · 13. Rotación de puestos 7v7",
   "origen": "nuevo",
   "provocacion": "Facilitar: Rotar solo entre dos líneas. Dificultar: Rotar cada 3-4 minutos y pedir que expliquen lo que cambia en cada puesto."
+ },
+ {
+  "categoria": "Otro",
+  "descripcion": "Objetivo: Conocer la colocación inicial del 1-3-2-1 y la función de cada puesto.\nPuestos (los números del dibujo son de posición, no de dorsal):\n1 · Portero (amarillo): protege la portería, inicia el juego y da órdenes a la defensa.\n2 · Defensa izquierdo (azul): cierra su banda y ayuda al central.\n3 · Defensa central (azul): protege el centro y cubre al compañero que sale a presionar.\n4 · Defensa derecho (azul): cierra su banda y ayuda al central.\n5 · Medio izquierdo (naranja): une defensa y ataque por la izquierda; ofrece apoyo o da equilibrio.\n6 · Medio derecho (naranja): une defensa y ataque por la derecha; si el otro medio apoya, este equilibra.\n7 · Punta (rojo): ofrece profundidad, fija a los defensas rivales y finaliza.\nCómo practicarlo:\n1. Coloca a los siete jugadores como en el dibujo.\n2. El entrenador mueve el balón de lado a lado y el equipo se desplaza junto, manteniendo las distancias.\n3. Cada jugador dice en voz alta su función antes de rotar de puesto.\nJugadores: 7 · Duración: 10 min · Edades: Alevín",
+  "dibujo": "{\"f\":\"medio\",\"s\":[{\"t\":\"p\",\"x\":260,\"y\":590,\"c\":\"#FACC15\",\"n\":1},{\"t\":\"p\",\"x\":110,\"y\":430,\"c\":\"#2563EB\",\"n\":2},{\"t\":\"p\",\"x\":260,\"y\":455,\"c\":\"#2563EB\",\"n\":3},{\"t\":\"p\",\"x\":410,\"y\":430,\"c\":\"#2563EB\",\"n\":4},{\"t\":\"p\",\"x\":175,\"y\":330,\"c\":\"#F97316\",\"n\":5},{\"t\":\"p\",\"x\":345,\"y\":330,\"c\":\"#F97316\",\"n\":6},{\"t\":\"p\",\"x\":260,\"y\":205,\"c\":\"#DC2626\",\"n\":7},{\"t\":\"a\",\"x1\":260,\"y1\":165,\"x2\":260,\"y2\":100,\"c\":\"#FFFFFF\"},{\"t\":\"t\",\"x\":205,\"y\":70,\"s\":\"ATAQUE\",\"c\":\"#FFFFFF\"}]}",
+  "duracion": "10 min",
+  "edades": "Alevín",
+  "etiquetas": "Sistema 1-3-2-1, Colocación",
+  "id": "otr-016",
+  "jugadores": "7",
+  "material": "7 petos (1 amarillo, 3 azules, 2 naranjas, 1 rojo), 1 balón",
+  "nombre": "Sistema 1-3-2-1 · 14. Colocación y funciones de cada puesto",
+  "origen": "nuevo",
+  "provocacion": "Pregunta a cada jugador qué haría su puesto si el balón estuviera en la banda contraria."
  }
 ]
