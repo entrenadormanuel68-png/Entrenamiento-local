@@ -563,6 +563,7 @@ body.role-coach .manager-only-el{opacity:0.3;pointer-events:none;cursor:not-allo
     <input id="bib-busca" placeholder="🔍 Buscar..." oninput="renderBiblioteca()" style="flex:1;min-width:140px;border:1px solid #E2E8F0;border-radius:8px;padding:8px 11px;font-size:13px;outline:none">
   </div>
   <div id="bib-espacio" style="display:none;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:10px 12px;margin-bottom:14px"></div>
+  <div id="et-ids" style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:10px;margin-bottom:12px"></div>
   <div id="bib-body" class="g3"></div>
 </div>
 
@@ -670,6 +671,7 @@ body.role-coach .manager-only-el{opacity:0.3;pointer-events:none;cursor:not-allo
     <div class="field"><label>Situación Final / Partido</label><textarea id="sf7-f-final" rows="2" placeholder="Partido condicionado, reglas especiales..." style="width:100%;border:1px solid #E2E8F0;border-radius:8px;padding:8px 11px;font-size:13px;outline:none;background:#FAFAFA;resize:vertical"></textarea></div>
     <div class="field"><label>Puntos Clave</label><textarea id="sf7-f-puntos" rows="2" placeholder="• Punto 1&#10;• Punto 2&#10;• Punto 3" style="width:100%;border:1px solid #E2E8F0;border-radius:8px;padding:8px 11px;font-size:13px;outline:none;background:#FAFAFA;resize:vertical"></textarea></div>
     <div class="field"><label>Materiales</label><input type="text" id="sf7-f-materiales" placeholder="Conos, petos, porterías pequeñas..." style="width:100%;border:1px solid #E2E8F0;border-radius:8px;padding:8px 11px;font-size:13px;outline:none;background:#FAFAFA"></div>
+    <div style="margin-top:10px"><div id="sf7-dibprev"></div><button type="button" id="sf7-dibbtn" onclick="abrirDibujo('sf7',0,0)" style="margin-top:6px;border:1px solid #BFDBFE;background:#EFF6FF;color:#2563EB;border-radius:7px;font-size:12px;font-weight:700;padding:6px 11px;cursor:pointer;font-family:inherit">🎨 Añadir dibujo / esquema</button></div>
     <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
       <button class="btn btn-ghost" onclick="sfCerrarModal()">Cancelar</button>
       <button class="btn btn-primary" onclick="sfGuardarSesion()">💾 Guardar Sesión</button>
@@ -678,56 +680,23 @@ body.role-coach .manager-only-el{opacity:0.3;pointer-events:none;cursor:not-allo
 </div>
 
 <div id="sec-pizarra" class="section">
-  <!-- TOOLBAR -->
-  <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px;align-items:center;padding:8px 10px;background:white;border-radius:10px;border:1px solid #E2E8F0;box-shadow:0 1px 4px rgba(0,0,0,.06)">
-    <!-- Fila 1: Fondo de campo -->
-    <div style="display:flex;gap:3px;width:100%;margin-bottom:4px;">
-      <button class="btn btn-ghost btn-sm pz-bg active" id="pzb-campo" onclick="setPzBg('campo',this)" style="flex:1;font-size:11px;padding:5px 4px">🏟 Campo</button>
-      <button class="btn btn-ghost btn-sm pz-bg" id="pzb-medio" onclick="setPzBg('medio',this)" style="flex:1;font-size:11px;padding:5px 4px">⚽ Medio</button>
-      <button class="btn btn-ghost btn-sm pz-bg" id="pzb-area" onclick="setPzBg('area',this)" style="flex:1;font-size:11px;padding:5px 4px">🎯 Área</button>
-    </div>
-    <!-- Fila 2: Herramientas dibujo -->
-    <div style="display:flex;gap:3px;flex-wrap:wrap;width:100%;margin-bottom:4px;">
-      <button class="btn btn-ghost pz-tool active" id="pzt-lap" onclick="setPzTool('lapiz',this)" style="font-size:10px;padding:4px 6px;min-width:0">✏️ Lápiz</button>
-      <button class="btn btn-ghost pz-tool" id="pzt-goma" onclick="setPzTool('goma',this)" style="font-size:10px;padding:4px 6px;min-width:0">🧽 Goma</button>
-      <button class="btn btn-ghost pz-tool" id="pzt-lin" onclick="setPzTool('linea',this)" style="font-size:10px;padding:4px 6px;min-width:0">➖ Línea</button>
-      <button class="btn btn-ghost pz-tool" id="pzt-fle" onclick="setPzTool('flecha',this)" style="font-size:10px;padding:4px 6px;min-width:0">➡️ Flecha</button>
-      <button class="btn btn-ghost pz-tool" id="pzt-cir" onclick="setPzTool('circulo',this)" style="font-size:10px;padding:4px 6px;min-width:0">⭕ Cír.</button>
-      <button class="btn btn-ghost pz-tool" id="pzt-rec" onclick="setPzTool('rect',this)" style="font-size:10px;padding:4px 6px;min-width:0">▭ Rect.</button>
-      <button class="btn btn-ghost pz-tool" id="pzt-txt" onclick="setPzTool('texto',this)" style="font-size:10px;padding:4px 6px;min-width:0">🔤 Txt</button>
-    </div>
-    <!-- Fila 3: Color, grosor, fichas y acciones -->
-    <div style="display:flex;gap:3px;align-items:center;flex-wrap:wrap;width:100%;">
-      <input type="color" id="pz-color" value="#DC2626" style="width:28px;height:28px;border:2px solid #E2E8F0;border-radius:6px;cursor:pointer;padding:1px;" title="Color">
-      <select id="pz-grosor" style="border:1px solid #E2E8F0;border-radius:6px;padding:3px 4px;font-size:10px;outline:none;height:28px;">
-        <option value="2">Fino</option>
-        <option value="4" selected>Normal</option>
-        <option value="8">Grueso</option>
-        <option value="14">M.Grueso</option>
-      </select>
-      <button class="btn btn-sm" style="background:#DC2626;color:white;font-size:10px;padding:4px 7px;" onclick="addToken('rojo')">🔴 Local</button>
-      <button class="btn btn-sm" style="background:#2563EB;color:white;font-size:10px;padding:4px 7px;" onclick="addToken('azul')">🔵 Visit.</button>
-      <button class="btn btn-sm" style="background:#F97316;color:white;font-size:10px;padding:4px 7px;" onclick="addToken('balon')">⚽ Balón</button>
-      <button class="btn btn-ghost btn-sm" onclick="pzUndo()" style="font-size:10px;padding:4px 7px;">↩️ Des.</button>
-      <button class="btn btn-red btn-sm" onclick="pzClear()" style="font-size:10px;padding:4px 7px;">🗑 Limpiar</button>
-      <button class="btn btn-green btn-sm" onclick="pzSave()" style="font-size:10px;padding:4px 7px;">💾 Guardar</button>
-      <button class="btn btn-ghost btn-sm" onclick="pzExportImg()" style="font-size:10px;padding:4px 7px;">📥 PNG</button>
+  <div class="card" style="margin-bottom:14px">
+    <div class="card-title" style="margin-bottom:6px">🎨 Pizarra táctica</div>
+    <p style="font-size:12px;color:#64748B;margin-bottom:10px">Elige el campo y dibuja: jugadores numerados, conos, porterías, pases, carreras y zonas. Luego guárdala y envíala por WhatsApp o en PDF.</p>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      <button class="btn btn-orange btn-sm" onclick="pizNueva('campo')">🏟 Campo completo</button>
+      <button class="btn btn-ghost btn-sm" onclick="pizNueva('medio')">⚽ Medio campo</button>
+      <button class="btn btn-ghost btn-sm" onclick="pizNueva('area')">🎯 Área</button>
+      <button class="btn btn-ghost btn-sm" onclick="pizNueva('espacio')">⬜ Espacio libre</button>
     </div>
   </div>
-
-  <!-- CANVAS WRAPPER -->
-  <div id="pz-wrap" style="position:relative;width:100%;border-radius:10px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.15);touch-action:none;user-select:none;">
-    <canvas id="pz-canvas" style="display:block;width:100%;cursor:crosshair;"></canvas>
-    <!-- Tokens overlay -->
-    <div id="pz-tokens" style="position:absolute;inset:0;pointer-events:none;"></div>
+  <div class="card-title" style="margin:6px 0 8px">📌 Mis pizarras</div>
+  <div id="piz-lista" class="g3"></div>
+  <div id="pz-legacy-wrap" style="margin-top:20px;display:none">
+    <div class="card-title" style="margin-bottom:8px">🗂 Pizarras antiguas</div>
+    <div id="pz-saved" style="display:flex;gap:10px;flex-wrap:wrap"></div>
   </div>
-  <p style="font-size:11px;color:#94A3B8;margin-top:8px;text-align:center;">💡 Dibuja sobre el campo · Añade fichas y arrástralas · Pulsa 💾 Guardar para persistir entre sesiones</p>
-
-  <!-- Pizarras guardadas -->
-  <div style="margin-top:16px;">
-    <div class="card-title" style="margin-bottom:8px;">📌 Pizarras Guardadas</div>
-    <div id="pz-saved" style="display:flex;gap:10px;flex-wrap:wrap;"></div>
-  </div>
+</div>
 </div>
 
 </div><!-- /main -->
@@ -2762,6 +2731,7 @@ function exportarInformePartidoCSV(pid){
 }
 
 function renderBiblioteca(){
+  etRenderIds();
   const cat=document.getElementById("bib-cat")?.value||"";
   const bq=(document.getElementById("bib-busca")?.value||"").toLowerCase();
   const filt=BIBLIOTECA.filter(e=>(!cat||e.categoria===cat)&&(!bq||e.nombre.toLowerCase().includes(bq)||e.descripcion.toLowerCase().includes(bq)));
@@ -2769,7 +2739,7 @@ function renderBiblioteca(){
     <div class="ej-card" style="border-left-color:${catColor(e.categoria)}">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:5px">
         <div>
-          <span style="font-size:9px;font-weight:700;padding:1px 6px;border-radius:3px;background:${catBg(e.categoria)};color:${catColor(e.categoria)}">${e.categoria}</span>
+          <span style="font-size:9px;font-weight:700;padding:1px 6px;border-radius:3px;background:${catBg(e.categoria)};color:${catColor(e.categoria)}">${e.categoria}</span>${e.id?` <span style="font-size:9px;color:#94A3B8;font-family:monospace">${esc(e.id)}</span>`:''}
           <h4 style="margin-top:4px">${esc(e.nombre)}</h4>
         </div>
         <div style="display:flex;gap:4px">
@@ -3113,44 +3083,7 @@ let pzColor='#DC2626',pzGrosor=4,pzInited=false;
 let pzStartX,pzStartY,pzSnap=null,pzHistory=[],pzTokens=[];
 let pzSavedBoards=[];
 
-function initPizarra(){
-  if(pzInited){renderPzSaved();return;}
-  pzCanvas=document.getElementById('pz-canvas');
-  pzCtx=pzCanvas.getContext('2d');
-  const wrap=document.getElementById('pz-wrap');
-
-  // Size canvas proportional to field
-  const resize=()=>{
-    const w=wrap.clientWidth;
-    const ratio=pzBgMode==='area'?0.7:0.65;
-    pzCanvas.width=w;
-    pzCanvas.height=Math.round(w*ratio);
-    pzCanvas.style.height=pzCanvas.height+'px';
-    drawPzBg();
-    redrawTokens();
-  };
-  resize();
-  window.addEventListener('resize',resize);
-
-  // Mouse events
-  pzCanvas.addEventListener('mousedown',pzDown);
-  pzCanvas.addEventListener('mousemove',pzMove);
-  pzCanvas.addEventListener('mouseup',pzUp);
-  pzCanvas.addEventListener('mouseleave',pzUp);
-  // Touch events
-  pzCanvas.addEventListener('touchstart',e=>{e.preventDefault();const r=pzCanvas.getBoundingClientRect();const t=e.touches[0];pzDown({offsetX:t.clientX-r.left,offsetY:t.clientY-r.top});},{passive:false});
-  pzCanvas.addEventListener('touchmove',e=>{e.preventDefault();const r=pzCanvas.getBoundingClientRect();const t=e.touches[0];pzMove({offsetX:t.clientX-r.left,offsetY:t.clientY-r.top});},{passive:false});
-  pzCanvas.addEventListener('touchend',e=>{e.preventDefault();pzUp();},{passive:false});
-
-  // Color + grosor listeners
-  document.getElementById('pz-color').addEventListener('input',e=>pzColor=e.target.value);
-  document.getElementById('pz-grosor').addEventListener('change',e=>pzGrosor=+e.target.value);
-
-  pzInited=true;
-  // pzSavedBoards ya cargado desde Firebase
-  renderPzSaved();
-  setPzBg('campo',document.getElementById('pzb-campo'));
-}
+function initPizarra(){pizRender();}
 
 function pzDown(e){
   if(pzTool==='texto'){addTextToken(e.offsetX,e.offsetY);return;}
@@ -3461,15 +3394,17 @@ function pzSave(){
   alert('✅ Pizarra guardada');
 }
 function renderPzSaved(){
-  const cont=document.getElementById('pz-saved');if(!cont)return;
-  if(!pzSavedBoards.length){cont.innerHTML='<span style="font-size:12px;color:#94A3B8">Sin pizarras guardadas aún</span>';return;}
-  cont.innerHTML=pzSavedBoards.map((b,i)=>`
-    <div style="position:relative;width:140px;">
-      <img src="${b.data}" onclick="pzLoad(${i})" style="width:140px;border-radius:8px;border:2px solid #E2E8F0;cursor:pointer;display:block;" title="Cargar esta pizarra">
-      <div style="font-size:10px;color:#64748B;text-align:center;margin-top:2px;">${b.date}</div>
-      <button onclick="pzDelete(${i})" style="position:absolute;top:3px;right:3px;background:#DC2626;color:white;border:none;border-radius:50%;width:18px;height:18px;font-size:10px;cursor:pointer;line-height:18px;text-align:center;padding:0;">×</button>
-    </div>`).join('');
+  const cont=document.getElementById('pz-saved'),wrap=document.getElementById('pz-legacy-wrap');
+  if(!cont)return;
+  if(!pzSavedBoards.length){if(wrap)wrap.style.display='none';cont.innerHTML='';return;}
+  if(wrap)wrap.style.display='block';
+  const b='border:1px solid #E2E8F0;background:white;border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;font-family:inherit';
+  cont.innerHTML=pzSavedBoards.map((p,i)=>`<div style="width:150px">
+      <img src="${p.data}" alt="" style="width:150px;border-radius:8px;border:2px solid #E2E8F0;display:block">
+      <div style="font-size:10px;color:#64748B;text-align:center;margin:2px 0">${esc(p.date||'')}</div>
+      <div style="display:flex;gap:4px;justify-content:center"><button style="${b}" onclick="pzLegacyEnviar(${i})" title="Enviar o descargar">📱</button><button style="${b};color:#B91C1C" onclick="pzDelete(${i})" title="Eliminar">🗑</button></div></div>`).join('');
 }
+function pzLegacyEnviar(i){const p=pzSavedBoards[i];if(!p||!p.data)return;etCompartirArchivo('pizarra_antigua_'+(i+1)+'.png','image/png',String(p.data).split(',')[1]);}
 function pzLoad(i){
   const b=pzSavedBoards[i];if(!b)return;
   setPzBg(b.bg||'campo',document.getElementById('pzb-'+( b.bg||'campo')));
@@ -3826,7 +3761,11 @@ const SF7_SESIONES_BASE=[
 
 function sfLoad(){const raw=localStorage.getItem(SF7_KEY);return raw?JSON.parse(raw):[];}
 function sfSave(arr){localStorage.setItem(SF7_KEY,JSON.stringify(arr));}
-function sfTodas(){return [...SF7_SESIONES_BASE,...sfLoad()];}
+function sfTodas(){
+  const c=sfLoad();
+  const rep=new Set(c.map(x=>x.reemplaza).filter(Boolean));
+  return [...SF7_SESIONES_BASE.filter(b=>!rep.has(b.id)),...c];
+}
 
 function renderSistemasFutbol7(){sfRenderTabs();sfRender();}
 
@@ -3877,7 +3816,7 @@ function sfRender(){
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
           <div style="display:flex;align-items:center;gap:6px">
             <span style="font-size:10px;font-weight:800;background:${info.color}15;color:${info.color};padding:2px 7px;border-radius:12px">S${s.num}</span>
-            ${esCustom?'<span style="font-size:9px;background:#FEF3C7;color:#D97706;padding:1px 5px;border-radius:10px;font-weight:700">NUEVA</span>':''}
+            ${esCustom?`<span style="font-size:9px;background:#FEF3C7;color:#D97706;padding:1px 5px;border-radius:10px;font-weight:700">${s.reemplaza?'EDITADA':'NUEVA'}</span>`:''}
           </div>
           <div style="display:flex;gap:4px;align-items:center">
             <span style="font-size:10px;color:#94A3B8">${s.duracion||75}min</span>
@@ -3900,50 +3839,82 @@ function sfRender(){
 }
 
 function sfVerDetalle(id){
-  const s=sfTodas().find(x=>x.id===id);if(!s)return;
+  const s=sfTodas().find(x=>x.id===id);
+  if(!s)return;
   const info=SF7_SISTEMAS.find(x=>x.id===s.sistema)||{color:'#1E3A5F',nombre:s.sistema,subtitulo:'',icono:'📋'};
-  document.getElementById('sf7-lista').style.display='none';
-  const detalle=document.getElementById('sf7-detalle');detalle.style.display='block';
-  const puntosList=(s.puntos||'').split('\n').filter(p=>p.trim()).map(p=>`<li style="margin-bottom:4px">${p.replace(/^•\s*/,'')}</li>`).join('');
+  const lista=document.getElementById('sf7-lista');
+  const detalle=document.getElementById('sf7-detalle');
+  lista.style.display='none';
+  detalle.style.display='block';
+
+  const puntosList=(s.puntos||'').split('\n').filter(p=>p.trim()).map(p=>`<li style="margin-bottom:4px">${esc(p.replace(/^•\s*/,''))}</li>`).join('');
+  const bt='border:1px solid #E2E8F0;background:white;border-radius:8px;padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;color:#334155';
+  const editada=!!s.reemplaza;
+  const esPropia=!s.base;
+
   detalle.innerHTML=`
     <button class="btn btn-ghost btn-sm" onclick="sfCerrarDetalle()" style="margin-bottom:12px">← Volver</button>
     <div class="card" style="border-top:4px solid ${info.color}">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid #F1F5F9">
         <div style="width:42px;height:42px;background:${info.color};border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">${info.icono}</div>
-        <div><div style="font-size:11px;color:${info.color};font-weight:700;text-transform:uppercase;letter-spacing:1px">${info.nombre} · ${info.subtitulo}</div>
-        <div style="font-size:17px;font-weight:800;color:#1e293b;line-height:1.2">Sesión ${s.num}: "${s.titulo}"</div></div>
+        <div>
+          <div style="font-size:11px;color:${info.color};font-weight:700;text-transform:uppercase;letter-spacing:1px">${esc(info.nombre)} · ${esc(info.subtitulo)}${editada?' · <span style="color:#D97706">EDITADA</span>':''}</div>
+          <div style="font-size:17px;font-weight:800;color:#1e293b;line-height:1.2">Sesión ${s.num}: "${esc(s.titulo)}"</div>
+        </div>
       </div>
       <div class="g2" style="gap:10px;margin-bottom:14px">
-        <div style="background:#F8FAFC;border-radius:8px;padding:10px"><div style="font-size:10px;color:#64748B;font-weight:700;text-transform:uppercase;margin-bottom:2px">Objetivo</div><div style="font-size:12px;color:#1e293b;font-weight:600">${s.objetivo}</div></div>
-        <div style="background:#F8FAFC;border-radius:8px;padding:10px"><div style="font-size:10px;color:#64748B;font-weight:700;text-transform:uppercase;margin-bottom:2px">Info</div><div style="font-size:12px;color:#1e293b">${s.categoria||'—'} · ${s.duracion||75} min</div></div>
+        <div style="background:#F8FAFC;border-radius:8px;padding:10px"><div style="font-size:10px;color:#64748B;font-weight:700;text-transform:uppercase;margin-bottom:2px">Objetivo</div><div style="font-size:12px;color:#1e293b;font-weight:600">${esc(s.objetivo)}</div></div>
+        <div style="background:#F8FAFC;border-radius:8px;padding:10px"><div style="font-size:10px;color:#64748B;font-weight:700;text-transform:uppercase;margin-bottom:2px">Info</div><div style="font-size:12px;color:#1e293b">${esc(s.categoria||'—')} · ${s.duracion||75} min</div></div>
       </div>
-      ${s.materiales?`<div style="background:#FFF7ED;border:1px solid #FED7AA;border-radius:8px;padding:10px;margin-bottom:12px"><div style="font-size:10px;color:#C2410C;font-weight:700;text-transform:uppercase;margin-bottom:3px">🎯 Materiales</div><div style="font-size:12px;color:#92400E">${s.materiales}</div></div>`:''}
-      ${s.activacion?`<div class="ej-card" style="border-left-color:#16A34A"><h4>🔥 Activación / Calentamiento</h4><p>${s.activacion}</p></div>`:''}
-      ${s.principal?`<div class="ej-card"><h4>⚽ Fase Principal</h4><p>${s.principal}</p></div>`:''}
-      ${s.final?`<div class="ej-card" style="border-left-color:#3B82F6"><h4>🏁 Situación Final / Partido</h4><p>${s.final}</p></div>`:''}
+      ${s.materiales?`<div style="background:#FFF7ED;border:1px solid #FED7AA;border-radius:8px;padding:10px;margin-bottom:12px"><div style="font-size:10px;color:#C2410C;font-weight:700;text-transform:uppercase;margin-bottom:3px">🎯 Materiales</div><div style="font-size:12px;color:#92400E">${esc(s.materiales)}</div></div>`:''}
+      ${s.activacion?`<div class="ej-card" style="border-left-color:#16A34A"><h4>🔥 Activación / Calentamiento</h4><p style="white-space:pre-line">${esc(s.activacion)}</p></div>`:''}
+      ${s.principal?`<div class="ej-card"><h4>⚽ Fase Principal</h4><p style="white-space:pre-line">${esc(s.principal)}</p></div>`:''}
+      ${s.dibujo&&etParse(s.dibujo)?`<div class="ej-card" style="border-left-color:#475569"><h4>📐 Esquema</h4>${etImgHTML(s.dibujo)}</div>`:''}
+      ${s.final?`<div class="ej-card" style="border-left-color:#3B82F6"><h4>🏁 Situación Final / Partido</h4><p style="white-space:pre-line">${esc(s.final)}</p></div>`:''}
       ${puntosList?`<div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:8px;padding:12px;margin-top:8px"><div style="font-size:10px;color:#16A34A;font-weight:700;text-transform:uppercase;margin-bottom:6px">✅ Puntos Clave</div><ul style="list-style:none;padding:0;margin:0;font-size:12px;color:#166534">${puntosList}</ul></div>`:''}
     </div>
-    ${!s.base?`<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px"><button class="btn btn-ghost btn-sm" onclick="sfAbrirEditar('${s.id}')">✏️ Editar</button><button class="btn btn-red btn-sm" onclick="sfEliminarDesdeDetalle('${s.id}')">🗑️ Eliminar</button></div>`:''}`;
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px;flex-wrap:wrap">
+      <button style="${bt};background:#25D366;color:white;border-color:#25D366" onclick="sf7WA('${s.id}')">📱 WhatsApp</button>
+      <button style="${bt}" onclick="sf7PDF('${s.id}')">📄 PDF</button>
+      <button style="${bt}" onclick="sfAbrirEditar('${s.id}')">✏️ Editar</button>
+      ${editada?`<button style="${bt};color:#B45309;border-color:#FDE68A" onclick="sfEliminarDesdeDetalle('${s.id}')">↩ Restaurar original</button>`:''}
+      ${esPropia&&!editada?`<button class="btn btn-red btn-sm" onclick="sfEliminarDesdeDetalle('${s.id}')">🗑️ Eliminar</button>`:''}
+    </div>
+  `;
 }
 
-function sfCerrarDetalle(){document.getElementById('sf7-lista').style.display='block';document.getElementById('sf7-detalle').style.display='none';}
+function sfCerrarDetalle(){
+  document.getElementById('sf7-lista').style.display='block';
+  document.getElementById('sf7-detalle').style.display='none';
+}
 
 function sfAbrirModalNueva(sistema,num){
   document.getElementById('sf7-edit-id').value='';
   document.getElementById('modal-sf7-title').textContent='📐 Nueva Sesión Sistema';
-  ['sf7-f-titulo','sf7-f-objetivo','sf7-f-activacion','sf7-f-principal','sf7-f-final','sf7-f-puntos','sf7-f-materiales'].forEach(id=>{document.getElementById(id).value='';});
+  document.getElementById('sf7-f-titulo').value='';
+  document.getElementById('sf7-f-objetivo').value='';
+  document.getElementById('sf7-f-activacion').value='';
+  document.getElementById('sf7-f-principal').value='';
+  document.getElementById('sf7-f-final').value='';
+  document.getElementById('sf7-f-puntos').value='';
+  document.getElementById('sf7-f-materiales').value='';
   document.getElementById('sf7-f-duracion').value='75';
-  if(sistema)document.getElementById('sf7-f-sistema').value=sistema;
-  else if(sf7SistemaActual!=='__todo')document.getElementById('sf7-f-sistema').value=sf7SistemaActual;
-  const custom=sfLoad();
-  document.getElementById('sf7-f-num').value=num||(custom.length+SF7_SESIONES_BASE.filter(s=>s.sistema===document.getElementById('sf7-f-sistema').value).length+1);
+  window._sf7Dib='';sf7RefrescarDib();
+  if(sistema) document.getElementById('sf7-f-sistema').value=sistema;
+  else if(sf7SistemaActual!=='__todo') document.getElementById('sf7-f-sistema').value=sf7SistemaActual;
+  const sis=document.getElementById('sf7-f-sistema').value;
+  const nums=sfTodas().filter(x=>x.sistema===sis).map(x=>x.num||0);
+  const nextDefault=num||((nums.length?Math.max.apply(null,nums):0)+1);
+  document.getElementById('sf7-f-num').value=nextDefault;
   document.getElementById('modal-sf7').style.display='flex';
 }
 
+// Abre el formulario con una sesión propia o con una de base (en ese caso se guardará una copia editada)
 function sfAbrirEditar(id){
-  const custom=sfLoad();const s=custom.find(x=>x.id===id);if(!s)return;
+  const s=sfTodas().find(x=>x.id===id);
+  if(!s)return;
   document.getElementById('sf7-edit-id').value=id;
-  document.getElementById('modal-sf7-title').textContent='✏️ Editar Sesión';
+  document.getElementById('modal-sf7-title').textContent=s.base?'✏️ Editar Sesión (se guardará tu copia)':'✏️ Editar Sesión';
   document.getElementById('sf7-f-sistema').value=s.sistema;
   document.getElementById('sf7-f-num').value=s.num;
   document.getElementById('sf7-f-titulo').value=s.titulo;
@@ -3955,6 +3926,7 @@ function sfAbrirEditar(id){
   document.getElementById('sf7-f-final').value=s.final||'';
   document.getElementById('sf7-f-puntos').value=s.puntos||'';
   document.getElementById('sf7-f-materiales').value=s.materiales||'';
+  window._sf7Dib=s.dibujo||'';sf7RefrescarDib();
   document.getElementById('modal-sf7').style.display='flex';
   sfCerrarDetalle();
 }
@@ -3967,13 +3939,53 @@ function sfGuardarSesion(){
   if(!titulo||!objetivo){alert('El título y el objetivo son obligatorios.');return;}
   const editId=document.getElementById('sf7-edit-id').value;
   const custom=sfLoad();
-  const nueva={id:editId||(Date.now().toString(36)),sistema:document.getElementById('sf7-f-sistema').value,num:parseInt(document.getElementById('sf7-f-num').value)||1,titulo,objetivo,categoria:document.getElementById('sf7-f-cat').value,duracion:parseInt(document.getElementById('sf7-f-duracion').value)||75,activacion:(document.getElementById('sf7-f-activacion').value||'').trim(),principal:(document.getElementById('sf7-f-principal').value||'').trim(),final:(document.getElementById('sf7-f-final').value||'').trim(),puntos:(document.getElementById('sf7-f-puntos').value||'').trim(),materiales:(document.getElementById('sf7-f-materiales').value||'').trim(),base:false};
-  if(editId){const idx=custom.findIndex(x=>x.id===editId);if(idx>=0)custom[idx]=nueva;else custom.push(nueva);}else{custom.push(nueva);}
-  sfSave(custom);sfCerrarModal();sf7SistemaActual=nueva.sistema;sfRenderTabs();sfRender();
+  const origBase=editId?SF7_SESIONES_BASE.find(x=>x.id===editId):null;
+  const prev=editId&&!origBase?custom.find(x=>x.id===editId):null;
+  const nueva={
+    id:origBase?('ed-'+editId):(editId||(Date.now().toString(36))),
+    sistema:document.getElementById('sf7-f-sistema').value,
+    num:parseInt(document.getElementById('sf7-f-num').value)||1,
+    titulo,objetivo,
+    categoria:document.getElementById('sf7-f-cat').value,
+    duracion:parseInt(document.getElementById('sf7-f-duracion').value)||75,
+    activacion:(document.getElementById('sf7-f-activacion').value||'').trim(),
+    principal:(document.getElementById('sf7-f-principal').value||'').trim(),
+    final:(document.getElementById('sf7-f-final').value||'').trim(),
+    puntos:(document.getElementById('sf7-f-puntos').value||'').trim(),
+    materiales:(document.getElementById('sf7-f-materiales').value||'').trim(),
+    base:false
+  };
+  if(window._sf7Dib)nueva.dibujo=window._sf7Dib;
+  if(origBase)nueva.reemplaza=editId;
+  else if(prev&&prev.reemplaza)nueva.reemplaza=prev.reemplaza;
+  const idx=custom.findIndex(x=>x.id===nueva.id);
+  if(idx>=0)custom[idx]=nueva; else custom.push(nueva);
+  try{sfSave(custom);}catch(e){alert('No se pudo guardar: el almacenamiento del navegador está lleno.');return;}
+  sfCerrarModal();
+  sf7SistemaActual=nueva.sistema;
+  sfRenderTabs();
+  sfRender();
+  etToast(origBase?'✏️ Guardada tu copia editada':'💾 Sesión guardada');
 }
 
-function sfEliminar(id){if(!confirm('¿Eliminar esta sesión personalizada?'))return;sfSave(sfLoad().filter(x=>x.id!==id));sfRenderTabs();sfRender();}
-function sfEliminarDesdeDetalle(id){if(!confirm('¿Eliminar esta sesión personalizada?'))return;sfSave(sfLoad().filter(x=>x.id!==id));sfCerrarDetalle();sfRenderTabs();sfRender();}
+function sfBorrarPropia(id){
+  const s=sfLoad().find(x=>x.id===id);if(!s)return false;
+  const msg=s.reemplaza?'¿Restaurar la sesión original? Se perderán tus cambios en esta sesión.':'¿Eliminar esta sesión personalizada?';
+  if(!confirm(msg))return false;
+  sfSave(sfLoad().filter(x=>x.id!==id));
+  return true;
+}
+function sfEliminar(id){
+  if(!sfBorrarPropia(id))return;
+  sfRenderTabs();sfRender();
+}
+
+function sfEliminarDesdeDetalle(id){
+  if(!sfBorrarPropia(id))return;
+  sfCerrarDetalle();
+  sfRenderTabs();sfRender();
+}
+
 // ═══════════════════════════════════════════════════════════════
 // FIN SISTEMA FÚTBOL 7
 // ═══════════════════════════════════════════════════════════════
@@ -4473,14 +4485,16 @@ function abrirDibujo(kind,a,b){
   if(kind==='bib'){const e=BIBLIOTECA[+a];if(!e)return;json=e.dibujo||'';}
   else if(kind==='ses'){const s=SESIONES.find(x=>x.num===+a);if(!s)return;json=s['ej'+b+'_dib']||'';}
   else if(kind==='mses'){json=(window._msesDib||{})[+a]||'';}
-  const d=etParse(json)||{f:'campo',s:[]};
+  else if(kind==='sf7'){json=window._sf7Dib||'';}
+  else if(kind==='piz'&&a!=='new'){const pp=PIZ.find(x=>x.id===+a);if(!pp)return;json=pp.dibujo||'';}
+  const d=etParse(json)||{f:(kind==='piz'&&ET_FMT[b]?b:'campo'),s:[]};
   _etEd={kind,a,b,f:d.f,shapes:JSON.parse(JSON.stringify(d.s)),tool:'pen',color:'#FACC15',hist:[],cur:null,drag:null,num:true};
   let ov=document.getElementById('et-dib-ov');
   if(!ov){ov=document.createElement('div');ov.id='et-dib-ov';ov.style.cssText='position:fixed;inset:0;background:#0F172A;z-index:3500;display:flex;flex-direction:column;overflow:hidden';document.body.appendChild(ov);}
   ov.style.display='flex';
   const tools=[['mover','✋ Mover'],['pen','✏️ Lápiz'],['a','➡️ Pase'],['d','⇢ Carrera'],['r','▭ Zona'],['p','🔵 Jugador'],['c','🔺 Cono'],['b','⚽ Balón'],['g','🥅 Portería'],['gv','🥅 Port. vertical'],['t','🔤 Texto'],['del','🗑 Borrar']];
   ov.innerHTML=`<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:#1E3A5F;color:white;flex-wrap:wrap">
-    <b style="font-size:14px;flex:1;min-width:120px">🎨 Dibujo del ejercicio</b>
+    <b style="font-size:14px;flex:1;min-width:120px">${kind==='piz'?'🎨 Pizarra táctica':kind==='sf7'?'📐 Esquema de la sesión':'🎨 Dibujo del ejercicio'}</b>
     <select id="et-fmt" onchange="etCambiarFmt(this.value)" style="border-radius:7px;padding:6px;font-size:12px">${Object.keys(ET_FMT).map(k=>`<option value="${k}"${k===_etEd.f?' selected':''}>${ET_FMT[k].n}</option>`).join('')}</select>
     <button onclick="etCerrarDibujo()" style="border:none;background:#475569;color:white;border-radius:7px;padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer">Cancelar</button>
     <button onclick="etGuardarEd()" style="border:none;background:#16A34A;color:white;border-radius:7px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer">💾 Guardar</button></div>
@@ -4595,6 +4609,8 @@ function etGuardarEd(){
   if(kind==='bib'){const e=BIBLIOTECA[+a];if(e){e.dibujo=json;save("biblioteca",BIBLIOTECA);renderBiblioteca();}}
   else if(kind==='ses'){const s=SESIONES.find(x=>x.num===+a);if(s){s['ej'+b+'_dib']=json;save("sesiones",SESIONES);renderSesionDetalle();}}
   else if(kind==='mses'){(window._msesDib=window._msesDib||{})[+a]=json;etRefrescarMsesDib();}
+  else if(kind==='sf7'){window._sf7Dib=json;sf7RefrescarDib();}
+  else if(kind==='piz'){etCerrarDibujo();pizGuardarDesdeEditor(a,json);etToast(json?'🎨 Pizarra guardada':'Pizarra sin cambios');return;}
   etCerrarDibujo();
   etToast(json?'🎨 Dibujo guardado':'Dibujo eliminado');
 }
@@ -4876,7 +4892,11 @@ function etAnalizarImport(){
     if(vistos.has(kn)||(kid&&vistos.has(kid))){malos.push(`#${k+1} ${it.nombre}: repetido dentro del archivo`);return;}
     vistos.add(kn);if(kid)vistos.add(kid);
     const idx=(kid&&claves.has(kid))?claves.get(kid):(claves.has(kn)?claves.get(kn):-1);
-    if(idx>=0)dup.push({it,idx});else nuevos.push(it);
+    if(idx>=0){
+      const old=BIBLIOTECA[idx];
+      if(kid&&old.id===it.id&&!etMismoNombre(old.nombre,it.nombre)){malos.push(`#${k+1} ${it.nombre}: el id ${it.id} ya es de «${old.nombre}» (no se importa; revisa el id)`);return;}
+      dup.push({it,idx});
+    }else nuevos.push(it);
   });
   _etImp={textos:_etImp&&_etImp.textos,nuevos,dup};
   const porCat={};nuevos.forEach(i=>porCat[i.categoria]=(porCat[i.categoria]||0)+1);
@@ -4895,7 +4915,7 @@ function etConfirmarImport(){
   const upd=!!(document.getElementById('et-imp-upd')||{}).checked;
   let add=0,act=0;
   _etImp.nuevos.forEach(it=>{BIBLIOTECA.push(it);add++;});
-  if(upd)_etImp.dup.forEach(d=>{const old=BIBLIOTECA[d.idx];BIBLIOTECA[d.idx]=Object.assign({},old,d.it,{imagen:old.imagen||'',dibujo:d.it.dibujo||old.dibujo||''});act++;});
+  if(upd)_etImp.dup.forEach(d=>{const old=BIBLIOTECA[d.idx];{const m=Object.assign({},old,d.it,{imagen:old.imagen||'',dibujo:d.it.dibujo||old.dibujo||''});const nid=old.id||d.it.id;if(nid)m.id=nid;else delete m.id;BIBLIOTECA[d.idx]=m;}act++;});
   const tam=JSON.stringify(BIBLIOTECA).length;
   save("biblioteca",BIBLIOTECA);
   closeModal();renderBiblioteca();
@@ -4906,6 +4926,231 @@ function etExportarBib(){
   const txt=JSON.stringify(BIBLIOTECA,null,1);
   const d=new Date(),f=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
   etEntregar('biblioteca_'+f+'.json','application/json',etB64Texto(txt));
+}
+
+
+// ═══════════════════════════════════════════════════════════════
+// EXTRAS v3: PDF/WhatsApp de sistemas F7 · ids por categoría · pizarra táctica vectorial
+// ═══════════════════════════════════════════════════════════════
+
+// ───────────────────────── ENTREGA / COMPARTIR ─────────────────────────
+function etEsMovil(){return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent||'');}
+function etEsNativo(){try{return !!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform());}catch(e){return false;}}
+// Envía un archivo: en el APK abre el menú de compartir; en el móvil web usa compartir del sistema; en ordenador lo descarga.
+function etCompartirArchivo(filename,mime,base64){
+  try{
+    if(!etEsNativo()&&etEsMovil()&&navigator.canShare&&navigator.share){
+      const bin=atob(base64),u8=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u8[i]=bin.charCodeAt(i);
+      const file=new File([u8],filename,{type:mime});
+      if(navigator.canShare({files:[file]})){navigator.share({files:[file],title:filename}).catch(function(){});return;}
+    }
+  }catch(e){}
+  etEntregar(filename,mime,base64);
+}
+function etWhatsAppTexto(txt){window.open('https://wa.me/?text='+encodeURIComponent(txt),'_blank');}
+
+// ───────────────────────── PDF GENÉRICO ─────────────────────────
+// cfg: {right, filename, partes:[{k:'h1'|'t'|'p'|'lista'|'dib'|'lineas', ...}]}
+async function etPdfGen(cfg){
+  etToast('📄 Generando PDF…');
+  let jsPDF;try{jsPDF=await etCargarJsPDF();}catch(err){alert(err.message);return;}
+  const doc=new jsPDF({unit:'mm',format:'a4'});
+  const PW=210,PH=297,M=14,CW=PW-2*M;
+  let y=M;
+  const club=etLatin(CLUB.nombre||'Entrenamiento Total'),cat=etLatin(CLUB.categoria||'');
+  const cabecera=()=>{
+    doc.setFillColor(30,58,95);doc.rect(0,0,PW,16,'F');
+    doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(12);doc.text(club+(cat?'  -  '+cat:''),M,10.5);
+    doc.setFont('helvetica','normal');doc.setFontSize(9);doc.text(etLatin(cfg.right||''),PW-M,10.5,{align:'right'});
+    y=22;
+  };
+  const nueva=()=>{doc.addPage();cabecera();};
+  const hay=h=>{if(y+h>PH-14)nueva();};
+  const titulo=(txt,rgb)=>{hay(9);doc.setFillColor(rgb[0],rgb[1],rgb[2]);doc.rect(M,y,CW,6.5,'F');doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(9.5);doc.text(etLatin(txt),M+2,y+4.6);y+=9;};
+  const parrafo=(txt,size,color,bold,indent)=>{
+    doc.setFont('helvetica',bold?'bold':'normal');doc.setFontSize(size||10);doc.setTextColor.apply(doc,color||[30,41,59]);
+    const ind=indent||0;
+    const lines=doc.splitTextToSize(etLatin(txt),CW-2-ind);
+    const lh=(size||10)*0.43;
+    lines.forEach(l=>{hay(lh+1);doc.text(l,M+1+ind,y+lh);y+=lh+0.9;});
+    y+=1.5;
+  };
+  cabecera();
+  (cfg.partes||[]).forEach(p=>{
+    if(p.k==='h1'){
+      doc.setTextColor(15,23,42);doc.setFont('helvetica','bold');doc.setFontSize(17);
+      doc.splitTextToSize(etLatin(p.txt||''),CW).forEach(l=>{hay(9);doc.text(l,M,y+6);y+=7.5;});
+      y+=1;
+    }else if(p.k==='t'){titulo(p.txt,p.rgb||[100,116,139]);}
+    else if(p.k==='p'){if(p.txt)parrafo(p.txt,p.size,p.color,p.bold);}
+    else if(p.k==='lista'){(p.items||[]).forEach(it=>parrafo('- '+it,p.size||10,p.color,false,2));}
+    else if(p.k==='dib'){
+      const dd=etParse(p.json);
+      if(dd){
+        const F=ET_FMT[dd.f],w=p.w||(F.w>600?150:62),h=w*F.h/F.w;
+        hay(h+3);
+        const u=etDataURL(p.json,1000,'jpeg');
+        if(u){doc.addImage(u,'JPEG',M+1,y,w,h);doc.setDrawColor(148,163,184);doc.rect(M+1,y,w,h);y+=h+3;}
+      }
+    }else if(p.k==='lineas'){
+      hay(34);titulo(p.txt||'ANOTACIONES',[217,119,6]);
+      doc.setDrawColor(203,213,225);doc.setLineWidth(0.2);
+      const resto=Math.max(2,Math.floor((PH-14-y)/7));
+      for(let i=0;i<Math.min(resto,p.max||5);i++){doc.line(M,y+5+i*7,M+CW,y+5+i*7);}
+      y+=Math.min(resto,p.max||5)*7+4;
+    }
+  });
+  const total=doc.getNumberOfPages();
+  for(let pg=1;pg<=total;pg++){doc.setPage(pg);doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(148,163,184);doc.text('Entrenamiento Total  -  '+club+'  -  pag. '+pg+'/'+total,PW/2,PH-6,{align:'center'});}
+  const b64=doc.output('datauristring').split(',')[1];
+  etCompartirArchivo(cfg.filename||'documento.pdf','application/pdf',b64);
+}
+function etSlug(s,max){return etLatin(String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'')).replace(/[^A-Za-z0-9]+/g,'_').replace(/^_+|_+$/g,'').slice(0,max||30)||'doc';}
+
+// ───────────────────────── SISTEMAS F7: PDF + WHATSAPP + DIBUJO ─────────────────────────
+function sf7Info(s){return SF7_SISTEMAS.find(x=>x.id===s.sistema)||{nombre:s.sistema,subtitulo:'',color:'#1E3A5F',icono:'📋'};}
+function sf7PDF(id){
+  const s=sfTodas().find(x=>x.id===id);if(!s){alert('Sesión no encontrada');return;}
+  const info=sf7Info(s);
+  const meta=[info.nombre+(info.subtitulo?' - '+info.subtitulo:''),s.categoria||'',(s.duracion||75)+' min'].filter(Boolean).join('   |   ');
+  const partes=[
+    {k:'h1',txt:'Sesion '+s.num+': '+s.titulo},
+    {k:'p',txt:meta,size:9,color:[100,116,139]},
+    {k:'p',txt:'Objetivo: '+(s.objetivo||''),size:10,color:[51,65,85]}
+  ];
+  if(s.materiales){partes.push({k:'t',txt:'MATERIAL',rgb:[100,116,139]},{k:'p',txt:s.materiales});}
+  if(s.activacion){partes.push({k:'t',txt:'ACTIVACION / CALENTAMIENTO',rgb:[22,101,52]},{k:'p',txt:s.activacion});}
+  if(s.principal){partes.push({k:'t',txt:'FASE PRINCIPAL',rgb:[37,99,235]},{k:'p',txt:s.principal});}
+  if(s.dibujo&&etParse(s.dibujo)){partes.push({k:'t',txt:'ESQUEMA',rgb:[71,85,105]},{k:'dib',json:s.dibujo,w:150});}
+  if(s.final){partes.push({k:'t',txt:'SITUACION FINAL / PARTIDO',rgb:[194,65,12]},{k:'p',txt:s.final});}
+  const pts=(s.puntos||'').split('\n').map(x=>x.replace(/^\s*[•\-\*]\s*/,'').trim()).filter(Boolean);
+  if(pts.length)partes.push({k:'t',txt:'PUNTOS CLAVE',rgb:[22,163,74]},{k:'lista',items:pts});
+  partes.push({k:'lineas',txt:'ANOTACIONES'});
+  return etPdfGen({right:'SISTEMA '+info.nombre+'  |  SESION '+s.num,filename:'sistema_'+etSlug(info.nombre,10)+'_s'+String(s.num).padStart(2,'0')+'_'+etSlug(s.titulo,24)+'.pdf',partes});
+}
+function sf7WA(id){
+  const s=sfTodas().find(x=>x.id===id);if(!s)return;
+  const info=sf7Info(s);
+  let t=`📐 *${info.nombre} · Sesión ${s.num}*\n*${s.titulo}*\n\n🎯 ${s.objetivo||''}\n⏱ ${s.duracion||75} min${s.categoria?' · '+s.categoria:''}`;
+  if(s.materiales)t+=`\n🎒 ${s.materiales}`;
+  if(s.activacion)t+=`\n\n🔥 *Activación:*\n${s.activacion}`;
+  if(s.principal)t+=`\n\n⚽ *Fase principal:*\n${s.principal}`;
+  if(s.final)t+=`\n\n🏁 *Situación final:*\n${s.final}`;
+  const pts=(s.puntos||'').split('\n').map(x=>x.replace(/^\s*[•\-\*]\s*/,'').trim()).filter(Boolean);
+  if(pts.length)t+=`\n\n✅ *Puntos clave:*\n`+pts.map(p=>'• '+p).join('\n');
+  etWhatsAppTexto(t);
+}
+// Dibujo dentro del formulario de sesión F7
+window._sf7Dib='';
+function sf7RefrescarDib(){
+  const el=document.getElementById('sf7-dibprev');if(!el)return;
+  const j=window._sf7Dib||'';
+  el.innerHTML=(j?etImgHTML(j)+`<button type="button" onclick="window._sf7Dib='';sf7RefrescarDib()" style="border:none;background:none;color:#B91C1C;font-size:11px;cursor:pointer;margin-top:3px">Quitar dibujo</button>`:'');
+  const b=document.getElementById('sf7-dibbtn');if(b)b.textContent=j?'🎨 Editar dibujo':'🎨 Añadir dibujo / esquema';
+}
+
+// ───────────────────────── IDS POR CATEGORÍA ─────────────────────────
+var ET_LOCAL=true;
+function etMismoNombre(a,b){
+  const A=etNorm(a),B=etNorm(b);if(A===B)return true;
+  const ta=new Set(A.split(' ').filter(Boolean)),tb=new Set(B.split(' ').filter(Boolean));
+  if(!ta.size||!tb.size)return false;
+  let i=0;ta.forEach(function(x){if(tb.has(x))i++;});
+  return i/Math.min(ta.size,tb.size)>=0.8||i/(ta.size+tb.size-i)>=0.5;
+}
+var ET_PREF={'Calentamiento':'cal','Físico':'fis','Técnica':'tec','Táctica':'tac','Juego dinámico':'jue','Portero':'por','Otro':'otr'};
+function etSiguienteId(cat,extra){
+  const p=ET_PREF[cat]||'otr',re=new RegExp('^'+p+'-(\\d+)$');let mx=0;
+  const chk=id=>{const m=re.exec(String(id||''));if(m)mx=Math.max(mx,+m[1]);};
+  BIBLIOTECA.forEach(e=>chk(e.id));
+  if(extra)extra.forEach(chk);
+  return p+'-'+String(mx+1).padStart(3,'0');
+}
+function etRenderIds(){
+  const el=document.getElementById('et-ids');if(!el)return;
+  const sin=BIBLIOTECA.filter(e=>!e.id).length;
+  el.innerHTML=`<div style="font-size:10px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">🔢 Siguiente id libre por categoría <span style="font-weight:400;text-transform:none;letter-spacing:0">(toca para copiar)</span></div>
+  <div style="display:flex;gap:6px;flex-wrap:wrap">${ET_CATS.map(c=>{const n=BIBLIOTECA.filter(e=>e.categoria===c).length,id=etSiguienteId(c);
+    return `<button type="button" onclick="etCopiarId('${id}')" style="border:1px solid #E2E8F0;background:white;border-radius:8px;padding:5px 9px;font-size:11px;cursor:pointer;font-family:inherit;color:#334155;border-left:3px solid ${catColor(c)}"><b>${esc(c)}</b> · ${n} · <span style="color:#2563EB;font-weight:700">${id}</span></button>`;}).join('')}</div>
+  ${sin&&!ET_LOCAL?`<div style="margin-top:7px;font-size:11px;color:#92400E">⚠️ ${sin} ejercicio${sin!==1?'s':''} sin id. <button type="button" onclick="etNumerarBib()" style="border:1px solid #FDE68A;background:#FFFBEB;border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;font-family:inherit;color:#92400E;font-weight:700">Numerarlos ahora</button></div>`:''}`;
+}
+function etCopiarId(id){
+  try{navigator.clipboard.writeText(id).then(function(){etToast('📋 '+id+' copiado');},function(){etToast(id);});}catch(e){etToast(id);}
+}
+function etNumerarBib(){
+  const sin=BIBLIOTECA.filter(e=>!e.id);if(!sin.length)return;
+  if(!confirm('Se pondrá un id (cal-001, fis-001…) a los '+sin.length+' ejercicios que no lo tienen, siguiendo el orden actual de la biblioteca. Los demás no cambian. ¿Continuar?'))return;
+  BIBLIOTECA.forEach(e=>{if(!e.id)e.id=etSiguienteId(e.categoria);});
+  save("biblioteca",BIBLIOTECA);renderBiblioteca();etToast('🔢 '+sin.length+' ejercicios numerados');
+}
+
+// ───────────────────────── PIZARRA TÁCTICA (vectorial) ─────────────────────────
+var PIZ=[];
+try{PIZ=JSON.parse(localStorage.getItem('pizarra_v2')||'[]');if(!Array.isArray(PIZ))PIZ=[];}catch(e){PIZ=[];}
+function pizSave(){
+  try{localStorage.setItem('pizarra_v2',JSON.stringify(PIZ));return true;}
+  catch(e){alert('No se pudo guardar la pizarra: el almacenamiento del navegador está lleno. Borra pizarras antiguas.');return false;}
+}
+function pizNueva(f){abrirDibujo('piz','new',f||'campo');}
+function pizEditar(id){abrirDibujo('piz',id);}
+function pizGuardarDesdeEditor(a,json){
+  if(a==='new'){
+    if(!json){return;}
+    const d=new Date(),def='Pizarra '+d.toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit'})+' '+d.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
+    const nom=(prompt('Nombre de la pizarra:',def)||def).trim().slice(0,60)||def;
+    PIZ.unshift({id:Date.now(),nombre:nom,fecha:d.toISOString(),dibujo:json});
+  }else{
+    const p=PIZ.find(x=>x.id===+a);if(!p)return;
+    if(!json){if(confirm('El dibujo está vacío. ¿Eliminar esta pizarra?'))PIZ=PIZ.filter(x=>x.id!==p.id);else return;}
+    else{p.dibujo=json;p.fecha=new Date().toISOString();}
+  }
+  pizSave();pizRender();
+}
+function pizRenombrar(id){
+  const p=PIZ.find(x=>x.id===+id);if(!p)return;
+  const n=prompt('Nombre de la pizarra:',p.nombre);if(n===null)return;
+  p.nombre=(n.trim()||p.nombre).slice(0,60);pizSave();pizRender();
+}
+function pizBorrar(id){
+  const p=PIZ.find(x=>x.id===+id);if(!p)return;
+  if(!confirm('¿Eliminar la pizarra «'+p.nombre+'»?'))return;
+  PIZ=PIZ.filter(x=>x.id!==p.id);pizSave();pizRender();
+}
+function pizFecha(iso){try{return new Date(iso).toLocaleString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});}catch(e){return '';}}
+function pizRender(){
+  const el=document.getElementById('piz-lista');
+  if(el){
+    if(!PIZ.length){el.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:26px;color:#94A3B8"><div style="font-size:38px;margin-bottom:6px">📋</div><div style="font-size:13px;font-weight:600">Aún no tienes pizarras</div><div style="font-size:12px;margin-top:4px">Elige un campo arriba y empieza a dibujar</div></div>';}
+    else{
+      const b='border:1px solid #E2E8F0;background:white;border-radius:7px;padding:5px 8px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;color:#334155';
+      el.innerHTML=PIZ.map(p=>`<div class="card" style="padding:10px;margin-bottom:0">
+        <img src="${etDataURL(p.dibujo,520)}" alt="" onclick="pizEditar(${p.id})" style="width:100%;height:auto;border-radius:8px;display:block;cursor:pointer;border:1px solid #E2E8F0">
+        <div style="font-size:13px;font-weight:700;color:#1e293b;margin:7px 0 1px">${esc(p.nombre)}</div>
+        <div style="font-size:10px;color:#94A3B8;margin-bottom:7px">${pizFecha(p.fecha)}</div>
+        <div style="display:flex;gap:5px;flex-wrap:wrap">
+          <button style="${b}" onclick="pizEditar(${p.id})">✏️ Editar</button>
+          <button style="${b}" onclick="pizPDF(${p.id})">📄 PDF</button>
+          <button style="${b};background:#25D366;color:white;border-color:#25D366" onclick="pizEnviar(${p.id})">📱 Enviar</button>
+          <button style="${b}" onclick="pizRenombrar(${p.id})" title="Cambiar nombre">🏷</button>
+          <button style="${b};color:#B91C1C;border-color:#FECACA" onclick="pizBorrar(${p.id})">🗑</button>
+        </div></div>`).join('');
+    }
+  }
+  renderPzSaved();
+}
+function pizEnviar(id){
+  const p=PIZ.find(x=>x.id===+id);if(!p)return;
+  const u=etDataURL(p.dibujo,1000,'png');if(!u){alert('No se pudo generar la imagen');return;}
+  etCompartirArchivo('pizarra_'+etSlug(p.nombre,30)+'.png','image/png',u.split(',')[1]);
+}
+function pizPDF(id){
+  const p=PIZ.find(x=>x.id===+id);if(!p)return;
+  return etPdfGen({right:'PIZARRA TACTICA',filename:'pizarra_'+etSlug(p.nombre,30)+'.pdf',partes:[
+    {k:'h1',txt:p.nombre},
+    {k:'p',txt:pizFecha(p.fecha),size:9,color:[100,116,139]},
+    {k:'dib',json:p.dibujo,w:(function(){const d=etParse(p.dibujo);return d&&ET_FMT[d.f].w>600?182:130;})()},
+    {k:'lineas',txt:'NOTAS',max:6}
+  ]});
 }
 
 function openPassModal(){
@@ -4963,6 +5208,7 @@ async function clubSync(){
   BIBLIOTECA.forEach((e,i)=>{if(e.id)byId.set(e.id,i);byName.set(_clubKey(e),i);});
   let add=0,upd=0,cambio=false;
   arr.forEach(it=>{
+    if(it&&!it.descripcion&&typeof etMapEj==='function'){const m=etMapEj(it);if(m.it)it=m.it;}
     if(!it||!it.nombre||!it.descripcion||CATS.indexOf(it.categoria)<0)return;
     if(it.id&&del.has(it.id))return;     // el entrenador lo borró a propósito
     const k=_clubKey(it);
