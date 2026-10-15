@@ -2791,7 +2791,7 @@ function saveNewEj(){
   const desc=document.getElementById("ej-desc").value.trim();
   if(!nom||!desc){alert("El nombre y la descripción son obligatorios.");return;}
   const img=document.getElementById("ej-img-prev");
-  BIBLIOTECA.push({nombre:nom,categoria:document.getElementById("ej-cat").value,descripcion:desc,provocacion:document.getElementById("ej-prov").value.trim(),material:document.getElementById("ej-mat").value.trim(),imagen:img.style.display!=="none"?img.src:""});
+  BIBLIOTECA.push({id:etSiguienteId(document.getElementById("ej-cat").value),nombre:nom,categoria:document.getElementById("ej-cat").value,descripcion:desc,provocacion:document.getElementById("ej-prov").value.trim(),material:document.getElementById("ej-mat").value.trim(),imagen:img.style.display!=="none"?img.src:""});
   save("biblioteca",BIBLIOTECA);
   closeModal();renderBiblioteca();
 }
@@ -4844,7 +4844,7 @@ function etMapEj(r){
   if(!desc)err.push('sin descripción/desarrollo');
   if(err.length)return {err,nombre};
   const mat=Array.isArray(r.material)?r.material.join(', '):String(r.material||'');
-  const it={nombre,categoria:cat,descripcion:desc,provocacion:String(r.provocacion||'').trim(),material:mat.trim(),imagen:''};
+  const it={nombre,categoria:cat,descripcion:desc,provocacion:String(r.provocacion||'').trim(),material:mat.trim(),imagen:(typeof r.imagen==='string'&&/^data:image\//.test(r.imagen))?r.imagen:''};
   if(r.id)it.id=String(r.id);
   if(r.etiquetas)it.etiquetas=Array.isArray(r.etiquetas)?r.etiquetas.join(', '):String(r.etiquetas);
   ['edades','jugadores','duracion','origen'].forEach(k=>{if(r[k])it[k]=String(r[k]);});
@@ -4915,7 +4915,7 @@ function etConfirmarImport(){
   const upd=!!(document.getElementById('et-imp-upd')||{}).checked;
   let add=0,act=0;
   _etImp.nuevos.forEach(it=>{BIBLIOTECA.push(it);add++;});
-  if(upd)_etImp.dup.forEach(d=>{const old=BIBLIOTECA[d.idx];{const m=Object.assign({},old,d.it,{imagen:old.imagen||'',dibujo:d.it.dibujo||old.dibujo||''});const nid=old.id||d.it.id;if(nid)m.id=nid;else delete m.id;BIBLIOTECA[d.idx]=m;}act++;});
+  if(upd)_etImp.dup.forEach(d=>{const old=BIBLIOTECA[d.idx];{const m=Object.assign({},old,d.it,{imagen:old.imagen||d.it.imagen||'',dibujo:d.it.dibujo||old.dibujo||''});const nid=old.id||d.it.id;if(nid)m.id=nid;else delete m.id;BIBLIOTECA[d.idx]=m;}act++;});
   const tam=JSON.stringify(BIBLIOTECA).length;
   save("biblioteca",BIBLIOTECA);
   closeModal();renderBiblioteca();
