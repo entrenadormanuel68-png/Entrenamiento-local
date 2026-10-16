@@ -266,6 +266,7 @@ body.role-coach .manager-only-el{opacity:0.3;pointer-events:none;cursor:not-allo
 <!-- ═══════════ RESUMEN ═══════════ -->
 <div id="sec-resumen" class="section active">
   <div id="res-stats" class="g4" style="margin-bottom:16px"></div>
+  <div id="res-comp"></div>
   <div class="g3">
     <div class="card"><div class="card-title">📊 Progreso por Fase</div><div id="res-fases"></div></div>
     <div class="card"><div class="card-title">🏆 Top Jugadores ★</div><div id="res-top"></div></div>
@@ -1190,24 +1191,95 @@ function updateHeader(){
 function getPartidoTotales(p){
   let gf=0,gc=0;
   p.periodos.forEach(pe=>{gf+=pe.goles.filter(g=>!g.esPropio).length;gc+=pe.goles.filter(g=>g.esPropio).length+(pe.golesRival||0);});
+  const _of=_resOficial(p);if(_of){gf=_of.gf;gc=_of.gc;}
   const r=gf>gc?"V":gf===gc?"E":"D";
   return{gf,gc,r,pts:r==="V"?3:r==="E"?1:0};
 }
+
+// ─── Competiciones: puntos y estadísticas separados por tipo de partido ───
+function _resOficial(p){
+  var r=p&&p.resultadoFinal;if(!r||typeof r!=="string")return null;
+  var m=r.split("-");if(m.length!==2||m[0].trim()===""||m[1].trim()===""||isNaN(+m[0])||isNaN(+m[1]))return null;
+  return{gf:+m[0],gc:+m[1]};
+}
+function _partidoJugado(p){
+  if(!p||!p.rival)return false;
+  if(_resOficial(p))return true;
+  return p.periodos.some(function(pe){return pe.goles.length>0||pe.golesRival>0;});
+}
+function statsComp(){
+  var out={};
+  PARTIDOS.forEach(function(p){
+    if(!_partidoJugado(p))return;
+    var k=p.tipo||"Amistoso";
+    var o=out[k]||(out[k]={pj:0,v:0,e:0,d:0,gf:0,gc:0,pts:0});
+    var t=getPartidoTotales(p);
+    o.pj++;o.gf+=t.gf;o.gc+=t.gc;
+    if(t.r==="V"){o.v++;o.pts+=3;}else if(t.r==="E"){o.e++;o.pts+=1;}else o.d++;
+  });
+  return out;
+}
+function compOrden(sc){
+  var base=TCOMP.slice();
+  Object.keys(sc).forEach(function(k){if(base.indexOf(k)<0)base.push(k);});
+  return base;
+}
+function compGuardada(){var v=null;try{v=localStorage.getItem("et_comp");}catch(e){}return v||"auto";}
+function compSel(sc){
+  var g=compGuardada();
+  if(g!=="auto"&&(g==="todos"||sc[g]||TCOMP.indexOf(g)>=0))return g;
+  if(sc["2ª Fase"])return "2ª Fase";
+  if(sc["1ª Fase"])return "1ª Fase";
+  var otros=Object.keys(sc).filter(function(k){return k!=="Amistoso";});
+  return otros.length?otros[0]:"1ª Fase";
+}
+function compNombre(k){return k==="todos"?"Todas":k;}
+function setComp(k){
+  try{localStorage.setItem("et_comp",k);}catch(e){}
+  try{renderResumen();}catch(e){}
+  try{renderPartidos();}catch(e){}
+}
+function compChipsHtml(sc,sel){
+  var g=compGuardada();
+  var chip=function(k,label,act){return '<button data-k="'+String(k).replace(/"/g,"&quot;")+'" onclick="setComp(this.dataset.k)" style="border:1px solid '+(act?"#1E3A5F":"#CBD5E1")+';background:'+(act?"#1E3A5F":"white")+';color:'+(act?"white":"#475569")+';border-radius:16px;padding:5px 11px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap">'+label+'</button>';};
+  var h='<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:12px"><span style="font-size:11px;font-weight:700;color:#64748B">Competición:</span>';
+  h+=chip("auto","Auto",g==="auto");
+  compOrden(sc).forEach(function(k){var n=sc[k]?sc[k].pj:0;h+=chip(k,k+(n?" ("+n+")":""),g!=="auto"&&sel===k);});
+  h+=chip("todos","Todas",g==="todos");
+  return h+'</div>';
+}
+function renderCompCard(id){
+  var el=document.getElementById(id);if(!el)return;
+  var sc=statsComp(),sel=compSel(sc),ks=compOrden(sc).filter(function(k){return sc[k];});
+  var h='<div class="card" style="margin-bottom:16px"><div class="card-title">🏆 Puntos por competición</div>'+compChipsHtml(sc,sel);
+  if(!ks.length){h+='<p style="color:#94A3B8;font-size:12px;text-align:center;padding:12px">Aún no hay partidos jugados.</p>';}
+  else{
+    h+='<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px;min-width:340px"><thead><tr style="color:#64748B;text-align:center"><th style="text-align:left;padding:6px 4px">Competición</th><th>PJ</th><th>V</th><th>E</th><th>D</th><th>GF</th><th>GC</th><th>Pts</th></tr></thead><tbody>';
+    ks.forEach(function(k){
+      var o=sc[k],am=(k==="Amistoso"),act=(sel===k||sel==="todos");
+      h+='<tr style="text-align:center;border-top:1px solid #E2E8F0;'+(act?'background:#EFF6FF;font-weight:700;':'')+(am?'color:#64748B;':'')+'"><td style="text-align:left;padding:7px 4px">'+esc(k)+(am?' <span style="font-size:10px;font-weight:400">(no puntúa en liga)</span>':'')+'</td><td>'+o.pj+'</td><td>'+o.v+'</td><td>'+o.e+'</td><td>'+o.d+'</td><td>'+o.gf+'</td><td>'+o.gc+'</td><td style="font-weight:800;color:'+(am?'#94A3B8':'#1E3A5F')+'">'+(am?'—':o.pts)+'</td></tr>';
+    });
+    h+='</tbody></table></div>';
+  }
+  el.innerHTML=h+'</div>';
+}
+
 function renderResumen(){
   const comp=SESIONES.filter(s=>s.completada).length;
   const pct=Math.round(comp/150*100);
-  const jugados=PARTIDOS.filter(p=>p.rival&&p.periodos.some(pe=>pe.goles.length>0||pe.golesRival>0));
-  let pts=0,pg=0,pe=0,pp=0,gf=0,gc=0;
-  jugados.forEach(p=>{const t=getPartidoTotales(p);if(t.r==="V"){pg++;pts+=3;}else if(t.r==="E"){pe++;pts++;}else pp++;gf+=t.gf;gc+=t.gc;});
+  const _sc=statsComp(),_sel=compSel(_sc);
+  let pts=0,pg=0,pe=0,pp=0,gf=0,gc=0,njug=0;
+  (_sel==="todos"?Object.keys(_sc):[_sel]).forEach(k=>{const o=_sc[k];if(!o)return;pts+=o.pts;pg+=o.v;pe+=o.e;pp+=o.d;gf+=o.gf;gc+=o.gc;njug+=o.pj;});
   const gd=gf-gc;
   const mEq=()=>{const v=JUGADORES.flatMap(j=>PEVAL.flatMap(p=>Object.values(j.evaluaciones[p]||{}).filter(x=>x>0)));return v.length?(v.reduce((a,b)=>a+b,0)/v.length).toFixed(1):"—";};
 
   document.getElementById("res-stats").innerHTML=[
     [comp+"/150","Sesiones completadas",pct+"% temporada","#16A34A"],
-    [pts,"Puntos liga",`${pg}V ${pe}E ${pp}D`,"#1E3A5F"],
+    [pts,"Puntos · "+compNombre(_sel),`${pg}V ${pe}E ${pp}D`,"#1E3A5F"],
     [mEq(),"Media equipo ★","Evaluación /5","#F97316"],
     [CLUB.sistema||"—","Sistema",`Variante: ${CLUB.variante||"—"}`,"#7C3AED"]
   ].map(([v,l,s,c])=>`<div class="statbox"><div class="val" style="color:${c}">${v}</div><div class="lbl">${l}</div><div class="sub">${s}</div></div>`).join("");
+  renderCompCard("res-comp");
 
   let fasesHtml="";
   Object.entries(FASES).forEach(([f,fi])=>{
@@ -1771,17 +1843,17 @@ function updSesFecha(num,v){const s=SESIONES.find(x=>x.num===num);if(s){s.fechaR
 // ═══════════════════════════════════════════════════════════════
 function renderPartidos(){
   if(partidoAbierto!==null){renderPartidoDetalle();return;}
-  const jugados=PARTIDOS.filter(p=>p.rival&&p.periodos.some(pe=>pe.goles.length>0||pe.golesRival>0));
-  let pts=0,pg=0,pe=0,pp=0,gf=0,gc=0;
-  jugados.forEach(p=>{const t=getPartidoTotales(p);if(t.r==="V"){pg++;pts+=3;}else if(t.r==="E"){pe++;pts++;}else pp++;gf+=t.gf;gc+=t.gc;});
+  const _sc=statsComp(),_sel=compSel(_sc);
+  let pts=0,pg=0,pe=0,pp=0,gf=0,gc=0,njug=0;
+  (_sel==="todos"?Object.keys(_sc):[_sel]).forEach(k=>{const o=_sc[k];if(!o)return;pts+=o.pts;pg+=o.v;pe+=o.e;pp+=o.d;gf+=o.gf;gc+=o.gc;njug+=o.pj;});
   const gd=gf-gc;
-  let html=`<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:16px">
-    ${[["PTS",pts,"#1E3A5F"],["PJ",jugados.length,"#374151"],["PG",pg,"#16A34A"],["PE",pe,"#D97706"],["PP",pp,"#DC2626"],["GF",gf,"#2563EB"],["GD",(gd>=0?"+":"")+gd,"#7C3AED"]].map(([l,v,c])=>`
+  let html=compChipsHtml(_sc,_sel)+`<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:16px">
+    ${[["PTS",pts,"#1E3A5F"],["PJ",njug,"#374151"],["PG",pg,"#16A34A"],["PE",pe,"#D97706"],["PP",pp,"#DC2626"],["GF",gf,"#2563EB"],["GD",(gd>=0?"+":"")+gd,"#7C3AED"]].map(([l,v,c])=>`
       <div class="statbox"><div class="val" style="color:${c};font-size:20px">${v}</div><div class="lbl">${l}</div></div>`).join("")}
   </div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">`;
   PARTIDOS.forEach(p=>{
-    const hasData=p.rival&&p.periodos.some(pe=>pe.goles.length>0||pe.golesRival>0);
+    const hasData=_partidoJugado(p);
     const t=hasData?getPartidoTotales(p):null;
     const rCol=t?(t.r==="V"?"#16A34A":t.r==="E"?"#D97706":"#DC2626"):"#E2E8F0";
     const rBg=t?(t.r==="V"?"#DCFCE7":t.r==="E"?"#FEF3C7":"#FEE2E2"):"#F8FAFC";
@@ -5874,7 +5946,13 @@ window.addEventListener('beforeinstallprompt',function(e){
   var b=document.getElementById('btn-instalar-app');if(b)b.style.display='';
 });
 window.addEventListener('appinstalled',function(){_ev=null;var b=document.getElementById('btn-instalar-app');if(b)b.style.display='none';});
+var _esIOS=/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+var _yaApp=!!(window.navigator.standalone)||(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches);
+var _esNat=!!(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform());
+// iOS no dispara beforeinstallprompt: mostramos el botón con instrucciones manuales
+if(_esIOS&&!_yaApp&&!_esNat){var _b=document.getElementById('btn-instalar-app');if(_b)_b.style.display='';}
 window.instalarApp=function(){
+  if(_esIOS&&!_ev){alert('Para instalarla en iPhone/iPad:\n\n1. Ábrela en Safari.\n2. Pulsa el botón Compartir (cuadrado con flecha hacia arriba).\n3. Elige «Añadir a pantalla de inicio» y confirma.');return;}
   if(!_ev){alert('Para instalarla: abre el menú del navegador (⋮) y pulsa «Instalar aplicación» o «Añadir a pantalla de inicio».');return;}
   _ev.prompt();_ev.userChoice.finally(function(){_ev=null;var b=document.getElementById('btn-instalar-app');if(b)b.style.display='none';});
 };
