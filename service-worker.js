@@ -1,7 +1,7 @@
 // Entrenamiento Total — service worker
 // Páginas y archivos propios: primero la red (así siempre ves la última versión) y, sin conexión, la copia guardada.
 // Si cambias algo en la lógica de caché, sube el número de VERSION.
-var VERSION='et-v1';
+var VERSION='et-v2';
 var SHELL=['./','./index.html','./manifest.json','./icon-192.png','./icon-512.png','./icon-maskable-512.png'];
 
 self.addEventListener('install',function(e){
