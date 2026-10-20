@@ -2877,10 +2877,16 @@ function openAddEj(){
     <button class="btn btn-orange" onclick="saveNewEj()" style="width:100%;justify-content:center;margin-top:4px">Guardar ejercicio</button>`;
   document.getElementById("modal-overlay").classList.add("open");
 }
+function quitarImgEj(){
+  const img=document.getElementById("ej-img-prev");if(!img)return;
+  img.removeAttribute("src");img.style.display="none";img.dataset.quitar="1";
+  const inp=document.getElementById("ej-img");if(inp)inp.value="";
+  const b=document.getElementById("ej-img-quitar");if(b)b.style.display="none";
+}
 function previewImg(input){
   const file=input.files[0];if(!file)return;
   const reader=new FileReader();
-  reader.onload=e=>{const img=document.getElementById("ej-img-prev");img.src=e.target.result;img.style.display="block";};
+  reader.onload=e=>{const img=document.getElementById("ej-img-prev");img.src=e.target.result;img.style.display="block";img.dataset.quitar="";const b=document.getElementById("ej-img-quitar");if(b)b.style.display="";};
   reader.readAsDataURL(file);
 }
 function saveNewEj(){
@@ -2916,6 +2922,7 @@ function editBib(i){
     <div class="field"><label>Material necesario</label><input id="ej-mat" placeholder="Conos, balones, porterías…" value="${esc(e.material||'')}"></div>
     <div class="field"><label>Imagen (opcional — dejar vacío para mantener la actual)</label><input type="file" id="ej-img" accept="image/*" onchange="previewImg(this)"></div>
     <img id="ej-img-prev" style="${e.imagen?'display:block':'display:none'};max-width:100%;max-height:150px;border-radius:8px;margin-bottom:10px;object-fit:contain" src="${e.imagen||''}">
+    <button type="button" id="ej-img-quitar" class="btn btn-ghost btn-sm" onclick="quitarImgEj()" style="margin-bottom:10px;${e.imagen?'':'display:none'}">🗑 Quitar imagen</button>
     <button class="btn btn-orange" onclick="saveEditEj(${i})" style="width:100%;justify-content:center;margin-top:4px">💾 Guardar cambios</button>`;
   document.getElementById("modal-overlay").classList.add("open");
 }
@@ -2932,7 +2939,7 @@ function saveEditEj(i){
     descripcion:desc,
     provocacion:document.getElementById("ej-prov").value.trim(),
     material:document.getElementById("ej-mat").value.trim(),
-    imagen:nuevaImg||BIBLIOTECA[i].imagen||"",
+    imagen:imgEl.dataset.quitar==="1"?"":(nuevaImg||BIBLIOTECA[i].imagen||""),
     editado:true
   };
   save("biblioteca",BIBLIOTECA);
@@ -5435,7 +5442,8 @@ async function clubSync(){
     if(!loc.dibujo&&it.dibujo){loc.dibujo=it.dibujo;cambio=true;}
     // Corrección del club: solo si sube "rev" y el entrenador no lo ha editado
     if((!loc.editado||it.forzar)&&(+it.rev||0)>(+loc.rev||0)){
-      BIBLIOTECA[idx]=Object.assign({},loc,it,{imagen:it.imagen||loc.imagen||'',dibujo:it.dibujo||loc.dibujo||''});
+      BIBLIOTECA[idx]=Object.assign({},loc,it,it.forzar?{imagen:it.imagen||'',dibujo:it.dibujo||''}:{imagen:it.imagen||loc.imagen||'',dibujo:it.dibujo||loc.dibujo||''});
+      delete BIBLIOTECA[idx].forzar;
       upd++;cambio=true;
     }
   });
