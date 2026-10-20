@@ -5434,7 +5434,7 @@ async function clubSync(){
     if(!loc.imagen&&it.imagen){loc.imagen=it.imagen;cambio=true;}
     if(!loc.dibujo&&it.dibujo){loc.dibujo=it.dibujo;cambio=true;}
     // Corrección del club: solo si sube "rev" y el entrenador no lo ha editado
-    if(!loc.editado&&(+it.rev||0)>(+loc.rev||0)){
+    if((!loc.editado||it.forzar)&&(+it.rev||0)>(+loc.rev||0)){
       BIBLIOTECA[idx]=Object.assign({},loc,it,{imagen:it.imagen||loc.imagen||'',dibujo:it.dibujo||loc.dibujo||''});
       upd++;cambio=true;
     }
