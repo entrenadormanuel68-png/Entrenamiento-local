@@ -690,7 +690,7 @@ body.role-coach .manager-only-el{opacity:0.3;pointer-events:none;cursor:not-allo
     <div class="field"><label>Situación Final / Partido</label><textarea id="sf7-f-final" rows="2" placeholder="Partido condicionado, reglas especiales..." style="width:100%;border:1px solid #E2E8F0;border-radius:8px;padding:8px 11px;font-size:13px;outline:none;background:#FAFAFA;resize:vertical"></textarea></div>
     <div class="field"><label>Puntos Clave</label><textarea id="sf7-f-puntos" rows="2" placeholder="• Punto 1&#10;• Punto 2&#10;• Punto 3" style="width:100%;border:1px solid #E2E8F0;border-radius:8px;padding:8px 11px;font-size:13px;outline:none;background:#FAFAFA;resize:vertical"></textarea></div>
     <div class="field"><label>Materiales</label><input type="text" id="sf7-f-materiales" placeholder="Conos, petos, porterías pequeñas..." style="width:100%;border:1px solid #E2E8F0;border-radius:8px;padding:8px 11px;font-size:13px;outline:none;background:#FAFAFA"></div>
-    <div style="margin-top:10px"><div id="sf7-dibprev"></div><button type="button" id="sf7-dibbtn" onclick="abrirDibujo('sf7',0,0)" style="margin-top:6px;border:1px solid #BFDBFE;background:#EFF6FF;color:#2563EB;border-radius:7px;font-size:12px;font-weight:700;padding:6px 11px;cursor:pointer;font-family:inherit">🎨 Añadir dibujo / esquema</button></div>
+    <div style="margin-top:10px"><div id="sf7-dibprev"></div><button type="button" id="sf7-dibbtn" onclick="abrirDibujo('sf7',0,0)" style="margin-top:6px;border:1px solid #BFDBFE;background:#EFF6FF;color:#2563EB;border-radius:7px;font-size:12px;font-weight:700;padding:6px 11px;cursor:pointer;font-family:inherit">🎨 Añadir dibujo / esquema</button> <button type="button" onclick="abrirPickerPiz('sf7',0)" style="margin-top:6px;border:1px solid #DDD6FE;background:#F5F3FF;color:#6D28D9;border-radius:7px;font-size:12px;font-weight:700;padding:6px 11px;cursor:pointer;font-family:inherit">🎨 Usar una pizarra</button></div>
     <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
       <button class="btn btn-ghost" onclick="sfCerrarModal()">Cancelar</button>
       <button class="btn btn-primary" onclick="sfGuardarSesion()">💾 Guardar Sesión</button>
@@ -773,7 +773,7 @@ body.role-coach .manager-only-el{opacity:0.3;pointer-events:none;cursor:not-allo
           <span style="font-size:11px;color:#94A3B8;font-weight:600">min</span>
         </div>
       </div>
-      <button type="button" onclick="abrirPickerBib('mses',1)" style="border:1px solid #BFDBFE;background:#EFF6FF;color:#2563EB;border-radius:6px;font-size:11px;font-weight:700;padding:4px 9px;cursor:pointer;margin-bottom:6px">📚 Elegir de la biblioteca</button> <button type="button" onclick="abrirDibujo('mses',1)" style="border:1px solid #BBF7D0;background:#F0FDF4;color:#16A34A;border-radius:6px;font-size:11px;font-weight:700;padding:4px 9px;cursor:pointer;margin-bottom:6px">🎨 Dibujo</button>
+      <button type="button" onclick="abrirPickerBib('mses',1)" style="border:1px solid #BFDBFE;background:#EFF6FF;color:#2563EB;border-radius:6px;font-size:11px;font-weight:700;padding:4px 9px;cursor:pointer;margin-bottom:6px">📚 Elegir de la biblioteca</button> <button type="button" onclick="abrirDibujo('mses',1)" style="border:1px solid #BBF7D0;background:#F0FDF4;color:#16A34A;border-radius:6px;font-size:11px;font-weight:700;padding:4px 9px;cursor:pointer;margin-bottom:6px">🎨 Dibujo</button> <button type="button" onclick="abrirPickerPiz('mses',1)" style="border:1px solid #DDD6FE;background:#F5F3FF;color:#6D28D9;border-radius:6px;font-size:11px;font-weight:700;padding:4px 9px;cursor:pointer;margin-bottom:6px">🎨 Usar una pizarra</button>
       <div id="mses-ej1-dibprev"></div>
       <input id="mses-ej1-nom" placeholder="Nombre del ejercicio" style="width:100%;border:1px solid #E2E8F0;border-radius:7px;padding:7px 9px;font-size:12px;outline:none;margin-bottom:5px;box-sizing:border-box">
       <textarea id="mses-ej1-desc" rows="2" placeholder="Descripción, espacio, jugadores..." style="width:100%;border:1px solid #E2E8F0;border-radius:7px;padding:7px 9px;font-size:12px;outline:none;resize:none;font-family:inherit;margin-bottom:5px;box-sizing:border-box"></textarea>
@@ -789,7 +789,7 @@ body.role-coach .manager-only-el{opacity:0.3;pointer-events:none;cursor:not-allo
           <span style="font-size:11px;color:#94A3B8;font-weight:600">min</span>
         </div>
       </div>
-      <button type="button" onclick="abrirPickerBib('mses',2)" style="border:1px solid #BFDBFE;background:#EFF6FF;color:#2563EB;border-radius:6px;font-size:11px;font-weight:700;padding:4px 9px;cursor:pointer;margin-bottom:6px">📚 Elegir de la biblioteca</button> <button type="button" onclick="abrirDibujo('mses',2)" style="border:1px solid #BBF7D0;background:#F0FDF4;color:#16A34A;border-radius:6px;font-size:11px;font-weight:700;padding:4px 9px;cursor:pointer;margin-bottom:6px">🎨 Dibujo</button>
+      <button type="button" onclick="abrirPickerBib('mses',2)" style="border:1px solid #BFDBFE;background:#EFF6FF;color:#2563EB;border-radius:6px;font-size:11px;font-weight:700;padding:4px 9px;cursor:pointer;margin-bottom:6px">📚 Elegir de la biblioteca</button> <button type="button" onclick="abrirDibujo('mses',2)" style="border:1px solid #BBF7D0;background:#F0FDF4;color:#16A34A;border-radius:6px;font-size:11px;font-weight:700;padding:4px 9px;cursor:pointer;margin-bottom:6px">🎨 Dibujo</button> <button type="button" onclick="abrirPickerPiz('mses',2)" style="border:1px solid #DDD6FE;background:#F5F3FF;color:#6D28D9;border-radius:6px;font-size:11px;font-weight:700;padding:4px 9px;cursor:pointer;margin-bottom:6px">🎨 Usar una pizarra</button>
       <div id="mses-ej2-dibprev"></div>
       <input id="mses-ej2-nom" placeholder="Nombre del ejercicio" style="width:100%;border:1px solid #E2E8F0;border-radius:7px;padding:7px 9px;font-size:12px;outline:none;margin-bottom:5px;box-sizing:border-box">
       <textarea id="mses-ej2-desc" rows="2" placeholder="Descripción, espacio, jugadores..." style="width:100%;border:1px solid #E2E8F0;border-radius:7px;padding:7px 9px;font-size:12px;outline:none;resize:none;font-family:inherit;margin-bottom:5px;box-sizing:border-box"></textarea>
@@ -805,7 +805,7 @@ body.role-coach .manager-only-el{opacity:0.3;pointer-events:none;cursor:not-allo
           <span style="font-size:11px;color:#94A3B8;font-weight:600">min</span>
         </div>
       </div>
-      <button type="button" onclick="abrirPickerBib('mses',3)" style="border:1px solid #BFDBFE;background:#EFF6FF;color:#2563EB;border-radius:6px;font-size:11px;font-weight:700;padding:4px 9px;cursor:pointer;margin-bottom:6px">📚 Elegir de la biblioteca</button> <button type="button" onclick="abrirDibujo('mses',3)" style="border:1px solid #BBF7D0;background:#F0FDF4;color:#16A34A;border-radius:6px;font-size:11px;font-weight:700;padding:4px 9px;cursor:pointer;margin-bottom:6px">🎨 Dibujo</button>
+      <button type="button" onclick="abrirPickerBib('mses',3)" style="border:1px solid #BFDBFE;background:#EFF6FF;color:#2563EB;border-radius:6px;font-size:11px;font-weight:700;padding:4px 9px;cursor:pointer;margin-bottom:6px">📚 Elegir de la biblioteca</button> <button type="button" onclick="abrirDibujo('mses',3)" style="border:1px solid #BBF7D0;background:#F0FDF4;color:#16A34A;border-radius:6px;font-size:11px;font-weight:700;padding:4px 9px;cursor:pointer;margin-bottom:6px">🎨 Dibujo</button> <button type="button" onclick="abrirPickerPiz('mses',3)" style="border:1px solid #DDD6FE;background:#F5F3FF;color:#6D28D9;border-radius:6px;font-size:11px;font-weight:700;padding:4px 9px;cursor:pointer;margin-bottom:6px">🎨 Usar una pizarra</button>
       <div id="mses-ej3-dibprev"></div>
       <input id="mses-ej3-nom" placeholder="Nombre del ejercicio" style="width:100%;border:1px solid #E2E8F0;border-radius:7px;padding:7px 9px;font-size:12px;outline:none;margin-bottom:5px;box-sizing:border-box">
       <textarea id="mses-ej3-desc" rows="2" placeholder="Descripción, espacio, jugadores..." style="width:100%;border:1px solid #E2E8F0;border-radius:7px;padding:7px 9px;font-size:12px;outline:none;resize:none;font-family:inherit;margin-bottom:5px;box-sizing:border-box"></textarea>
@@ -2840,6 +2840,7 @@ function renderBiblioteca(){
         </div>
         <div style="display:flex;gap:4px">
           <button onclick="abrirDibujo('bib',${BIBLIOTECA.indexOf(e)})" title="Dibujo del ejercicio" style="border:none;background:#F0FDF4;color:#16A34A;cursor:pointer;font-size:13px;padding:3px 7px;border-radius:5px">🎨</button>
+          <button onclick="abrirPickerPiz('bib',${BIBLIOTECA.indexOf(e)})" title="Usar una pizarra guardada" style="border:none;background:#F5F3FF;color:#6D28D9;cursor:pointer;font-size:13px;padding:3px 7px;border-radius:5px">📋</button>
           <button onclick="editBib(${BIBLIOTECA.indexOf(e)})" title="Editar" style="border:none;background:#EFF6FF;color:#2563EB;cursor:pointer;font-size:13px;padding:3px 7px;border-radius:5px">✏️</button>
           <button onclick="delBib(${BIBLIOTECA.indexOf(e)})" title="Eliminar" style="border:none;background:none;cursor:pointer;color:#94A3B8;font-size:14px;padding:3px 6px">✕</button>
         </div>
@@ -4589,7 +4590,7 @@ function etImgHTML(json){
 function etDibBloque(kind,id,n,json){
   const has=!!etParse(json);
   const b='border:1px solid #BFDBFE;background:#EFF6FF;color:#2563EB;border-radius:6px;font-size:11px;font-weight:700;padding:4px 9px;cursor:pointer;font-family:inherit';
-  return `<div style="margin-top:8px">${has?etImgHTML(json):''}<div style="display:flex;gap:6px;margin-top:6px"><button type="button" style="${b}" onclick="abrirDibujo('${kind}','${id}',${n})">🎨 ${has?'Editar dibujo':'Añadir dibujo'}</button></div></div>`;
+  return `<div style="margin-top:8px">${has?etImgHTML(json):''}<div style="display:flex;gap:6px;margin-top:6px"><button type="button" style="${b}" onclick="abrirDibujo('${kind}','${id}',${n})">🎨 ${has?'Editar dibujo':'Añadir dibujo'}</button>${kind==='ses'?`<button type="button" style="${b.replace('#BFDBFE','#DDD6FE').replace('#EFF6FF','#F5F3FF').replace('#2563EB','#6D28D9')}" onclick="abrirPickerPiz('ses',${n})">🎨 Usar una pizarra</button>`:''}</div></div>`;
 }
 var _etEd=null;
 function abrirDibujo(kind,a,b){
@@ -5206,6 +5207,63 @@ function etNumerarBib(){
   save("biblioteca",BIBLIOTECA);renderBiblioteca();etToast('🔢 '+sin.length+' ejercicios numerados');
 }
 
+// ───────────────────────── PIZARRA → EJERCICIO (copia independiente) ─────────────────────────
+var _pizCtx=null;
+function abrirPickerPiz(kind,n){
+  _pizCtx={kind:kind,n:+n};
+  let ov=document.getElementById('picker-piz-ov');
+  if(!ov){
+    ov=document.createElement('div');ov.id='picker-piz-ov';
+    ov.style.cssText='position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:3100;display:flex;align-items:center;justify-content:center;padding:14px';
+    ov.onclick=e=>{if(e.target===ov)cerrarPickerPiz();};
+    document.body.appendChild(ov);
+  }
+  ov.style.display='flex';
+  ov.innerHTML=`<div style="background:white;border-radius:14px;width:100%;max-width:560px;max-height:88vh;display:flex;flex-direction:column;overflow:hidden">
+    <div style="padding:14px 16px;border-bottom:1px solid #E2E8F0;display:flex;justify-content:space-between;align-items:center">
+      <div style="font-weight:800;font-size:15px">🎨 Elegir una pizarra</div>
+      <button onclick="cerrarPickerPiz()" style="border:none;background:none;font-size:18px;cursor:pointer;color:#64748B">✕</button>
+    </div>
+    <div style="padding:10px 16px;border-bottom:1px solid #F1F5F9"><input id="picker-piz-q" oninput="renderPickerPiz()" placeholder="Buscar por nombre…" style="width:100%;box-sizing:border-box;border:1px solid #E2E8F0;border-radius:7px;padding:7px 9px;font-size:13px;outline:none"></div>
+    <div id="picker-piz-list" style="overflow-y:auto;padding:10px 16px;flex:1;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:9px;align-content:start"></div>
+    <div style="padding:8px 16px;font-size:10px;color:#94A3B8;border-top:1px solid #F1F5F9">Se copia el dibujo al ejercicio: después puedes editarlo sin cambiar la pizarra guardada.</div>
+  </div>`;
+  renderPickerPiz();
+  setTimeout(()=>{const q=document.getElementById('picker-piz-q');if(q)q.focus();},50);
+}
+function renderPickerPiz(){
+  const el=document.getElementById('picker-piz-list');if(!el)return;
+  const q=(document.getElementById('picker-piz-q')?.value||'').toLowerCase().trim();
+  const res=PIZ.filter(p=>p&&p.dibujo&&(!q||(p.nombre||'').toLowerCase().includes(q)));
+  if(!res.length){el.innerHTML='<div style="grid-column:1/-1;text-align:center;color:#94A3B8;padding:24px;font-size:13px">'+(PIZ.length?'Sin resultados':'Aún no tienes pizarras guardadas. Créalas en la sección Pizarra.')+'</div>';return;}
+  el.innerHTML=res.slice(0,60).map(p=>`<div onclick="elegirPizarra(${p.id})" style="border:1px solid #E2E8F0;border-radius:9px;padding:6px;cursor:pointer;background:white">
+    <img src="${etDataURL(p.dibujo,300)}" alt="" style="width:100%;height:auto;border-radius:6px;display:block">
+    <div style="font-size:12px;font-weight:700;color:#1e293b;margin-top:5px;line-height:1.3">${esc(p.nombre)}</div></div>`).join('');
+}
+function cerrarPickerPiz(){const ov=document.getElementById('picker-piz-ov');if(ov){ov.style.display='none';ov.innerHTML='';}_pizCtx=null;}
+function elegirPizarra(id){
+  const p=PIZ.find(x=>x.id===+id);if(!p||!_pizCtx)return;
+  const {kind,n}=_pizCtx,dib=p.dibujo;
+  const pisa=(actual)=>!actual||confirm('Este ejercicio ya tiene un dibujo. ¿Sustituirlo por la pizarra «'+p.nombre+'»?');
+  if(kind==='mses'){
+    if(!pisa((window._msesDib||{})[n]))return;
+    (window._msesDib=window._msesDib||{})[n]=dib;etRefrescarMsesDib();
+  }else if(kind==='sf7'){
+    if(!pisa(window._sf7Dib))return;
+    window._sf7Dib=dib;sf7RefrescarDib();
+  }else if(kind==='ses'){
+    const s=SESIONES.find(x=>x.num===sesionAbierta);if(!s)return;
+    if(!pisa(s['ej'+n+'_dib']))return;
+    s['ej'+n+'_dib']=dib;save("sesiones",SESIONES);renderSesionDetalle();
+  }else if(kind==='bib'){
+    const e=BIBLIOTECA[n];if(!e)return;
+    if(!pisa(e.dibujo))return;
+    e.dibujo=dib;e.editado=true;save("biblioteca",BIBLIOTECA);renderBiblioteca();
+  }
+  cerrarPickerPiz();
+  etToast('🎨 Pizarra «'+p.nombre+'» añadida');
+}
+
 // ───────────────────────── PIZARRA TÁCTICA (vectorial) ─────────────────────────
 var PIZ=[];
 try{PIZ=JSON.parse(localStorage.getItem('pizarra_v2')||'[]');if(!Array.isArray(PIZ))PIZ=[];}catch(e){PIZ=[];}
@@ -5357,6 +5415,42 @@ async function clubSync(){
   try{etToast('📚 Biblioteca del club: '+add+' nuevos'+(upd?', '+upd+' actualizados':''));}catch(e){}
 }
 document.addEventListener('DOMContentLoaded',()=>{setTimeout(clubSync,600);});
+
+// ═══════════ PIZARRAS DEL CLUB — carga automática desde pizarras.json ═══════════
+function _pizKey(n){return String(n||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,' ').trim();}
+function _pizVistas(){try{return new Set(JSON.parse(localStorage.getItem('pizarra_sync_vistas')||'[]'));}catch(e){return new Set();}}
+async function pizSync(){
+  let data=null;
+  for(const base of CLUB_LIB_BASES){
+    try{
+      const r=await fetch(base+'pizarras.json',{cache:'no-cache'});
+      if(!r.ok)continue;
+      data=await r.json();break;
+    }catch(e){}
+  }
+  if(!data)return;                       // sin conexión o sin archivo: se usan las pizarras locales
+  const arr=Array.isArray(data)?data:(data&&Array.isArray(data.pizarras)?data.pizarras:[]);
+  if(!arr.length)return;
+  const vistas=_pizVistas(),presentes=new Set(PIZ.map(p=>_pizKey(p.nombre)));
+  const nuevas=[];
+  arr.slice(0,200).forEach(o=>{
+    if(!o||typeof o!=='object'||!o.dibujo)return;
+    const nom=String(o.nombre||'Pizarra del club').slice(0,60),k=_pizKey(nom);
+    if(vistas.has(k)||presentes.has(k))return;    // ya importada antes (aunque la hayas borrado o renombrado)
+    const j=etSanDibujo(o.dibujo);if(!j)return;
+    vistas.add(k);presentes.add(k);
+    nuevas.push({nombre:nom,fecha:(o.fecha&&!isNaN(new Date(o.fecha)))?new Date(o.fecha).toISOString():new Date().toISOString(),dibujo:j});
+  });
+  try{localStorage.setItem('pizarra_sync_vistas',JSON.stringify([...vistas]));}catch(e){}
+  if(!nuevas.length)return;
+  const t=Date.now();
+  nuevas.reverse().forEach((x,i)=>PIZ.unshift({id:t+i,nombre:x.nombre,fecha:x.fecha,dibujo:x.dibujo}));
+  if(pizSave()){
+    try{pizRender();}catch(e){}
+    try{etToast('🎨 Pizarras del club: '+nuevas.length+' nuevas');}catch(e){}
+  }
+}
+document.addEventListener('DOMContentLoaded',()=>{setTimeout(pizSync,1200);});
 </script>
 <script>
 // ═══════════ INDICADOR DE ESPACIO (Biblioteca) ═══════════
