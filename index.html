@@ -632,6 +632,8 @@ body.role-coach .manager-only-el{opacity:0.3;pointer-events:none;cursor:not-allo
       <option value="PRE-PARTIDO">PRE-PARTIDO</option>
     </select>
     <span id="mses-count" style="font-size:11px;color:#94A3B8;white-space:nowrap"></span>
+    <button class="btn btn-ghost btn-sm" onclick="msesExportar()" title="Guardar todas tus sesiones en un archivo">📤 Exportar</button>
+    <button class="btn btn-ghost btn-sm" onclick="msesImportar()" title="Añadir sesiones desde un archivo">📥 Importar</button>
   </div>
   <div id="mses-lista" class="g3"></div>
   <div id="mses-detalle" style="display:none"></div>
@@ -6397,6 +6399,44 @@ if(nb&&!document.getElementById('piz-imp')){
 }
 try{W.pizRender();}catch(e){}
 })();
+</script>
+<script>
+// ═══════════ MIS SESIONES: exportar / importar (para pasar sesiones entre web y APK) ═══════════
+function msesExportar(){
+  try{
+    if(!SES_LIBRES||!SES_LIBRES.length){alert('Aún no hay sesiones en «Mis Sesiones» para exportar.');return;}
+    var d={app:'EntrenamientoTotal',tipo:'mis_sesiones',v:1,fecha:new Date().toISOString(),sesiones:SES_LIBRES};
+    var f=new Date().toISOString().slice(0,10);
+    etEntregar('mis_sesiones_'+f+'.json','application/json',etB64Texto(JSON.stringify(d)));
+    etToast('📤 '+SES_LIBRES.length+' sesión'+(SES_LIBRES.length!==1?'es':'')+' exportada'+(SES_LIBRES.length!==1?'s':''));
+  }catch(e){alert('No se pudo exportar: '+(e&&e.message?e.message:e));}
+}
+function msesImportar(){
+  var i=document.getElementById('mses-imp-file');
+  if(!i){i=document.createElement('input');i.type='file';i.id='mses-imp-file';i.accept='.json,application/json';i.style.display='none';i.onchange=msesLeerArchivo;document.body.appendChild(i);}
+  i.value='';i.click();
+}
+async function msesLeerArchivo(ev){
+  var f=ev&&ev.target&&ev.target.files&&ev.target.files[0];if(!f)return;
+  try{
+    var o=JSON.parse(await f.text());
+    var arr=Array.isArray(o)?o:(o&&Array.isArray(o.sesiones)?o.sesiones:(o&&o.datos&&Array.isArray(o.datos.ses_libres)?o.datos.ses_libres:null));
+    if(!arr){alert('Este archivo no contiene sesiones de «Mis Sesiones».');return;}
+    var ok=arr.filter(function(s){return s&&typeof s==='object'&&s.id!=null&&typeof s.tema==='string'&&s.tema.trim();});
+    if(!ok.length){alert('No se encontró ninguna sesión válida en el archivo.');return;}
+    var pos=new Map();SES_LIBRES.forEach(function(s,k){pos.set(s.id,k);});
+    var nuevas=ok.filter(function(s){return !pos.has(s.id);});
+    var existentes=ok.filter(function(s){return pos.has(s.id);});
+    var act=0;
+    if(existentes.length&&confirm(existentes.length+' sesión'+(existentes.length!==1?'es ya existen':' ya existe')+' aquí.\n¿Sustituir por la versión del archivo?\n\nAceptar = sustituir · Cancelar = dejarlas como están')){
+      existentes.forEach(function(s){SES_LIBRES[pos.get(s.id)]=s;act++;});
+    }
+    SES_LIBRES=nuevas.concat(SES_LIBRES);
+    saveSesLibres();
+    try{renderMisSesiones();}catch(e){}
+    etToast('📥 '+nuevas.length+' añadida'+(nuevas.length!==1?'s':'')+(act?', '+act+' sustituida'+(act!==1?'s':''):''));
+  }catch(e){alert('No se pudo importar: '+(e&&e.message?e.message:e));}
+}
 </script>
 </body>
 </html>
