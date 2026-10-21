@@ -762,6 +762,7 @@ body.role-coach .manager-only-el{opacity:0.3;pointer-events:none;cursor:not-allo
       </div>
       <button type="button" onclick="abrirPickerBib('mses',0)" style="border:1px solid #FED7AA;background:#FFF7ED;color:#C2410C;border-radius:6px;font-size:11px;font-weight:700;padding:4px 9px;cursor:pointer;margin-bottom:6px">📚 Elegir de la biblioteca</button>
       <textarea id="mses-cal-desc" rows="2" placeholder="Descripción del calentamiento..." style="width:100%;border:1px solid #FED7AA;border-radius:7px;padding:7px 9px;font-size:12px;outline:none;resize:none;font-family:inherit;background:#FFFBF5;box-sizing:border-box"></textarea>
+      <div id="mses-cal-dibprev"></div><button type="button" onclick="abrirDibujo('mses',0)" style="border:1px solid #BBF7D0;background:#F0FDF4;color:#16A34A;border-radius:6px;font-size:11px;font-weight:700;padding:4px 9px;cursor:pointer;margin-top:6px">🎨 Dibujo</button> <button type="button" onclick="abrirPickerPiz('mses',0)" style="border:1px solid #DDD6FE;background:#F5F3FF;color:#6D28D9;border-radius:6px;font-size:11px;font-weight:700;padding:4px 9px;cursor:pointer;margin-top:6px">🎨 Usar una pizarra</button>
     </div>
 
     <!-- EJERCICIO 1 -->
@@ -822,6 +823,7 @@ body.role-coach .manager-only-el{opacity:0.3;pointer-events:none;cursor:not-allo
         </div>
       </div>
       <textarea id="mses-partido-desc" rows="2" placeholder="Descripción del partido condicionado..." style="width:100%;border:1px solid #BFDBFE;border-radius:7px;padding:7px 9px;font-size:12px;outline:none;resize:none;font-family:inherit;background:#F0F8FF;box-sizing:border-box"></textarea>
+      <div id="mses-partido-dibprev"></div><button type="button" onclick="abrirDibujo('mses',4)" style="border:1px solid #BBF7D0;background:#F0FDF4;color:#16A34A;border-radius:6px;font-size:11px;font-weight:700;padding:4px 9px;cursor:pointer;margin-top:6px">🎨 Dibujo</button> <button type="button" onclick="abrirPickerPiz('mses',4)" style="border:1px solid #DDD6FE;background:#F5F3FF;color:#6D28D9;border-radius:6px;font-size:11px;font-weight:700;padding:4px 9px;cursor:pointer;margin-top:6px">🎨 Usar una pizarra</button>
     </div>
 
     <!-- VUELTA A LA CALMA -->
@@ -834,6 +836,7 @@ body.role-coach .manager-only-el{opacity:0.3;pointer-events:none;cursor:not-allo
         </div>
       </div>
       <textarea id="mses-vuelta-desc" rows="2" placeholder="Estiramientos, reflexión final..." style="width:100%;border:1px solid #BBF7D0;border-radius:7px;padding:7px 9px;font-size:12px;outline:none;resize:none;font-family:inherit;background:#F8FFF8;box-sizing:border-box"></textarea>
+      <div id="mses-vuelta-dibprev"></div><button type="button" onclick="abrirDibujo('mses',5)" style="border:1px solid #BBF7D0;background:#F0FDF4;color:#16A34A;border-radius:6px;font-size:11px;font-weight:700;padding:4px 9px;cursor:pointer;margin-top:6px">🎨 Dibujo</button> <button type="button" onclick="abrirPickerPiz('mses',5)" style="border:1px solid #DDD6FE;background:#F5F3FF;color:#6D28D9;border-radius:6px;font-size:11px;font-weight:700;padding:4px 9px;cursor:pointer;margin-top:6px">🎨 Usar una pizarra</button>
     </div>
 
     <!-- MATERIAL -->
@@ -1502,7 +1505,7 @@ function aplicarConfigDias(){
   saveClub();
   // Preserve completed/notes from existing sessions
   const prevData={};
-  const CAMPOS_EDIT=['completada','notas','fechaReal','calentamiento','ej1_nom','ej1_desc','ej1_prov','ej2_nom','ej2_desc','ej2_prov','ej3_nom','ej3_desc','ej3_prov','partido','vuelta','material','estado','fechaOriginal','ej1_dib','ej2_dib','ej3_dib'];
+  const CAMPOS_EDIT=['completada','notas','fechaReal','calentamiento','ej1_nom','ej1_desc','ej1_prov','ej2_nom','ej2_desc','ej2_prov','ej3_nom','ej3_desc','ej3_prov','partido','vuelta','material','estado','fechaOriginal','ej1_dib','ej2_dib','ej3_dib','cal_dib','partido_dib','vuelta_dib'];
   SESIONES.forEach(s=>{prevData[s.num]={};CAMPOS_EDIT.forEach(c=>{if(s[c]!==undefined)prevData[s.num][c]=s[c];});});
   SESIONES=genSesiones();
   // Try to restore data for matching session numbers
@@ -2376,6 +2379,7 @@ function renderSesionDetalle(){
     <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:14px;margin-bottom:12px">
       <div style="font-size:10px;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;display:flex;justify-content:space-between;align-items:center">🔥 Calentamiento<button onclick="abrirPickerBib('ses',0)" style="border:1px solid #BFDBFE;background:#EFF6FF;color:#2563EB;border-radius:5px;font-size:10px;font-weight:700;padding:2px 7px;cursor:pointer;text-transform:none">📚 Biblioteca</button></div>
       <textarea rows="3" oninput="updSesField(${s.num},'calentamiento',this.value)" style="width:100%;border:1px solid #E2E8F0;border-radius:6px;padding:6px 9px;font-size:13px;color:#374151;background:transparent;outline:none;resize:vertical;font-family:inherit;box-sizing:border-box">${esc(s.calentamiento||"")}</textarea>
+      ${etDibBloque('ses',s.num,0,s.cal_dib)}
     </div>
     <div class="g3" style="margin-bottom:12px">
       ${[[1,'ej1_nom','ej1_desc','ej1_prov'],[2,'ej2_nom','ej2_desc','ej2_prov'],[3,'ej3_nom','ej3_desc','ej3_prov']].map(([n,kn,kd,kp])=>`
@@ -2394,10 +2398,12 @@ function renderSesionDetalle(){
       <div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:10px;padding:13px">
         <div style="font-size:10px;font-weight:700;color:#2563EB;text-transform:uppercase;margin-bottom:5px">⚽ Partido Condicionado</div>
         <textarea rows="3" oninput="updSesField(${s.num},'partido',this.value)" placeholder="Descripción del partido condicionado…" style="width:100%;font-size:13px;color:#1E3A5F;border:1px solid #BFDBFE;border-radius:6px;padding:5px 7px;outline:none;resize:vertical;background:transparent;font-family:inherit;box-sizing:border-box">${esc(s.partido||"")}</textarea>
+      ${etDibBloque('ses',s.num,4,s.partido_dib)}
       </div>
       <div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:10px;padding:13px">
         <div style="font-size:10px;font-weight:700;color:#16A34A;text-transform:uppercase;margin-bottom:5px">🧘 Vuelta a la Calma</div>
         <textarea rows="2" oninput="updSesField(${s.num},'vuelta',this.value)" placeholder="Estiramientos, reflexión…" style="width:100%;font-size:13px;color:#166534;border:1px solid #BBF7D0;border-radius:6px;padding:5px 7px;outline:none;resize:vertical;background:transparent;font-family:inherit;box-sizing:border-box">${esc(s.vuelta||"")}</textarea>
+      ${etDibBloque('ses',s.num,5,s.vuelta_dib)}
       </div>
     </div>
     <div class="g2">
@@ -3078,7 +3084,7 @@ function renderSesLibreDetalle(){
       <div style="display:flex;align-items:center;margin-bottom:5px">
         <div style="font-size:10px;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:1px">🔥 Calentamiento</div>${mb(s.cal_min)}
       </div>
-      <p style="font-size:13px;color:#374151;margin:0">${s.calentamiento||''}</p>
+      <p style="font-size:13px;color:#374151;margin:0">${s.calentamiento||''}</p>${s.cal_dib?etImgHTML(s.cal_dib):''}
     </div>
     <div class="g3" style="margin-bottom:12px">
       ${ejBlock(s.ej1_nom,s.ej1_desc,s.ej1_prov,s.ej1_min,1)}
@@ -3086,8 +3092,8 @@ function renderSesLibreDetalle(){
       ${ejBlock(s.ej3_nom,s.ej3_desc,s.ej3_prov,s.ej3_min,3)}
     </div>
     <div class="g2" style="margin-bottom:12px">
-      ${s.partido?`<div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:10px;padding:13px"><div style="display:flex;align-items:center;margin-bottom:5px"><div style="font-size:10px;font-weight:700;color:#2563EB;text-transform:uppercase">⚽ Partido Condicionado</div>${mb(s.partido_min)}</div><p style="font-size:13px;color:#1E3A5F;margin:0">${s.partido}</p></div>`:''}
-      ${s.vuelta?`<div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:10px;padding:13px"><div style="display:flex;align-items:center;margin-bottom:5px"><div style="font-size:10px;font-weight:700;color:#16A34A;text-transform:uppercase">🧘 Vuelta a la Calma</div>${mb(s.vuelta_min)}</div><p style="font-size:13px;color:#166534;margin:0">${s.vuelta}</p></div>`:''}
+      ${s.partido?`<div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:10px;padding:13px"><div style="display:flex;align-items:center;margin-bottom:5px"><div style="font-size:10px;font-weight:700;color:#2563EB;text-transform:uppercase">⚽ Partido Condicionado</div>${mb(s.partido_min)}</div><p style="font-size:13px;color:#1E3A5F;margin:0">${s.partido}</p>${s.partido_dib?etImgHTML(s.partido_dib):''}</div>`:''}
+      ${s.vuelta?`<div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:10px;padding:13px"><div style="display:flex;align-items:center;margin-bottom:5px"><div style="font-size:10px;font-weight:700;color:#16A34A;text-transform:uppercase">🧘 Vuelta a la Calma</div>${mb(s.vuelta_min)}</div><p style="font-size:13px;color:#166534;margin:0">${s.vuelta}</p>${s.vuelta_dib?etImgHTML(s.vuelta_dib):''}</div>`:''}
     </div>
     <div class="g2">
       ${s.material?`<div style="background:#F9FAFB;border:1px solid #E2E8F0;border-radius:10px;padding:13px"><div style="font-size:10px;font-weight:700;color:#94A3B8;text-transform:uppercase;margin-bottom:5px">🎒 Material</div><p style="font-size:13px;margin:0">${s.material}</p></div>`:''}
@@ -3141,7 +3147,7 @@ function openAddSesLibre(id){
   document.getElementById('mses-vuelta-desc').value=v('vuelta');
   document.getElementById('mses-vuelta-min').value=s?(s.vuelta_min||''):'';
   document.getElementById('mses-material').value=v('material');
-  window._msesDib={1:v('ej1_dib'),2:v('ej2_dib'),3:v('ej3_dib')};etRefrescarMsesDib();
+  window._msesDib={0:v('cal_dib'),1:v('ej1_dib'),2:v('ej2_dib'),3:v('ej3_dib'),4:v('partido_dib'),5:v('vuelta_dib')};etRefrescarMsesDib();
 }
 
 function editSesLibre(id){openAddSesLibre(id);}
@@ -3166,7 +3172,7 @@ function guardarSesLibre(){
     ej2_nom:_gv('mses-ej2-nom'),ej2_desc:_gv('mses-ej2-desc'),ej2_prov:_gv('mses-ej2-prov'),ej2_min:_gn('mses-ej2-min'),
     ej3_nom:_gv('mses-ej3-nom'),ej3_desc:_gv('mses-ej3-desc'),ej3_prov:_gv('mses-ej3-prov'),ej3_min:_gn('mses-ej3-min'),
     partido:_gv('mses-partido-desc'),partido_min:_gn('mses-partido-min'),
-    ej1_dib:(window._msesDib||{})[1]||'',ej2_dib:(window._msesDib||{})[2]||'',ej3_dib:(window._msesDib||{})[3]||'',
+    ej1_dib:(window._msesDib||{})[1]||'',ej2_dib:(window._msesDib||{})[2]||'',ej3_dib:(window._msesDib||{})[3]||'',cal_dib:(window._msesDib||{})[0]||'',partido_dib:(window._msesDib||{})[4]||'',vuelta_dib:(window._msesDib||{})[5]||'',
     vuelta:_gv('mses-vuelta-desc'),vuelta_min:_gn('mses-vuelta-min'),
     material:_gv('mses-material'),
     notas:editSesLibreId?(SES_LIBRES.find(x=>x.id===editSesLibreId)?.notas||''):'',
@@ -4606,10 +4612,11 @@ function etDibBloque(kind,id,n,json){
   return `<div style="margin-top:8px">${has?etImgHTML(json):''}<div style="display:flex;gap:6px;margin-top:6px"><button type="button" style="${b}" onclick="abrirDibujo('${kind}','${id}',${n})">🎨 ${has?'Editar dibujo':'Añadir dibujo'}</button>${kind==='ses'?`<button type="button" style="${b.replace('#BFDBFE','#DDD6FE').replace('#EFF6FF','#F5F3FF').replace('#2563EB','#6D28D9')}" onclick="abrirPickerPiz('ses',${n})">🎨 Usar una pizarra</button>`:''}</div></div>`;
 }
 var _etEd=null;
+function etDibKey(n){n=+n;return n>=1&&n<=3?'ej'+n+'_dib':({0:'cal_dib',4:'partido_dib',5:'vuelta_dib'})[n];}
 function abrirDibujo(kind,a,b){
   let json='';
   if(kind==='bib'){const e=BIBLIOTECA[+a];if(!e)return;json=e.dibujo||'';}
-  else if(kind==='ses'){const s=SESIONES.find(x=>x.num===+a);if(!s)return;json=s['ej'+b+'_dib']||'';}
+  else if(kind==='ses'){const s=SESIONES.find(x=>x.num===+a);if(!s)return;json=s[etDibKey(b)]||'';}
   else if(kind==='mses'){json=(window._msesDib||{})[+a]||'';}
   else if(kind==='sf7'){json=window._sf7Dib||'';}
   else if(kind==='piz'&&a!=='new'){const pp=PIZ.find(x=>x.id===+a);if(!pp)return;json=pp.dibujo||'';}
@@ -4763,7 +4770,7 @@ function etGuardarEd(){
   const json=_etEd.shapes.length?JSON.stringify({f:_etEd.f,s:etRound(_etEd.shapes)}):'';
   const {kind,a,b}=_etEd;
   if(kind==='bib'){const e=BIBLIOTECA[+a];if(e){e.dibujo=json;save("biblioteca",BIBLIOTECA);renderBiblioteca();}}
-  else if(kind==='ses'){const s=SESIONES.find(x=>x.num===+a);if(s){s['ej'+b+'_dib']=json;save("sesiones",SESIONES);renderSesionDetalle();}}
+  else if(kind==='ses'){const s=SESIONES.find(x=>x.num===+a);if(s){s[etDibKey(b)]=json;save("sesiones",SESIONES);renderSesionDetalle();}}
   else if(kind==='mses'){(window._msesDib=window._msesDib||{})[+a]=json;etRefrescarMsesDib();}
   else if(kind==='sf7'){window._sf7Dib=json;sf7RefrescarDib();}
   else if(kind==='piz'){const nm=((document.getElementById('et-nom')||{}).value||'').trim();etCerrarDibujo();pizGuardarDesdeEditor(a,json,nm);etToast(json?'🎨 Pizarra guardada':'Pizarra sin cambios');return;}
@@ -4771,7 +4778,7 @@ function etGuardarEd(){
   etToast(json?'🎨 Dibujo guardado':'Dibujo eliminado');
 }
 function etRefrescarMsesDib(){
-  [1,2,3].forEach(n=>{const el=document.getElementById('mses-ej'+n+'-dibprev');if(el){const j=(window._msesDib||{})[n]||'';el.innerHTML=j?etImgHTML(j)+`<button type="button" onclick="(window._msesDib=window._msesDib||{})[${n}]='';etRefrescarMsesDib()" style="border:none;background:none;color:#B91C1C;font-size:11px;cursor:pointer;margin-top:3px">Quitar dibujo</button>`:'';}});
+  [[0,'mses-cal-dibprev'],[1,'mses-ej1-dibprev'],[2,'mses-ej2-dibprev'],[3,'mses-ej3-dibprev'],[4,'mses-partido-dibprev'],[5,'mses-vuelta-dibprev']].forEach(([n,pid])=>{const el=document.getElementById(pid);if(el){const j=(window._msesDib||{})[n]||'';el.innerHTML=j?etImgHTML(j)+`<button type="button" onclick="(window._msesDib=window._msesDib||{})[${n}]='';etRefrescarMsesDib()" style="border:none;background:none;color:#B91C1C;font-size:11px;cursor:pointer;margin-top:3px">Quitar dibujo</button>`:'';}});
 }
 
 // ───────────────────────── REORDENAR ARRASTRANDO ─────────────────────────
@@ -4833,7 +4840,7 @@ function etMoverEj(s,a,b,F){
   const it=items.splice(a-1,1)[0];items.splice(b-1,0,it);
   items.forEach((o,i)=>{F.forEach(f=>{if(o[f]===undefined)delete s[`ej${i+1}_${f}`];else s[`ej${i+1}_${f}`]=o[f];});});
 }
-var ET_CONT=['tema','objetivo','calentamiento','ej1_nom','ej1_desc','ej1_prov','ej1_dib','ej1_min','ej2_nom','ej2_desc','ej2_prov','ej2_dib','ej2_min','ej3_nom','ej3_desc','ej3_prov','ej3_dib','ej3_min','partido','vuelta','material','notas'];
+var ET_CONT=['tema','objetivo','calentamiento','ej1_nom','ej1_desc','ej1_prov','ej1_dib','ej1_min','ej2_nom','ej2_desc','ej2_prov','ej2_dib','ej2_min','ej3_nom','ej3_desc','ej3_prov','ej3_dib','ej3_min','partido','vuelta','cal_dib','partido_dib','vuelta_dib','material','notas'];
 function etIntercambiarSesiones(na,nb){
   const A=SESIONES.find(x=>x.num===na),B=SESIONES.find(x=>x.num===nb);
   if(!A||!B||A===B)return;
@@ -4917,8 +4924,9 @@ async function sesionPDF(tipo,id){
   if(meta.length)parrafo(meta.join('   |   '),9,[100,116,139]);
   if(s.objetivo)parrafo('Objetivo: '+s.objetivo,10,[51,65,85]);
   const mins=m=>m?'  ('+m+' min)':'';
+  var dibPdf=function(dj){const dd=etParse(dj);if(!dd)return;const F=ET_FMT[dd.f],w=F.w>600?150:62,h=w*F.h/F.w;hay(h+3);const u=etDataURL(dj,900,'jpeg');if(u){doc.addImage(u,'JPEG',M+1,y,w,h);doc.setDrawColor(148,163,184);doc.rect(M+1,y,w,h);y+=h+3;}};
   titulo('CALENTAMIENTO'+mins(s.cal_min),194,65,12);
-  parrafo(s.calentamiento||'-',10);
+  parrafo(s.calentamiento||'-',10);dibPdf(s.cal_dib);
   [1,2,3].forEach(n=>{
     const nom=s['ej'+n+'_nom'];if(!nom)return;
     titulo('EJERCICIO '+n+mins(s['ej'+n+'_min']),37,99,235);
@@ -4933,8 +4941,8 @@ async function sesionPDF(tipo,id){
       if(u){doc.addImage(u,'JPEG',M+1,y,w,h);doc.setDrawColor(148,163,184);doc.rect(M+1,y,w,h);y+=h+3;}
     }
   });
-  if(s.partido){titulo('PARTIDO CONDICIONADO'+mins(s.partido_min),22,101,52);parrafo(s.partido,10);}
-  if(s.vuelta){titulo('VUELTA A LA CALMA'+mins(s.vuelta_min),13,148,136);parrafo(s.vuelta,10);}
+  if(s.partido){titulo('PARTIDO CONDICIONADO'+mins(s.partido_min),22,101,52);parrafo(s.partido,10);dibPdf(s.partido_dib);}
+  if(s.vuelta){titulo('VUELTA A LA CALMA'+mins(s.vuelta_min),13,148,136);parrafo(s.vuelta,10);dibPdf(s.vuelta_dib);}
   if(s.material){titulo('MATERIAL',100,116,139);parrafo(s.material,10);}
   hay(34);titulo('ANOTACIONES',217,119,6);
   doc.setDrawColor(203,213,225);doc.setLineWidth(0.2);
@@ -5290,8 +5298,8 @@ function elegirPizarra(id){
     window._sf7Dib=dib;sf7RefrescarDib();
   }else if(kind==='ses'){
     const s=SESIONES.find(x=>x.num===sesionAbierta);if(!s)return;
-    if(!pisa(s['ej'+n+'_dib']))return;
-    s['ej'+n+'_dib']=dib;save("sesiones",SESIONES);renderSesionDetalle();
+    if(!pisa(s[etDibKey(n)]))return;
+    s[etDibKey(n)]=dib;save("sesiones",SESIONES);renderSesionDetalle();
   }else if(kind==='bib'){
     const e=BIBLIOTECA[n];if(!e)return;
     if(!pisa(e.dibujo))return;
