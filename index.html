@@ -6004,7 +6004,6 @@ function statsP(p){
 function statsJ(j){
   var lista=[];
   PARTIDOS.forEach(function(p){
-    if(!p.rival)return;
     var r=statsP(p).find(function(x){return x.j.id===j.id;});
     if(r&&r.n>0)lista.push({p:p,r:r});
   });
@@ -6246,7 +6245,7 @@ window.valJugadorHTML=function(j){
   S.lista.slice().reverse().forEach(function(x){
     var res='',p=x.p;
     try{if(_partidoJugado(p)){var t=getPartidoTotales(p);res=t.gf+'–'+t.gc+' '+t.r;}}catch(e){}
-    h+='<tr class="go" onclick="valIrPartido('+p.id+')" title="Ver la valoración de este partido"><td class="n"><i>J'+p.id+'</i>'+esc(p.rival)+'</td><td>'+esc(res)+'</td><td>'+x.r.q+'</td>'
+    h+='<tr class="go" onclick="valIrPartido('+p.id+')" title="Ver la valoración de este partido"><td class="n"><i>J'+p.id+'</i>'+esc(p.rival||'(sin rival)')+'</td><td>'+esc(res)+'</td><td>'+x.r.q+'</td>'
      +CRIT.map(function(c){return '<td>'+chip(x.r.c[c.k],true)+'</td>';}).join('')
      +'<td class="vl-tot">'+(x.r.total!=null?fmt1(x.r.total)+'<small>de 25</small>':'<small>parcial</small>')+'</td></tr>';
   });
