@@ -3111,5 +3111,15 @@
   "nombre": "Calentamiento pre-partido portero",
   "provocacion": "Duración total: 3 minutos por zona, alternando los porteros.",
   "origen": "nuevo"
+ },
+ {
+  "categoria": "Calentamiento",
+  "descripcion": "Objetivo: mejorar el pase y la presión en un rondo 4x2.\n1. Zona cuadrada con un cono en el centro. 4 jugadores (rojos) pasan el balón por fuera; 2 defensores (amarillos) intentan robarlo.\n2. Los dos defensores deben proteger a la vez los pases y el cono.\nJugadores: 6 · Material: conos, chinos y balones.",
+  "dibujo": "{\"f\":\"area\",\"s\":[{\"t\":\"r\",\"x\":197,\"y\":113,\"w\":413,\"h\":413,\"c\":\"#FACC15\"},{\"t\":\"c\",\"x\":410,\"y\":325},{\"t\":\"p\",\"x\":596,\"y\":151,\"c\":\"#DC2626\",\"n\":1},{\"t\":\"p\",\"x\":239,\"y\":154,\"c\":\"#DC2626\",\"n\":2},{\"t\":\"p\",\"x\":259,\"y\":483,\"c\":\"#DC2626\",\"n\":3},{\"t\":\"p\",\"x\":566,\"y\":474,\"c\":\"#DC2626\",\"n\":4},{\"t\":\"p\",\"x\":349,\"y\":263,\"c\":\"#FACC15\",\"n\":1},{\"t\":\"p\",\"x\":499,\"y\":319,\"c\":\"#FACC15\",\"n\":2},{\"t\":\"b\",\"x\":532,\"y\":215},{\"t\":\"a\",\"x1\":586,\"y1\":168,\"x2\":550,\"y2\":242,\"c\":\"#2563EB\"},{\"t\":\"m\",\"x\":626,\"y\":114,\"c\":\"#2563EB\"},{\"t\":\"m\",\"x\":204,\"y\":120,\"c\":\"#2563EB\"},{\"t\":\"m\",\"x\":209,\"y\":531,\"c\":\"#2563EB\"},{\"t\":\"m\",\"x\":626,\"y\":537,\"c\":\"#2563EB\"}]}",
+  "id": "cal-041",
+  "material": "Conos, chinos y balones.",
+  "nombre": "Protege el cono",
+  "provocacion": "6 pases = 1 punto. Tumbar el cono = 2 puntos. Si los defensores recuperan el balón = 1 punto. Si sale driblando = 2 puntos.",
+  "origen": "nuevo"
  }
 ]
