@@ -1911,7 +1911,7 @@ function renderPartidoDetalle(){
     ${isCoach()?`<div style="background:#DBEAFE;border:1px solid #BFDBFE;border-radius:7px;padding:4px 10px;font-size:11px;color:#1E40AF;font-weight:700">📋 Modo Entrenador · Edita alineación y goles</div>`:''}
   </div>
   <div style="display:flex;gap:0;border-bottom:2px solid #E2E8F0;margin-bottom:16px;overflow-x:auto">
-    ${[["datos","📋 Datos"],["conv","👥 Convocatoria"],["p0","⚽ P1"],["p1","⚽ P2"],["p2","⚽ P3"],["p3","⚽ P4"],["pt","📊 Resumen"],["hoja","📄 Hoja"]].map(([t2,l])=>{
+    ${[["datos","📋 Datos"],["conv","👥 Convocatoria"],["p0","⚽ P1"],["p1","⚽ P2"],["p2","⚽ P3"],["p3","⚽ P4"],["pt","📊 Resumen"],["hoja","📄 Hoja"],["val","⭐ Valoración"]].map(([t2,l])=>{
       const act=(partidoTab==="periodo"&&"p"+periodoActual===t2)||partidoTab===t2;
       return`<button onclick="setPartidoTab('${t2}')" style="padding:8px 15px;border:none;background:none;cursor:pointer;font-size:12px;font-weight:600;white-space:nowrap;border-bottom:2px solid ${act?"#F97316":"transparent"};color:${act?"#F97316":"#64748B"}">${l}</button>`;
     }).join("")}
@@ -1969,6 +1969,7 @@ function renderPartidoDetalle(){
           return`<div style="display:flex;align-items:center;gap:8px;padding:5px 9px;border-radius:6px;margin-bottom:3px;background:${isC?"#F0FDF4":"#F9FAFB"};border:1px solid ${isC?"#BBF7D0":"#E2E8F0"}">
             <input type="checkbox" ${isC?"checked":""} onchange="toggleConv(${p.id},${j.id})" style="cursor:pointer;width:15px;height:15px">
             <span style="flex:1;font-size:12px;font-weight:${isC?600:400};color:${isC?"#166534":"#64748B"}">#${j.dorsal} ${j.nombre}</span>
+            ${window.valBadge?window.valBadge(j):""}
             <span style="font-size:10px;color:#94A3B8">${j.posicion}</span>
           </div>`;}).join("")}
       </div>
@@ -2161,6 +2162,7 @@ function renderPartidoDetalle(){
   }
 
   if(partidoTab==="hoja"){html+=hojaHTML(p);}
+  if(partidoTab==="val"){html+=window.valHTML(p);}
 
   det.innerHTML=html;
   if(partidoTab==="hoja")hojaMostrar(p.id);
@@ -2464,6 +2466,7 @@ function renderJugadores(){
           <div style="font-weight:700;font-size:14px">${j.nombre}${inactivo?` <span style="font-size:9px;font-weight:700;color:#94A3B8;background:#F1F5F9;border-radius:4px;padding:1px 5px;vertical-align:middle">VACÍO</span>`:""}</div>
           <div style="font-size:11px;color:#64748B">${j.posicion}</div>
           <div style="font-size:10px;color:#94A3B8">#${j.dorsal} · ${j.pierna}${goles>0?` · ⚽${goles}`:""}</div>
+          ${window.valJugadorMini?window.valJugadorMini(j):""}
         </div>
         <div style="background:${mt!=="—"?"#FFF7ED":"#F3F4F6"};border:1px solid ${mt!=="—"?"#FED7AA":"#E2E8F0"};border-radius:8px;padding:5px 10px;text-align:center">
           <div style="font-size:17px;font-weight:800;color:${mt!=="—"?"#F97316":"#94A3B8"}">${mt}</div>
@@ -2544,6 +2547,7 @@ function renderJugadorDetalle(){
       <div style="font-size:10px;font-weight:700;color:#D97706;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">🎯 Objetivos Individuales</div>
       <textarea rows="3" oninput="updJObj(${jugadorAbierto},this.value)" placeholder="Anota aquí los objetivos personales de este jugador para la temporada…" style="width:100%;border:1px solid #FDE68A;border-radius:6px;padding:7px 10px;font-size:12px;background:transparent;outline:none;resize:none;font-family:inherit;color:#374151">${esc(j.objetivos||"")}</textarea>
     </div>
+    ${window.valJugadorHTML?window.valJugadorHTML(j):""}
     <div style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap">
       ${PEVAL.map(p=>`<button onclick="setPeriodoEval('${p}')" style="padding:6px 14px;border:none;border-radius:7px;cursor:pointer;font-size:12px;font-weight:600;background:${periodoEvalActual===p?"#F97316":"#F3F4F6"};color:${periodoEvalActual===p?"#fff":"#374151"}">${p}</button>`).join("")}
     </div>
@@ -5927,6 +5931,617 @@ if(typeof window.updResultadoFinal!=='function')window.updResultadoFinal=functio
 window._hojaDebug={render:render,datos:datos,texto:texto,pdfB64:pdfB64};
 })();
 </script>
+<script id="valoracion-modulo">
+/* ═══════════════════════════════════════════════════════════════
+   VALORACIÓN DE PARTIDO — pestaña "⭐ Valoración", PDF, WhatsApp y ficha de jugador
+   Mismo bloque en la versión local y en la de Firebase.
+   Datos: PARTIDOS[i].periodos[q].val = { j<id>: {col,int,tec,tac,act} } (1..5)
+          PARTIDOS[i].notasValoracion = texto
+   Se adapta a F7/F8/F11 leyendo FORMACIONES y la alineación de cada cuarto.
+   ═══════════════════════════════════════════════════════════════ */
+(function(){
+'use strict';
+var CRIT=[
+  {k:'col',n:'Colocación',d:'posición y ocupación de espacios'},
+  {k:'int',n:'Intensidad',d:'duelos, presión y esfuerzo'},
+  {k:'tec',n:'Técnica',d:'control y pase (portero: juego con los pies)'},
+  {k:'tac',n:'Táctica',d:'decisiones y comprensión del juego'},
+  {k:'act',n:'Actitud',d:'comunicación y concentración'}
+];
+var FN={F7:'Fútbol 7',F8:'Fútbol 8',F11:'Fútbol 11'};
+var BK='valPendiente_v1';
+var vTab=0, obsTimer=null;
+
+function db(){try{return (typeof DB!=='undefined'&&DB)?DB:null;}catch(e){return null;}}
+function root(){try{return ROOT;}catch(e){return 'biblia';}}
+function getP(id){return PARTIDOS.find(function(x){return x.id===id;});}
+function fmtP(p){return FORMACIONES[p.formatoCampo]?p.formatoCampo:'F7';}
+function formQ(p,pe){var f=fmtP(p);var fr=(pe&&pe.formacion)||p.formacion;if(!FORMACIONES[f][fr])fr=FORM_DEFAULT[f];return fr;}
+function jug(id){return JUGADORES.find(function(j){return String(j.id)===String(id);})||null;}
+function pk(j){return 'j'+j.id;}
+function per(p,i){var a=toArr(p.periodos);return a[i]||null;}
+function fmt1(n){return n.toFixed(1).replace('.',',');}
+function mean(a){return a.length?a.reduce(function(x,y){return x+y;},0)/a.length:null;}
+function fechaCorta(iso){if(!iso)return '';var d=new Date(iso+'T12:00:00');return isNaN(d)?iso:d.toLocaleDateString('es-ES',{day:'numeric',month:'short'});}
+function fechaLarga(iso){if(!iso)return '';var d=new Date(iso+'T12:00:00');return isNaN(d)?iso:d.toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long',year:'numeric'});}
+function slug(s){return String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^A-Za-z0-9]+/g,'_').replace(/^_+|_+$/g,'').slice(0,30)||'partido';}
+function aviso(m){try{if(typeof toast==='function')toast(m);else alert(m);}catch(e){}}
+
+/* Posiciones del cuarto de portero a delantero */
+function slots(p,i){
+  var pe=per(p,i)||{},al=pe.alineacion||{};
+  var f=fmtP(p),pos=FORMACIONES[f][formQ(p,pe)].slice();
+  pos.sort(function(a,b){return (b.y-a.y)||(a.x-b.x);});
+  return pos.map(function(ps){return {pos:ps,j:jug(al[ps.id])};});
+}
+function getV(p,i,j,c){var pe=per(p,i);var v=pe&&pe.val&&pe.val[pk(j)]&&pe.val[pk(j)][c];return (v>=1&&v<=5)?v:null;}
+function prog(p,i){
+  var S=slots(p,i).filter(function(s){return s.j;}),got=0;
+  S.forEach(function(s){CRIT.forEach(function(c){if(getV(p,i,s.j,c.k))got++;});});
+  return {got:got,tot:S.length*CRIT.length};
+}
+
+/* ── Estadísticas ── (por partido: media de cada criterio en los cuartos jugados; total = suma de las 5 medias, sobre 25) */
+function statsP(p){
+  var map={},order=[];
+  for(var i=0;i<4;i++){
+    slots(p,i).forEach(function(s){
+      if(!s.j)return;var k=pk(s.j);
+      if(!map[k]){map[k]={j:s.j,q:0,v:{}};CRIT.forEach(function(c){map[k].v[c.k]=[];});order.push(k);}
+      map[k].q++;
+      CRIT.forEach(function(c){var v=getV(p,i,s.j,c.k);if(v)map[k].v[c.k].push(v);});
+    });
+  }
+  return order.map(function(k){
+    var r=map[k],ms=[];r.c={};
+    CRIT.forEach(function(c){var m=mean(r.v[c.k]);r.c[c.k]=m;if(m!=null)ms.push(m);});
+    r.n=ms.length;
+    r.media=mean(ms);
+    r.total=(ms.length===CRIT.length)?ms.reduce(function(a,b){return a+b;},0):null;
+    return r;
+  });
+}
+function statsJ(j){
+  var lista=[];
+  PARTIDOS.forEach(function(p){
+    var r=statsP(p).find(function(x){return x.j.id===j.id;});
+    if(r&&r.n>0)lista.push({p:p,r:r});
+  });
+  lista.sort(function(a,b){return a.p.id-b.p.id;});
+  var out={lista:lista,media:null,c:{},tend:null};
+  if(!lista.length)return out;
+  out.media=mean(lista.map(function(x){return x.r.media;}));
+  CRIT.forEach(function(c){var a=lista.map(function(x){return x.r.c[c.k];}).filter(function(v){return v!=null;});out.c[c.k]=mean(a);});
+  if(lista.length>=4){
+    var ult=mean(lista.slice(-3).map(function(x){return x.r.media;})),ant=mean(lista.slice(0,-3).map(function(x){return x.r.media;}));
+    var d=ult-ant;out.tend=d>=0.2?'up':d<=-0.2?'down':'eq';
+  }
+  return out;
+}
+function chip(v,dec){
+  if(v==null)return '<span class="vl-chip n">–</span>';
+  var cls=v>=4?'g':v>=3?'a':'r';
+  return '<span class="vl-chip '+cls+'">'+(dec?fmt1(v):Math.round(v))+'</span>';
+}
+
+/* ── Guardado ── */
+function pend(){try{return JSON.parse(localStorage.getItem(BK)||'{}');}catch(e){return {};}}
+function setPend(o){try{localStorage.setItem(BK,JSON.stringify(o));}catch(e){}}
+function marcarEscribiendo(){
+  window._isTyping=true;clearTimeout(window._typingTimer);
+  window._typingTimer=setTimeout(function(){window._isTyping=false;},1500);
+}
+function escribirFB(pid,i,jk,c,v){
+  var d=db(),p=getP(pid);if(!d||!p)return;
+  var idx=PARTIDOS.indexOf(p),key=pid+'|'+i+'|'+jk+'|'+c;
+  d.ref(root()+'/partidos/'+idx+'/periodos/'+i+'/val/'+jk+'/'+c).set(v==null?null:v).then(function(){
+    var o=pend();delete o[key];setPend(o);
+  }).catch(function(e){console.warn('Valoración sin sincronizar (queda pendiente):',e);});
+}
+function guardarVal(p,i,jk,c,v){
+  if(db()){
+    var o=pend();o[p.id+'|'+i+'|'+jk+'|'+c]=(v==null?0:v);setPend(o);
+    marcarEscribiendo();
+    escribirFB(p.id,i,jk,c,v);
+  }else{
+    save('partidos',PARTIDOS);
+  }
+}
+function reenviar(){
+  if(!db())return;
+  var o=pend();
+  Object.keys(o).forEach(function(k){
+    var a=k.split('|'),pid=+a[0],i=+a[1],jk=a[2],c=a[3],v=o[k]||null;
+    var p=getP(pid);if(!p||!per(p,i))return;
+    var pe=per(p,i);pe.val=pe.val||{};pe.val[jk]=pe.val[jk]||{};
+    if(v==null)delete pe.val[jk][c];else pe.val[jk][c]=v;
+    escribirFB(pid,i,jk,c,v);
+  });
+}
+window.addEventListener('online',function(){try{reenviar();}catch(e){}});
+
+/* ── Estilos ── */
+function css(){
+  if(document.getElementById('val-css'))return;
+  var s=document.createElement('style');s.id='val-css';
+  s.textContent=
+  '#val-box{container-type:inline-size}'
+ +'.vl-act{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px}'
+ +'.vl-warn{font-size:11px;color:#94A3B8;margin-bottom:12px}'
+ +'.vl-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}'
+ +'.vl-tabs button{flex:1 1 64px;min-height:46px;border:2px solid #E2E8F0;background:#fff;border-radius:10px;font-weight:800;font-size:15px;color:#374151;cursor:pointer;line-height:1.1}'
+ +'.vl-tabs button.on{background:#1E3A5F;border-color:#1E3A5F;color:#fff}'
+ +'.vl-tabs button small{display:block;font-size:10px;font-weight:600;opacity:.75}'
+ +'.vl-tabs button.sum{flex:1.5 1 100px}'
+ +'.vl-qh{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:2px 0 10px}'
+ +'.vl-qh b{font-size:18px;color:#1E3A5F}.vl-qh span{font-size:12px;color:#64748B}'
+ +'.vl-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:10px}'
+ +'.vl-pl{background:#fff;border:1px solid #E2E8F0;border-radius:12px;padding:10px 12px}'
+ +'.vl-who{display:flex;align-items:center;gap:8px;margin-bottom:6px;min-width:0}'
+ +'.vl-pos{font-size:10px;font-weight:800;background:#E2E8F0;border-radius:5px;padding:3px 6px;color:#1E3A5F;flex:none;letter-spacing:.04em}'
+ +'.vl-pos.POR{background:#F97316;color:#fff}'
+ +'.vl-dn{color:#F97316;font-weight:800;flex:none}'
+ +'.vl-nm{font-weight:800;font-size:16px;color:#1E3A5F;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}'
+ +'.vl-avg{font-size:12px;font-weight:700;color:#64748B;flex:none}'
+ +'.vl-cr{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:2px 0}'
+ +'.vl-cl{font-size:12px;font-weight:600;color:#64748B;width:84px;flex:none}'
+ +'.vl-sc{display:flex;gap:4px}'
+ +'.vl-sc button{width:40px;height:40px;border-radius:50%;border:2px solid #CBD5E1;background:#fff;font-weight:800;font-size:16px;color:#64748B;cursor:pointer;padding:0;touch-action:manipulation}'
+ +'.vl-sc button.on{background:#F97316;border-color:#F97316;color:#1E3A5F}'
+ +'.vl-colhead{display:none}'
+ +'.vl-empty{background:#F8FAFC;border:1px dashed #CBD5E1;border-radius:10px;padding:22px;text-align:center;color:#64748B;font-size:13px}'
+ +'.vl-note{font-size:12px;color:#92400E;background:#FEF3C7;border-radius:8px;padding:8px 12px;margin-top:10px}'
+ +'.vl-tw{overflow-x:auto}'
+ +'.vl-tb{border-collapse:collapse;width:100%;min-width:640px}'
+ +'.vl-tb th,.vl-tb td{padding:8px 6px;text-align:center;border-bottom:1px solid #E2E8F0;font-size:13px}'
+ +'.vl-tb th{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:#64748B}'
+ +'.vl-tb th:first-child,.vl-tb td:first-child{text-align:left}'
+ +'.vl-tb td.n{font-weight:800;color:#1E3A5F;white-space:nowrap}.vl-tb td.n i{font-style:normal;color:#F97316;margin-right:5px}'
+ +'.vl-tb tr.go{cursor:pointer}.vl-tb tr.go:hover td{background:#F8FAFC}'
+ +'.vl-tot{font-weight:800;font-size:15px;color:#1E3A5F}.vl-tot small{display:block;font-size:10px;font-weight:600;color:#94A3B8}'
+ +'.vl-chip{display:inline-block;min-width:30px;padding:3px 6px;border-radius:7px;font-weight:800;font-size:13px}'
+ +'.vl-chip.g{background:#DCFCE7;color:#166534}.vl-chip.a{background:#FEF3C7;color:#92400E}.vl-chip.r{background:#FEE2E2;color:#991B1B}.vl-chip.n{background:#F1F5F9;color:#94A3B8}'
+ +'.vl-obs{width:100%;min-height:110px;border:1px solid #E2E8F0;border-radius:10px;padding:10px;font:inherit;font-size:13px;resize:vertical;box-sizing:border-box}'
+ +'.vl-jug{background:#fff;border:1px solid #E2E8F0;border-radius:12px;padding:14px;margin-bottom:16px}'
+ +'.vl-jh{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:10px}'
+ +'.vl-jh b{font-size:13px;color:#374151}.vl-jh span{font-size:11px;color:#94A3B8}'
+ +'.vl-top{display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-bottom:12px}'
+ +'.vl-big{background:#FFF7ED;border:1px solid #FED7AA;border-radius:10px;padding:8px 16px;text-align:center}'
+ +'.vl-big div:first-child{font-size:26px;font-weight:800;color:#F97316;line-height:1.1}.vl-big div:last-child{font-size:10px;color:#94A3B8}'
+ +'.vl-cb{flex:1;min-width:230px}'
+ +'.vl-cbr{display:flex;align-items:center;gap:8px;font-size:12px;margin:3px 0}'
+ +'.vl-cbr span:first-child{width:78px;color:#64748B;font-weight:600}'
+ +'.vl-cbr .t{flex:1;height:8px;background:#F1F5F9;border-radius:4px;overflow:hidden}.vl-cbr .t i{display:block;height:100%;background:#F97316}'
+ +'.vl-cbr b{width:28px;text-align:right;color:#1E3A5F}'
+ +'.vl-tend{font-size:12px;font-weight:700;border-radius:999px;padding:3px 10px}'
+ +'.vl-tend.up{background:#DCFCE7;color:#166534}.vl-tend.down{background:#FEE2E2;color:#991B1B}.vl-tend.eq{background:#F1F5F9;color:#64748B}'
+ +'.vl-evo{display:flex;gap:6px;align-items:flex-end;height:70px;margin-top:12px}'
+ +'.vl-evo div{flex:1;text-align:center;font-size:9px;color:#94A3B8;min-width:0}.vl-evo i{display:block;width:70%;max-width:34px;margin:0 auto 3px;background:#F97316;border-radius:3px 3px 0 0}'
+ +'.vl-mini{margin-top:8px;font-size:11px;font-weight:700;color:#F97316}.vl-mini span{color:#94A3B8;font-weight:500}'
+ +'@container (min-width:1000px){'
+ +'.vl-list{display:block}'
+ +'.vl-colhead,.vl-pl{display:grid;grid-template-columns:200px repeat(5,minmax(0,1fr));gap:6px;align-items:center}'
+ +'.vl-colhead{padding:0 12px 6px;font-size:11px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:.06em;text-align:center}'
+ +'.vl-pl{padding:7px 12px;border-radius:10px;margin-bottom:6px}'
+ +'.vl-who{margin:0}.vl-cl{display:none}.vl-cr{justify-content:center;padding:0}.vl-sc{gap:2px}'
+ +'.vl-sc button{width:36px;height:36px;font-size:15px}}';
+  document.head.appendChild(s);
+}
+
+/* ── Pestaña del partido ── */
+function quarter(p,i){
+  var pe=per(p,i)||{},S=slots(p,i),A=S.filter(function(s){return s.j;});
+  var h='<div class="vl-qh"><b>'+(i+1)+'.º cuarto</b><span>'+formQ(p,pe)+' · '+FN[fmtP(p)]+' · 1 mejorable · 3 correcto · 5 muy bien</span></div>';
+  if(!A.length)return h+'<div class="vl-empty">Todavía no hay alineación en este cuarto.<br>Asigna los jugadores en la pestaña P'+(i+1)+' y aparecerán aquí, de portero a delantero.</div>';
+  h+='<div class="vl-colhead"><span></span>'+CRIT.map(function(c){return '<span>'+c.n+'</span>';}).join('')+'</div><div class="vl-list">';
+  A.forEach(function(s){
+    var j=s.j,vs=[];
+    CRIT.forEach(function(c){var v=getV(p,i,j,c.k);if(v)vs.push(v);});
+    var av=mean(vs);
+    h+='<article class="vl-pl"><div class="vl-who"><span class="vl-pos '+(s.pos.l==='POR'?'POR':'')+'">'+esc(s.pos.l)+'</span><span class="vl-dn">#'+esc(j.dorsal)+'</span><span class="vl-nm">'+esc(j.nombre)+'</span><span class="vl-avg">'+(av?fmt1(av):'')+'</span></div>';
+    CRIT.forEach(function(c){
+      var cur=getV(p,i,j,c.k);
+      h+='<div class="vl-cr"><span class="vl-cl">'+c.n+'</span><div class="vl-sc" role="group" aria-label="'+esc(j.nombre)+', '+c.n+'">';
+      for(var v=1;v<=5;v++)h+='<button type="button" class="'+(cur===v?'on':'')+'" aria-pressed="'+(cur===v)+'" onclick="valTap('+p.id+','+i+',\''+pk(j)+'\',\''+c.k+'\','+v+')">'+v+'</button>';
+      h+='</div></div>';
+    });
+    h+='</article>';
+  });
+  h+='</div>';
+  if(A.length<S.length)h+='<div class="vl-note">'+(S.length-A.length)+' posición(es) de este cuarto sin jugador asignado.</div>';
+  return h;
+}
+
+function ordenar(rows){
+  return rows.slice().sort(function(a,b){
+    var x=a.total!=null?a.total/5:(a.media||0),y=b.total!=null?b.total/5:(b.media||0);
+    return y-x;
+  });
+}
+function resumen(p){
+  var rows=ordenar(statsP(p));
+  if(!rows.length)return '<div class="vl-empty">Cuando asignes la alineación y puntúes, aquí verás las medias de cada jugador.</div>';
+  var h='<div class="vl-tw"><table class="vl-tb"><thead><tr><th>Jugador</th><th>Cuartos</th>'+CRIT.map(function(c){return '<th>'+c.n+'</th>';}).join('')+'<th>Total</th></tr></thead><tbody>';
+  rows.forEach(function(r){
+    h+='<tr><td class="n"><i>#'+esc(r.j.dorsal)+'</i>'+esc(r.j.nombre)+'</td><td>'+r.q+'</td>';
+    CRIT.forEach(function(c){h+='<td>'+chip(r.c[c.k],true)+'</td>';});
+    h+='<td class="vl-tot">'+(r.total!=null?fmt1(r.total)+'<small>de 25 · media '+fmt1(r.media)+'</small>':(r.media!=null?'<small>parcial · media '+fmt1(r.media)+'</small>':'–'))+'</td></tr>';
+  });
+  h+='</tbody></table></div><div style="font-size:11px;color:#94A3B8;margin:8px 0 14px">Cada criterio es la media de los cuartos jugados. El total suma los 5 criterios (máximo 25) y solo se calcula cuando están los 5 puntuados.</div>'
+   +'<div style="font-weight:700;font-size:13px;color:#374151;margin-bottom:6px">Observaciones para convocatorias</div>'
+   +'<textarea class="vl-obs" id="val-obs" placeholder="Anota lo que quieras recordar de este partido." oninput="valObs('+p.id+',this.value)">'+esc(p.notasValoracion||'')+'</textarea>';
+  return h;
+}
+
+function inner(p){
+  var h='<div class="vl-tabs" role="tablist">';
+  for(var i=0;i<4;i++){var g=prog(p,i);h+='<button type="button" role="tab" class="'+(vTab===i?'on':'')+'" aria-selected="'+(vTab===i)+'" onclick="valTab('+p.id+','+i+')">'+(i+1)+'.º<small>'+g.got+'/'+g.tot+'</small></button>';}
+  h+='<button type="button" role="tab" class="sum '+(vTab===4?'on':'')+'" aria-selected="'+(vTab===4)+'" onclick="valTab('+p.id+',4)">Resumen</button></div>';
+  return h+(vTab===4?resumen(p):quarter(p,vTab));
+}
+function scrollers(box){
+  var out=[],el=box;
+  while(el){if(el.scrollHeight>el.clientHeight+1){var o=getComputedStyle(el).overflowY;if(o==='auto'||o==='scroll')out.push([el,el.scrollTop]);}el=el.parentElement;}
+  out.push([window,window.scrollY]);
+  return out;
+}
+function refresh(id){
+  var p=getP(id),box=document.getElementById('val-box');if(!p||!box)return;
+  var sc=scrollers(box);
+  box.innerHTML=inner(p);
+  sc.forEach(function(s){if(s[0]===window)window.scrollTo(0,s[1]);else s[0].scrollTop=s[1];});
+}
+
+window.valHTML=function(p){
+  css();
+  try{reenviar();}catch(e){}
+  return '<div class="vl-act">'
+   +'<button class="btn btn-wa btn-sm" onclick="valWA('+p.id+')">📱 WhatsApp</button>'
+   +'<button class="btn btn-ghost btn-sm" onclick="valPDF('+p.id+',\'informe\')" title="Informe con las notas y las medias">📄 PDF informe</button>'
+   +'<button class="btn btn-ghost btn-sm" onclick="valPDF('+p.id+',\'campo\')" title="Hoja en blanco para imprimir y puntuar en el campo">🖨️ Hoja para el campo</button>'
+   +'</div><div class="vl-warn">Las notas son del cuerpo técnico: envíalas a un chat privado, no al grupo de familias.</div>'
+   +'<div id="val-box">'+inner(p)+'</div>';
+};
+window.valTab=function(id,t){vTab=t;refresh(id);};
+window.valTap=function(id,i,jk,c,v){
+  var p=getP(id),pe=p&&per(p,i);if(!pe)return;
+  pe.val=pe.val||{};pe.val[jk]=pe.val[jk]||{};
+  var nuevo=(pe.val[jk][c]===v)?null:v;
+  if(nuevo==null)delete pe.val[jk][c];else pe.val[jk][c]=nuevo;
+  guardarVal(p,i,jk,c,nuevo);
+  refresh(id);
+};
+window.valObs=function(id,txt){
+  var p=getP(id);if(!p)return;
+  p.notasValoracion=txt;
+  clearTimeout(obsTimer);
+  obsTimer=setTimeout(function(){
+    var d=db();
+    if(d){marcarEscribiendo();d.ref(root()+'/partidos/'+PARTIDOS.indexOf(p)+'/notasValoracion').set(txt||null).catch(function(e){console.warn(e);});}
+    else save('partidos',PARTIDOS);
+  },600);
+  window._isTyping=true;clearTimeout(window._typingTimer);window._typingTimer=setTimeout(function(){window._isTyping=false;},2500);
+};
+window.valIrPartido=function(id){
+  vTab=4;
+  try{goSection('partidos');openPartido(id);setPartidoTab('val');}catch(e){console.warn(e);}
+};
+
+/* ── Pestaña Jugadores: ficha, tarjeta y convocatoria ── */
+window.valJugadorHTML=function(j){
+  css();
+  var S=statsJ(j);
+  var h='<div class="vl-jug"><div class="vl-jh"><b>⭐ Valoración en partidos</b><span>'+(S.lista.length?S.lista.length+' partido'+(S.lista.length!==1?'s':'')+' valorado'+(S.lista.length!==1?'s':''):'')+'</span></div>';
+  if(!S.lista.length)return h+'<div class="vl-empty">Todavía no hay partidos valorados para este jugador.<br>Puntúa en Partidos → ⭐ Valoración y aquí verás su evolución.</div></div>';
+  var con=CRIT.filter(function(c){return S.c[c.k]!=null;}).sort(function(a,b){return S.c[b.k]-S.c[a.k];});
+  var fuerte=con.length>=2&&S.c[con[0].k]-S.c[con[con.length-1].k]>=0.3?con[0]:null,mejora=fuerte?con[con.length-1]:null;
+  h+='<div class="vl-top"><div class="vl-big"><div>'+fmt1(S.media)+'</div><div>media / 5</div></div><div class="vl-cb">';
+  CRIT.forEach(function(c){var v=S.c[c.k];h+='<div class="vl-cbr"><span>'+c.n+'</span><span class="t"><i style="width:'+(v==null?0:Math.round(v/5*100))+'%"></i></span><b>'+(v==null?'–':fmt1(v))+'</b></div>';});
+  h+='</div><div style="display:flex;flex-direction:column;gap:6px;align-items:flex-start">';
+  if(S.tend)h+='<span class="vl-tend '+S.tend+'">'+(S.tend==='up'?'▲ Mejorando':S.tend==='down'?'▼ Bajando':'● Estable')+' <small style="font-weight:500">(últimos 3)</small></span>';
+  if(fuerte)h+='<span style="font-size:12px;color:#166534">💪 Punto fuerte: <b>'+fuerte.n+'</b></span><span style="font-size:12px;color:#92400E">🎯 A mejorar: <b>'+mejora.n+'</b></span>';
+  h+='</div></div>';
+  h+='<div class="vl-tw"><table class="vl-tb"><thead><tr><th>Partido</th><th>Res.</th><th>Cuartos</th>'+CRIT.map(function(c){return '<th>'+c.n.slice(0,3)+'</th>';}).join('')+'<th>Total</th></tr></thead><tbody>';
+  S.lista.slice().reverse().forEach(function(x){
+    var res='',p=x.p;
+    try{if(_partidoJugado(p)){var t=getPartidoTotales(p);res=t.gf+'–'+t.gc+' '+t.r;}}catch(e){}
+    h+='<tr class="go" onclick="valIrPartido('+p.id+')" title="Ver la valoración de este partido"><td class="n"><i>J'+p.id+'</i>'+esc(p.rival||'(sin rival)')+'</td><td>'+esc(res)+'</td><td>'+x.r.q+'</td>'
+     +CRIT.map(function(c){return '<td>'+chip(x.r.c[c.k],true)+'</td>';}).join('')
+     +'<td class="vl-tot">'+(x.r.total!=null?fmt1(x.r.total)+'<small>de 25</small>':'<small>parcial</small>')+'</td></tr>';
+  });
+  h+='</tbody></table></div>';
+  if(S.lista.length>=2){
+    h+='<div class="vl-evo">'+S.lista.map(function(x){var m=x.r.media;return '<div><i style="height:'+Math.max(3,Math.round(m/5*54))+'px"></i>'+fmt1(m)+'<br>J'+x.p.id+'</div>';}).join('')+'</div>';
+  }
+  return h+'</div>';
+};
+window.valJugadorMini=function(j){
+  var S=statsJ(j);if(!S.lista.length)return '';
+  return '<div class="vl-mini">⭐ '+fmt1(S.media)+' <span>· '+S.lista.length+' partido'+(S.lista.length!==1?'s':'')+' valorado'+(S.lista.length!==1?'s':'')+'</span></div>';
+};
+window.valBadge=function(j){
+  var S=statsJ(j);if(!S.lista.length)return '';
+  return '<span title="Media de valoración en partidos ('+S.lista.length+')" style="font-size:10px;font-weight:800;color:#F97316;white-space:nowrap">⭐'+fmt1(S.media)+'</span>';
+};
+
+/* ── WhatsApp ── */
+function textoWA(p){
+  var rows=ordenar(statsP(p)).filter(function(r){return r.n>0;});
+  var t='🔒 *Valoración · solo cuerpo técnico*\n';
+  t+='⚽ *'+((typeof CLUB!=='undefined'&&CLUB.nombre)||'Mi equipo')+'*'+((typeof CLUB!=='undefined'&&CLUB.categoria)?' · '+CLUB.categoria:'')+'\n';
+  t+='🆚 *'+(p.local?'vs ':'en ')+(p.rival||'Rival')+'* · Jornada '+p.id+(p.tipo?' · '+p.tipo:'')+'\n';
+  var f=fechaLarga(p.fecha);if(f)t+='📅 '+f+'\n';
+  try{if(_partidoJugado(p)){var tt=getPartidoTotales(p);t+='📊 Resultado: *'+tt.gf+' – '+tt.gc+'* '+(tt.r==='V'?'✅':tt.r==='D'?'❌':'🟡')+'\n';}}catch(e){}
+  t+='\n';
+  var largo=rows.length>12;
+  rows.forEach(function(r){
+    var tot=r.total!=null?fmt1(r.total)+'/25':fmt1(r.media)+'/5*';
+    t+='*'+r.j.nombre+'* '+tot;
+    if(!largo)t+=' · '+CRIT.map(function(c){return c.n.slice(0,3)+' '+(r.c[c.k]==null?'–':fmt1(r.c[c.k]));}).join(' · ');
+    t+='\n';
+  });
+  if(rows.some(function(r){return r.total==null;}))t+='\n_* valoración parcial (media de lo puntuado)_\n';
+  if(p.notasValoracion)t+='\n📝 '+p.notasValoracion+'\n';
+  return t.trim();
+}
+window.valTexto=textoWA;
+window.valWA=function(id){
+  var p=getP(id);if(!p)return;
+  if(!statsP(p).some(function(r){return r.n>0;})){aviso('Todavía no hay valoraciones que enviar');return;}
+  window.open('https://wa.me/?text='+encodeURIComponent(textoWA(p)),'_blank');
+};
+
+/* ── PDF (hoja en blanco para el campo / informe) ── */
+var NAVY='#0F2744',ORG='#F97316',MUT='#566882',LINEC='#D5DDE8',FONT='"Helvetica Neue",Helvetica,Arial,sans-serif';
+var W=1240,H=1754,M=44;
+function fit(g,txt,maxW,px,weight){var s=px;g.font=weight+' '+s+'px '+FONT;while(g.measureText(txt).width>maxW&&s>9){s-=1;g.font=weight+' '+s+'px '+FONT;}return s;}
+function rr(g,x,y,w,h,r){g.beginPath();if(g.roundRect)g.roundRect(x,y,w,h,r);else g.rect(x,y,w,h);}
+function wrapTxt(g,txt,maxW,maxLines){
+  var words=String(txt).split(/\s+/),lines=[],cur='';
+  for(var i=0;i<words.length;i++){
+    var t=cur?cur+' '+words[i]:words[i];
+    if(g.measureText(t).width>maxW&&cur){lines.push(cur);cur=words[i];}else cur=t;
+  }
+  if(cur)lines.push(cur);
+  if(lines.length>maxLines){lines=lines.slice(0,maxLines);var l=lines[maxLines-1];while(l.length>1&&g.measureText(l+'…').width>maxW)l=l.slice(0,-1);lines[maxLines-1]=l+'…';}
+  return lines;
+}
+async function cargarLogo(){
+  try{var src=localStorage.getItem('clubLogo');if(src){var im=new Image();im.src=src;await im.decode();return im;}}catch(e){}
+  return null;
+}
+function resultadoPartido(p){
+  var off=null;
+  if(p.resultadoFinal){var m=String(p.resultadoFinal).split('-');if(m.length===2&&m[0].trim()!==''&&m[1].trim()!==''&&!isNaN(+m[0])&&!isNaN(+m[1]))off={gf:+m[0],gc:+m[1]};}
+  if(off)return off;
+  try{if(_partidoJugado(p)){var t=getPartidoTotales(p);return {gf:t.gf,gc:t.gc};}}catch(e){}
+  return null;
+}
+function golesCuarto(p,i){
+  var pe=per(p,i)||{},gl=toArr(pe.goles);
+  var gf=gl.filter(function(g){return !g.esPropio;}).length,gc=gl.filter(function(g){return g.esPropio;}).length+(pe.golesRival||0);
+  return {gf:gf,gc:gc,any:gl.length>0||(pe.golesRival||0)>0};
+}
+/* cabecera común; devuelve la y donde empieza el contenido */
+function cabecera(g,p,titulo,logo,res){
+  g.fillStyle=NAVY;g.fillRect(0,0,W,108);g.fillStyle=ORG;g.fillRect(0,108,W,6);
+  var tx=M;
+  if(logo&&logo.naturalWidth){
+    var sc=Math.min(86/logo.naturalWidth,86/logo.naturalHeight),lw=logo.naturalWidth*sc,lh=logo.naturalHeight*sc;
+    g.fillStyle='#fff';rr(g,M,10,96,88,14);g.fill();g.drawImage(logo,M+(96-lw)/2,10+(88-lh)/2,lw,lh);tx=M+116;
+  }
+  var club=(typeof CLUB!=='undefined'&&CLUB.nombre)||'Mi equipo';
+  g.textBaseline='alphabetic';g.textAlign='left';
+  g.fillStyle='#fff';fit(g,String(club).toUpperCase(),W-tx-M,38,'800');g.fillText(String(club).toUpperCase(),tx,50);
+  var l2=[(typeof CLUB!=='undefined')&&CLUB.categoria,(typeof CLUB!=='undefined')&&CLUB.temporada].filter(Boolean).join('  ·  ');
+  g.fillStyle='#BFD0E6';fit(g,l2,W-tx-M,22,'500');g.fillText(l2,tx,78);
+  var f=fmtP(p);
+  g.fillStyle='#FDBA74';var l3=(FN[f]||f).toUpperCase()+'  ·  '+titulo.toUpperCase();fit(g,l3,W-tx-M,18,'700');g.fillText(l3,tx,100);
+  g.fillStyle=ORG;g.font='700 20px '+FONT;g.fillText(('Jornada '+p.id+(p.tipo?'  ·  '+p.tipo:'')).toUpperCase(),M,150);
+  g.fillStyle=NAVY;var rv='vs '+(p.rival||'Rival sin definir');fit(g,rv,W-2*M-330,44,'800');g.fillText(rv,M,196);
+  g.fillStyle=MUT;var det=[p.local?'LOCAL':'VISITANTE',fechaLarga(p.fecha),p.hora?p.hora+' h':''].filter(Boolean).join('  ·  ');
+  fit(g,det,W-2*M-330,21,'500');g.fillText(det,M,226);
+  var bx=W-M-300,by=128,bw=300,bh=102;
+  g.fillStyle='#EEF2F7';rr(g,bx,by,bw,bh,14);g.fill();
+  g.fillStyle=MUT;g.textAlign='center';g.font='700 16px '+FONT;g.fillText('RESULTADO FINAL',bx+bw/2,by+26);
+  g.fillStyle=NAVY;g.font='800 52px '+FONT;g.fillText(res?(res.gf+'  –  '+res.gc):'___  –  ___',bx+bw/2,by+82);
+  g.textAlign='left';
+  return 250;
+}
+function leyenda(g,y){
+  g.fillStyle=MUT;g.font='500 15px '+FONT;
+  var t='Rodea del 1 al 5 (1 = mejorable · 3 = correcto · 5 = muy bien).   '+CRIT.map(function(c){return c.n+': '+c.d;}).join('  ·  ');
+  var ls=wrapTxt(g,t,W-2*M,2);ls.forEach(function(l,i){g.fillText(l,M,y+i*20);});
+  return y+ls.length*20+8;
+}
+function circulo(g,cx,cy,d,num,on){
+  g.beginPath();g.arc(cx,cy,d/2,0,Math.PI*2);
+  if(on){g.fillStyle=ORG;g.fill();g.lineWidth=2;g.strokeStyle=ORG;g.stroke();}
+  else{g.fillStyle='#fff';g.fill();g.lineWidth=1.8;g.strokeStyle='#8A96B0';g.stroke();}
+  g.fillStyle=on?NAVY:'#6B7690';g.font=(on?'800 ':'500 ')+Math.round(d*0.55)+'px '+FONT;g.textAlign='center';g.textBaseline='middle';g.fillText(String(num),cx,cy+1);
+  g.textAlign='left';g.textBaseline='alphabetic';
+}
+function lleno(p,i,s,c){return s.j?getV(p,i,s.j,c):null;}
+
+/* hoja de cuartos: en blanco (campo) o rellena (informe) */
+async function hojaCanvas(p,opt){
+  var cv=document.createElement('canvas');cv.width=W;cv.height=H;
+  var g=cv.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,W,H);
+  var y=cabecera(g,p,opt.filled?'Valoración · detalle por cuarto':'Hoja de valoración',opt.logo,opt.filled?resultadoPartido(p):null);
+  y=leyenda(g,y+12);
+  var qs=opt.qs,N=0;qs.forEach(function(i){N+=slots(p,i).length;});
+  var pie=opt.obs?150:60,blq=52;
+  var avail=H-y-pie-qs.length*blq;
+  var rh=Math.min(46,Math.floor(avail/N));
+  var nameW=330,colW=(W-2*M-nameW)/CRIT.length,d=Math.min(27,rh-8);
+  qs.forEach(function(i){
+    var S=slots(p,i),pe=per(p,i)||{};
+    g.save();rr(g,M,y,W-2*M,blq-8+S.length*rh,12);g.clip();
+    g.fillStyle=NAVY;g.fillRect(M,y,W-2*M,44);
+    g.fillStyle='#fff';g.font='800 22px '+FONT;g.textAlign='left';g.textBaseline='middle';g.fillText((i+1)+'.º CUARTO',M+14,y+23);
+    g.font='500 15px '+FONT;g.fillStyle='#FDBA74';
+    var gq=golesCuarto(p,i);
+    g.fillText(formQ(p,pe)+(opt.filled?(gq.any?'   '+gq.gf+' – '+gq.gc:''):'   ___ – ___'),M+14+g.measureText((i+1)+'.º CUARTO').width+34,y+24);
+    g.fillStyle='#fff';g.font='700 15px '+FONT;g.textAlign='center';
+    CRIT.forEach(function(c,ci){g.fillText(c.n,M+nameW+ci*colW+colW/2,y+24);});
+    g.textAlign='left';g.textBaseline='alphabetic';
+    S.forEach(function(s,r){
+      var ry=y+44+r*rh;
+      g.fillStyle=r%2?'#F3F5F9':'#FFFFFF';g.fillRect(M,ry,W-2*M,rh);
+      g.fillStyle=LINEC;g.fillRect(M,ry,W-2*M,1);
+      var cy=ry+rh/2;
+      g.fillStyle=ORG;rr(g,M+12,cy-11,s.pos.l.length>4?66:58,22,5);g.fill();
+      g.fillStyle='#fff';g.font='800 13px '+FONT;g.textAlign='center';g.textBaseline='middle';g.fillText(s.pos.l,M+12+(s.pos.l.length>4?33:29),cy+1);
+      g.textAlign='left';
+      var nx=M+12+(s.pos.l.length>4?66:58)+12;
+      if(s.j){
+        g.fillStyle=ORG;g.font='800 20px '+FONT;g.fillText('#'+s.j.dorsal,nx,cy+1);
+        var dw=g.measureText('#'+s.j.dorsal).width;
+        g.fillStyle=NAVY;fit(g,String(s.j.nombre),nameW-(nx-M)-dw-18,22,'600');g.fillText(String(s.j.nombre),nx+dw+8,cy+1);
+      }else{g.fillStyle='#9AA7BD';g.font='italic 500 18px '+FONT;g.fillText('(sin asignar)',nx,cy+1);}
+      g.textBaseline='alphabetic';
+      CRIT.forEach(function(c,ci){
+        var x0=M+nameW+ci*colW;
+        g.fillStyle=LINEC;g.fillRect(x0,ry,1,rh);
+        var val=lleno(p,i,s,c.k),step=Math.min(colW/5.15,d+6);
+        for(var k=1;k<=5;k++)circulo(g,x0+colW/2+(k-3)*step,cy,d,k,opt.filled&&val===k);
+      });
+    });
+    g.restore();
+    g.lineWidth=1.5;g.strokeStyle=NAVY;rr(g,M,y,W-2*M,blq-8+S.length*rh,12);g.stroke();
+    y+=blq+S.length*rh;
+  });
+  if(opt.obs){
+    g.lineWidth=1.5;g.strokeStyle=NAVY;rr(g,M,H-pie+10,W-2*M,pie-44,12);g.stroke();
+    g.fillStyle=NAVY;g.font='800 16px '+FONT;g.fillText('OBSERVACIONES PARA CONVOCATORIAS',M+14,H-pie+36);
+    if(opt.filled&&p.notasValoracion){g.fillStyle=MUT;g.font='500 17px '+FONT;wrapTxt(g,p.notasValoracion,W-2*M-28,3).forEach(function(l,k){g.fillText(l,M+14,H-pie+62+k*22);});}
+  }
+  g.fillStyle='#8A96B0';g.font='500 14px '+FONT;g.textAlign='center';
+  g.fillText('Hoja de valoración · '+((typeof CLUB!=='undefined'&&CLUB.nombre)||'Mi equipo')+(opt.pagina?'  ·  '+opt.pagina:''),W/2,H-22);g.textAlign='left';
+  return cv;
+}
+
+/* página de resumen del informe */
+async function resumenCanvas(p,logo){
+  var cv=document.createElement('canvas');cv.width=W;cv.height=H;
+  var g=cv.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,W,H);
+  var y=cabecera(g,p,'Valoración · resumen',logo,resultadoPartido(p));
+  y+=14;
+  var rows=ordenar(statsP(p)).filter(function(r){return r.n>0;});
+  var cw=[330,86,0,0,0,0,0,150];var colW=(W-2*M-330-86-150)/CRIT.length;
+  g.fillStyle=NAVY;rr(g,M,y,W-2*M,46,10);g.fill();
+  g.fillStyle='#fff';g.font='700 16px '+FONT;g.textBaseline='middle';g.textAlign='left';g.fillText('JUGADOR',M+16,y+24);
+  g.textAlign='center';g.fillText('CUARTOS',M+330+43,y+24);
+  CRIT.forEach(function(c,ci){g.fillText(c.n.toUpperCase(),M+330+86+ci*colW+colW/2,y+24);});
+  g.fillText('TOTAL /25',W-M-75,y+24);
+  y+=46;
+  var rh=Math.min(58,Math.floor((H-y-330)/Math.max(rows.length,1)));
+  rows.slice(0,24).forEach(function(r,k){
+    var ry=y+k*rh,cy=ry+rh/2;
+    g.fillStyle=k%2?'#F3F5F9':'#fff';g.fillRect(M,ry,W-2*M,rh);
+    g.textAlign='left';g.fillStyle=ORG;g.font='800 22px '+FONT;g.fillText('#'+r.j.dorsal,M+16,cy+1);
+    var dw=g.measureText('#'+r.j.dorsal).width;
+    g.fillStyle=NAVY;fit(g,String(r.j.nombre),300-dw-34,24,'700');g.fillText(String(r.j.nombre),M+16+dw+10,cy+1);
+    g.textAlign='center';g.fillStyle=MUT;g.font='600 20px '+FONT;g.fillText(String(r.q),M+330+43,cy+1);
+    CRIT.forEach(function(c,ci){
+      var v=r.c[c.k],cx=M+330+86+ci*colW+colW/2;
+      if(v==null){g.fillStyle='#9AA7BD';g.font='600 20px '+FONT;g.fillText('–',cx,cy+1);return;}
+      var col=v>=4?'#DCFCE7':v>=3?'#FEF3C7':'#FEE2E2',tc=v>=4?'#166534':v>=3?'#92400E':'#991B1B';
+      g.fillStyle=col;rr(g,cx-34,cy-17,68,34,9);g.fill();g.fillStyle=tc;g.font='800 20px '+FONT;g.fillText(fmt1(v),cx,cy+1);
+    });
+    g.fillStyle=NAVY;g.font='800 26px '+FONT;g.fillText(r.total!=null?fmt1(r.total):'–',W-M-75,cy-(r.total!=null?6:0)+1);
+    if(r.total!=null){g.fillStyle=MUT;g.font='500 14px '+FONT;g.fillText('media '+fmt1(r.media),W-M-75,cy+16);}
+    else if(r.media!=null){g.fillStyle=MUT;g.font='500 14px '+FONT;g.fillText('parcial · '+fmt1(r.media),W-M-75,cy+14);}
+  });
+  g.textBaseline='alphabetic';g.textAlign='left';
+  var oy=H-300;
+  g.fillStyle=MUT;g.font='500 15px '+FONT;
+  wrapTxt(g,'Cada criterio es la media de los cuartos jugados. El total suma los 5 criterios (máximo 25) y solo se calcula si los 5 están puntuados. '+CRIT.map(function(c){return c.n+': '+c.d;}).join(' · '),W-2*M,3).forEach(function(l,k){g.fillText(l,M,oy+k*20);});
+  g.lineWidth=1.5;g.strokeStyle=NAVY;rr(g,M,oy+78,W-2*M,170,12);g.stroke();
+  g.fillStyle=NAVY;g.font='800 16px '+FONT;g.fillText('OBSERVACIONES PARA CONVOCATORIAS',M+14,oy+106);
+  if(p.notasValoracion){g.fillStyle=MUT;g.font='500 19px '+FONT;wrapTxt(g,p.notasValoracion,W-2*M-28,5).forEach(function(l,k){g.fillText(l,M+14,oy+138+k*26);});}
+  g.fillStyle='#8A96B0';g.font='500 14px '+FONT;g.textAlign='center';
+  g.fillText('Informe de valoración · '+((typeof CLUB!=='undefined'&&CLUB.nombre)||'Mi equipo'),W/2,H-22);g.textAlign='left';
+  return cv;
+}
+
+/* PDF de varias páginas (cada una, una imagen JPEG a pantalla completa A4) */
+function b64Bytes(b64){var bin=atob(b64),u=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return u;}
+function pdfJpegs(jpgs,w,h){
+  var parts=[],len=0,offs={};
+  function enc(s){var u=new Uint8Array(s.length);for(var i=0;i<s.length;i++)u[i]=s.charCodeAt(i)&255;return u;}
+  function push(u){parts.push(u);len+=u.length;}
+  function obj(id,body){offs[id]=len;push(enc(id+' 0 obj\n'+body+'\nendobj\n'));}
+  push(enc('%PDF-1.4\n'));
+  var n=jpgs.length,kids=[];
+  for(var i=0;i<n;i++)kids.push((3+3*i)+' 0 R');
+  obj(1,'<< /Type /Catalog /Pages 2 0 R >>');
+  obj(2,'<< /Type /Pages /Kids ['+kids.join(' ')+'] /Count '+n+' >>');
+  for(var k=0;k<n;k++){
+    var pid=3+3*k,cid=4+3*k,iid=5+3*k;
+    obj(pid,'<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /XObject << /Im0 '+iid+' 0 R >> >> /Contents '+cid+' 0 R >>');
+    var c='q 595.28 0 0 841.89 0 0 cm /Im0 Do Q';
+    obj(cid,'<< /Length '+c.length+' >>\nstream\n'+c+'\nendstream');
+    offs[iid]=len;
+    push(enc(iid+' 0 obj\n<< /Type /XObject /Subtype /Image /Width '+w+' /Height '+h+' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length '+jpgs[k].length+' >>\nstream\n'));
+    push(jpgs[k]);push(enc('\nendstream\nendobj\n'));
+  }
+  var total=3*n+3,xref=len,x='xref\n0 '+total+'\n0000000000 65535 f \n';
+  for(var j=1;j<total;j++)x+=String(offs[j]).padStart(10,'0')+' 00000 n \n';
+  push(enc(x+'trailer\n<< /Size '+total+' /Root 1 0 R >>\nstartxref\n'+xref+'\n%%EOF'));
+  var all=new Uint8Array(len),pos=0;parts.forEach(function(u){all.set(u,pos);pos+=u.length;});
+  var s='',CH=0x8000;for(var a=0;a<all.length;a+=CH)s+=String.fromCharCode.apply(null,all.subarray(a,a+CH));
+  return btoa(s);
+}
+async function generarPDF(p,tipo){
+  var logo=await cargarLogo(),pages=[],cvs=[];
+  var N=slots(p,0).length;
+  var dosPaginas=(function(){var y0=250+12+60,avail=H-y0-150-4*52;return Math.floor(avail/(4*N))<34;})();
+  var grupos=dosPaginas?[[0,1],[2,3]]:[[0,1,2,3]];
+  if(tipo==='informe')cvs.push(await resumenCanvas(p,logo));
+  for(var gi=0;gi<grupos.length;gi++){
+    cvs.push(await hojaCanvas(p,{filled:tipo==='informe',qs:grupos[gi],logo:logo,obs:tipo==='campo'&&gi===grupos.length-1,pagina:grupos.length>1?'hoja '+(gi+1)+' de '+grupos.length:''}));
+  }
+  cvs.forEach(function(cv){pages.push(b64Bytes(cv.toDataURL('image/jpeg',0.92).split(',')[1]));});
+  return pdfJpegs(pages,W,H);
+}
+window.valGenPDF=generarPDF;
+
+/* entrega: APK (hoja de compartir), móvil (compartir) u ordenador (descarga) */
+function esNativo(){try{return !!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform());}catch(e){return false;}}
+function esMovil(){return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent||'');}
+function entregar(nombre,mime,b64){
+  if(esNativo()&&window.CapacitorFilesystem&&window.CapacitorShare){
+    window.CapacitorFilesystem.writeFile({path:nombre,data:b64,directory:'CACHE'}).then(function(res){
+      return window.CapacitorShare.share({title:nombre,text:nombre,url:res.uri,dialogTitle:'¿Dónde enviar el archivo?'});
+    }).catch(function(err){console.error(err);alert('No se pudo compartir el archivo: '+(err&&err.message?err.message:err));});
+    return;
+  }
+  var u8=b64Bytes(b64);
+  try{
+    if(esMovil()&&navigator.canShare&&navigator.share){
+      var file=new File([u8],nombre,{type:mime});
+      if(navigator.canShare({files:[file]})){navigator.share({files:[file],title:nombre}).catch(function(){});return;}
+    }
+  }catch(e){}
+  var blob=new Blob([u8],{type:mime}),a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);a.download=nombre;document.body.appendChild(a);a.click();
+  setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},1500);
+}
+var generando=false;
+window.valPDF=async function(id,tipo){
+  var p=getP(id);if(!p||generando)return;
+  if(tipo==='informe'&&!statsP(p).some(function(r){return r.n>0;})){aviso('Todavía no hay valoraciones: puntúa algún cuarto o usa la hoja para el campo');return;}
+  generando=true;aviso('Generando PDF…');
+  try{
+    var b64=await generarPDF(p,tipo);
+    entregar((tipo==='informe'?'valoracion_J':'hoja_campo_J')+p.id+'_'+slug(p.rival||'rival')+'.pdf','application/pdf',b64);
+  }catch(e){console.error(e);alert('No se pudo generar el PDF: '+(e&&e.message?e.message:e));}
+  generando=false;
+};
+})();
+</script>
+
 
 <script>
 // ═══════════ PLANTILLA: reordenar jugadores e intercambiar historial ═══════════
@@ -5995,6 +6610,7 @@ function swapHistorial(a,b){
     toArr(p.periodos).forEach(pe=>{
       const al=pe.alineacion||{};Object.keys(al).forEach(k=>{al[k]=sw(al[k]);});
       toArr(pe.goles).forEach(g=>{g.jugadorId=sw(g.jugadorId);});
+      const vl=pe.val;if(vl){const ka='j'+a,kb='j'+b,x=vl[ka],y=vl[kb];if(y===undefined)delete vl[ka];else vl[ka]=y;if(x===undefined)delete vl[kb];else vl[kb]=x;}
     });
   });
   const A=JUGADORES.find(j=>j.id==a),B=JUGADORES.find(j=>j.id==b);
