@@ -579,7 +579,7 @@ body.role-coach .manager-only-el{opacity:0.3;pointer-events:none;cursor:not-allo
       <option>Calentamiento</option><option>Físico</option><option>Técnica</option>
       <option>Táctica</option><option>Juego dinámico</option><option>Portero</option><option>Otro</option>
     </select>
-    <input id="bib-busca" placeholder="🔍 Buscar..." oninput="renderBiblioteca()" style="flex:1;min-width:140px;border:1px solid #E2E8F0;border-radius:8px;padding:8px 11px;font-size:13px;outline:none">
+    <input id="bib-busca" placeholder="🔍 Buscar por nombre, código o texto…" oninput="renderBiblioteca()" style="flex:1;min-width:140px;border:1px solid #E2E8F0;border-radius:8px;padding:8px 11px;font-size:13px;outline:none">
     <select id="bib-orden" onchange="try{localStorage.setItem('bib_orden',this.value)}catch(e){}renderBiblioteca()" title="Orden de la lista" style="border:1px solid #E2E8F0;border-radius:8px;padding:8px 11px;font-size:13px;outline:none;background:white">
       <option value="cat">🔢 Categoría y número</option>
       <option value="num">🔢 Solo por número</option>
@@ -2862,8 +2862,15 @@ function bibOrdenar(arr){
 function renderBiblioteca(){
   etRenderIds();
   const cat=document.getElementById("bib-cat")?.value||"";
-  const bq=(document.getElementById("bib-busca")?.value||"").toLowerCase();
-  let filt=BIBLIOTECA.filter(e=>(!cat||e.categoria===cat)&&(!bq||e.nombre.toLowerCase().includes(bq)||e.descripcion.toLowerCase().includes(bq)));
+  const bqRaw=(document.getElementById("bib-busca")?.value||"").trim();
+  const nrm=t=>String(t||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
+  const bqT=nrm(bqRaw).split(/\s+/).filter(Boolean);
+  let filt=BIBLIOTECA.filter(e=>{
+    if(cat&&e.categoria!==cat)return false;
+    if(!bqT.length)return true;
+    const pajar=nrm([e.id,e.nombre,e.descripcion,e.material,e.provocacion,e.categoria].join(" "));
+    return bqT.every(w=>pajar.includes(w));
+  });
   filt=bibOrdenar(filt);
   document.getElementById("bib-body").innerHTML=filt.length?filt.map((e,i)=>`
     <div class="ej-card" style="border-left-color:${catColor(e.categoria)}">
@@ -2886,8 +2893,8 @@ function renderBiblioteca(){
       ${e.dibujo?etImgHTML(e.dibujo):""}
     </div>`).join(""):`<div style="grid-column:1/-1;text-align:center;padding:40px;color:#94A3B8">
       <div style="font-size:40px;margin-bottom:10px">📚</div>
-      <div style="font-size:14px;font-weight:600">Biblioteca vacía</div>
-      <div style="font-size:12px;margin-top:5px">Añade tus propios ejercicios con el botón + Añadir ejercicio</div>
+      <div style="font-size:14px;font-weight:600">${BIBLIOTECA.length?"Sin resultados":"Biblioteca vacía"}</div>
+      <div style="font-size:12px;margin-top:5px">${BIBLIOTECA.length?"Prueba con otra palabra, con el código (por ejemplo tec-037) o cambia la categoría":"Añade tus propios ejercicios con el botón + Añadir ejercicio"}</div>
     </div>`;
 }
 function catColor(c){const m={Calentamiento:"#F97316",Físico:"#DC2626",Técnica:"#2563EB",Táctica:"#16A34A","Juego dinámico":"#7C3AED",Portero:"#0891B2",Otro:"#6B7280"};return m[c]||"#94A3B8";}
