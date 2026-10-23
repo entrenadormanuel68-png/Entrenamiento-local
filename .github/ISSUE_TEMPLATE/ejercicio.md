@@ -1,24 +1,31 @@
 ---
 name: 📚 Nuevo ejercicio para la Biblioteca
-about: Propón un ejercicio para añadir a la biblioteca
+about: Propón un ejercicio para añadir a la biblioteca del club
 labels: biblioteca, good first issue
 ---
+
+<!-- Consejo: créalo en la app (Biblioteca → Nuevo ejercicio), pulsa "Exportar JSON" y adjunta el archivo aquí. -->
 
 ## Nombre del ejercicio
 
 ## Categoría
-<!-- Tecnica / Tactica / Fisico / Posesion / Porteros -->
+<!-- Calentamiento / Físico / Técnica / Táctica / Juego dinámico / Portero / Otro -->
 
-## Descripción del ejercicio
+## Objetivo
+
+## Descripción y pasos
+
+## Variantes (opcional)
+
+## Precauciones (opcional)
 
 ## Número de jugadores
+
+## Edades recomendadas
 
 ## Duración estimada
 
 ## Material necesario
 
-## Nivel
-<!-- Basico / Medio / Avanzado -->
-
-## Fase de la sesión
-<!-- Calentamiento / Principal / Vuelta a la calma -->
+## Dibujo o imagen
+<!-- Adjunta el JSON exportado, una pizarra o una imagen ligera (menos de ~100 KB) -->

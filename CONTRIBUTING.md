@@ -1,118 +1,98 @@
-🤝 Cómo contribuir a Entrenamiento Total
-¡Gracias por tu interés en mejorar esta app! Este documento explica cómo participar, tanto si eres programador como si eres entrenador con ideas.
+# 🤝 Cómo contribuir a Entrenamiento Total
+
+¡Gracias por querer ayudar! Puedes aportar **ejercicios**, **pizarras**, **ideas** o **correcciones**, aunque no sepas programar.
+
 ---
-🧭 Antes de empezar
-Lee el README.md para entender qué hace la app y el Roadmap para ver qué mejoras están planificadas. Así evitas trabajar en algo que ya está en marcha.
+
+## 💡 Formas de contribuir
+
+| Quiero… | Qué hacer |
+|---|---|
+| Proponer un ejercicio | Abre un Issue con la plantilla **Ejercicio** |
+| Compartir una pizarra | Abre un Issue y adjunta el JSON exportado de la pizarra |
+| Sugerir una mejora | Abre un Issue con la plantilla **Propuesta** |
+| Avisar de un error | Abre un Issue con la plantilla **Bug** |
+| Preguntar o hablar de ideas | Pestaña **Discussions** |
+| Cambiar código o datos | Pull Request (ver abajo) |
+
 ---
-💡 Tengo una idea pero no sé programar
-¡Perfecto! Las ideas son tan valiosas como el código.
-Ve a la pestaña Issues
-Haz clic en New Issue
-Elige la plantilla "Propuesta de mejora"
-Describe tu idea con el máximo detalle posible:
-¿Qué problema resuelve?
-¿Cómo imaginas que funcionaría?
-¿En qué sección de la app encajaría?
-También puedes abrir una Discussion para debatir ideas más abiertas antes de formalizarlas como Issue.
----
-🐛 Encontré un error
-Ve a Issues y busca si ya está reportado
-Si no existe, abre uno nuevo con la plantilla "Bug report"
-Incluye:
-Qué paso a paso hiciste
-Qué resultado esperabas
-Qué resultado obtuviste
-Navegador y sistema operativo
----
-💻 Quiero contribuir con código
-1. Haz un fork del repositorio
-```bash
-# Haz clic en "Fork" en la parte superior derecha de GitHub
-# Luego clona tu fork:
-git clone https://github.com/TU-USUARIO/Entrenamiento-local.git
-cd Entrenamiento-local
-```
-2. Crea una rama para tu cambio
-Usa nombres descriptivos:
-```bash
-git checkout -b feature/ejercicios-conduccion
-# o para bugs:
-git checkout -b fix/error-asistencia
-```
-3. Haz tus cambios
-La app es un único archivo `index.html`. Está organizado en secciones claramente marcadas con comentarios:
-```
-// ═══════════════════════════════════════════
-// SECCIÓN: BIBLIOTECA
-// ═══════════════════════════════════════════
-```
-Busca el bloque correspondiente a la sección que quieres modificar.
-Convenciones:
-Usa español en los textos visibles de la app
-Mantén el mismo estilo CSS (variables y clases existentes)
-No añadas dependencias externas — la app debe seguir siendo un único archivo sin internet
-Prueba en Chrome y en Firefox antes de enviar
-4. Sube tu rama y abre un Pull Request
-```bash
-git add .
-git commit -m "feat: añadir ejercicios de conducción a la biblioteca"
-git push origin feature/ejercicios-conduccion
-```
-Luego ve a tu fork en GitHub y haz clic en "Compare & pull request".
-En la descripción del PR incluye:
-Qué cambiaste y por qué
-Capturas de pantalla si tocaste la interfaz
-El número del Issue relacionado (ej: `Cierra #12`)
----
-📚 Cómo añadir ejercicios a la Biblioteca
-Esta es una de las contribuciones más valiosas y accesibles. Los ejercicios están definidos como objetos JavaScript dentro de `index.html`.
-Busca el bloque:
-```javascript
-// ═══════ BIBLIOTECA DE EJERCICIOS ═══════
-```
-Cada ejercicio tiene esta estructura:
-```javascript
+
+## 📚 Aportar ejercicios a la biblioteca del club
+
+### La forma más fácil (sin tocar código)
+1. En la app, ve a **Biblioteca → ➕ Nuevo ejercicio** y créalo (con imagen o con dibujo de pizarra)
+2. Pulsa **📤 Exportar JSON**
+3. Abre un Issue con la plantilla **Ejercicio** y adjunta el archivo
+
+### Formato de un ejercicio (`ejercicios.json`)
+
+```json
 {
-  nombre: "Rondo 4v2",
-  categoria: "Posesion",        // Tecnica | Tactica | Fisico | Posesion | Porteros
-  descripcion: "Cuatro jugadores en círculo mantienen la posesión contra dos defensores centrales.",
-  jugadores: "6-10",
-  duracion: "10-15 min",
-  material: "Petos, conos",
-  nivel: "Medio",               // Basico | Medio | Avanzado
-  fase: "Principal"             // Calentamiento | Principal | Vuelta a la calma
+  "id": "tec-037",
+  "nombre": "Rondo 4x2 con dos toques",
+  "categoria": "Técnica",
+  "descripcion": "Objetivo: ... Pasos: ... Variantes: ... Precauciones: ... Edades: 8-12 · Duración: 10 min",
+  "material": "Conos, petos, 1 balón",
+  "jugadores": "6",
+  "rev": 1
 }
 ```
-Añade el tuyo siguiendo el mismo formato y abre un Pull Request.
+
+- **Categorías válidas:** `Calentamiento`, `Físico`, `Técnica`, `Táctica`, `Juego dinámico`, `Portero`, `Otro`
+- **Id:** prefijo de la categoría (`cal-`, `fis-`, `tec-`, `tac-`, `jue-`, `por-`, `otr-`) + número libre y **único** en toda la biblioteca
+- **Imagen:** si llevas una, que sea ligera (menos de ~100 KB). El dibujo de pizarra pesa mucho menos y es lo preferible
+- **No incluyas** la marca `"editado"`: es solo de uso interno de cada dispositivo
+
+### Corregir un ejercicio existente
+Sube el número `"rev"` (1 → 2 → 3…). Se actualiza en los dispositivos donde nadie lo haya editado. Para que se aplique también a quien lo editó (por ejemplo, un cambio de dibujo), añade `"forzar": true`: sustituye el ejercicio entero, imagen y dibujo incluidos.
+
+### Si hay muchos ejercicios
+La app lee `ejercicios.json`, `ejercicios-2.json`, `ejercicios-3.json`… en orden y se detiene en el primero que falte. Mantén la numeración sin saltos.
+
 ---
-🖊️ Cómo mejorar la Pizarra
-El campo de fútbol de la pizarra está en el bloque:
-```javascript
-// ═══════ PIZARRA TÁCTICA ═══════
-```
-Se dibuja con SVG dentro de un `div.campo-wrap`. Las posiciones de los jugadores son `div.campo-pos` posicionados en porcentaje. Si quieres añadir funcionalidades (dibujar líneas, animaciones) trabaja sobre este bloque y comenta bien tu código.
+
+## 🖊️ Aportar pizarras (`pizarras.json`)
+
+1. En la app, ve a **Pizarra**, dibuja y **💾 guarda** con un nombre claro y **único**
+2. **📤 Exportar** (una pizarra, JSON) o **Exportar todas**
+3. Adjúntalo en un Issue o en un Pull Request
+
+Formato del archivo: `{"app":..., "tipo":"pizarras", "v":1, "pizarras":[{"nombre":..., "fecha":..., "dibujo":{"f":..., "s":[...]}}]}`
+
+Reglas importantes:
+- Las pizarras se identifican por **nombre**. Una pizarra con el mismo nombre que otra ya publicada **no la sustituye**: usa otro nombre
+- Las que alguien ya borró o renombró no vuelven a aparecer
+- Procura no pasar de unas pocas decenas de figuras por pizarra
+
 ---
-✅ Checklist antes de enviar un Pull Request
-[ ] Probé los cambios en Chrome
-[ ] Probé los cambios en Firefox (o en móvil)
-[ ] No añadí dependencias externas
-[ ] El archivo sigue siendo un único `index.html` funcional
-[ ] Los textos visibles están en español
-[ ] Incluí una descripción clara en el PR
+
+## 🔧 Contribuir con código
+
+La app es **un único archivo**: `index.html` (HTML + CSS + JavaScript, sin frameworks ni dependencias).
+
+1. Haz un **fork** y clona tu copia
+2. Crea una rama: `git checkout -b mejora/nombre-corto`
+3. Abre `index.html` en el navegador para probar (no necesita servidor)
+4. Cambia lo mínimo necesario; mantén el estilo del código existente
+5. Prueba en móvil (la mayoría de usuarios la usan en el teléfono) y **sin conexión**
+6. Abre un **Pull Request** explicando qué cambia y por qué
+
+### Para tener en cuenta
+- Los datos se guardan en `localStorage`; no cambies el nombre de claves existentes sin una migración, o se perderán datos de los usuarios
+- Si cambias archivos que usa la app sin conexión, sube la `VERSION` de `service-worker.js`
+- La app se empaqueta con Capacitor desde `www/` (copia de `index.html`); las carpetas `android/` y `www/` se actualizan al preparar la APK
+- No añadas librerías externas ni llamadas a servidores de terceros
+
 ---
-🏷️ Etiquetas de Issues
-Etiqueta	Significado
-`good first issue`	Ideal para primeras contribuciones
-`enhancement`	Nueva funcionalidad o mejora
-`bug`	Algo que no funciona como debería
-`biblioteca`	Añadir ejercicios a la biblioteca
-`pizarra`	Mejoras en la pizarra táctica
-`sesiones`	Nuevas plantillas de sesiones
-`seguridad`	Mejoras de seguridad
-`ui/ux`	Cambios en la interfaz
-`discussion`	Idea abierta a debate
+
+## 🐛 Reportar un error
+
+Incluye: qué hacías, qué esperabas, qué ocurrió, dispositivo y navegador (o "APK Android"), y una captura si puedes.
+
 ---
-🙏 Código de conducta
-Sé respetuoso y constructivo. Este proyecto lo usa gente que dedica su tiempo libre al fútbol base. Toda contribución, grande o pequeña, es bienvenida.
----
-¿Dudas? Abre una Discussion y te respondemos
+
+## 📜 Normas
+
+Al participar aceptas el [Código de Conducta](CODE_OF_CONDUCT.md). Todo lo que aportes se publica bajo licencia [MIT](LICENSE).
+
+¡Gracias por ayudar a que más entrenadores de base tengan buenas herramientas! ⚽
