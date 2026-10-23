@@ -163,7 +163,7 @@ npx cap open android
 
 ---
 
-## 🗺️ Roadmap — Áreas donde puedes contribuir
+## 🗺️ Roadmap — Ideas para próximas versiones
 
 ### 📚 Biblioteca de ejercicios
 - [x] Biblioteca del club con actualización automática (v1.2)
@@ -206,13 +206,13 @@ npx cap open android
 - [ ] Soporte multiidioma (inglés, portugués, francés)
 - [ ] Versión PWA instalable en iOS
 
-¿Tienes otra idea? ¡Abre un Issue o una Discussion!
+¿Tienes otra idea? ¡Abre un Issue o una Discussion! Las nuevas funciones las desarrolla el autor.
 
 ---
 
 ## 🤝 Contribuir
 
-Las contribuciones son bienvenidas. Lee [`CONTRIBUTING.md`](CONTRIBUTING.md) para empezar. Hay plantillas para **proponer un ejercicio**, **compartir una pizarra**, **sugerir una mejora** o **reportar un error**.
+Las contribuciones son bienvenidas. Lee [`CONTRIBUTING.md`](CONTRIBUTING.md) para empezar. El código lo mantiene solo el autor; tú puedes aportar ejercicios, pizarras e ideas. Hay plantillas para **proponer un ejercicio**, **compartir una pizarra**, **sugerir una mejora** o **reportar un error**.
 Si es tu primera vez en open source, busca los issues con la etiqueta `good first issue`.
 
 ---

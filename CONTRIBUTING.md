@@ -13,7 +13,7 @@
 | Sugerir una mejora | Abre un Issue con la plantilla **Propuesta** |
 | Avisar de un error | Abre un Issue con la plantilla **Bug** |
 | Preguntar o hablar de ideas | Pestaña **Discussions** |
-| Cambiar código o datos | Pull Request (ver abajo) |
+| Añadir ejercicios o pizarras en el propio archivo JSON | Pull Request solo de datos (ver abajo) |
 
 ---
 
@@ -66,22 +66,13 @@ Reglas importantes:
 
 ---
 
-## 🔧 Contribuir con código
+## 🔧 Sobre el código
 
-La app es **un único archivo**: `index.html` (HTML + CSS + JavaScript, sin frameworks ni dependencias).
+El código de la app (`index.html`) lo mantiene **solo el autor del proyecto**. No se aceptan Pull Requests que cambien el código.
 
-1. Haz un **fork** y clona tu copia
-2. Crea una rama: `git checkout -b mejora/nombre-corto`
-3. Abre `index.html` en el navegador para probar (no necesita servidor)
-4. Cambia lo mínimo necesario; mantén el estilo del código existente
-5. Prueba en móvil (la mayoría de usuarios la usan en el teléfono) y **sin conexión**
-6. Abre un **Pull Request** explicando qué cambia y por qué
+Si ves algo que mejorar o que falla, no hace falta que lo programes: cuéntalo con un Issue (**Propuesta** o **Bug**) y se valorará para una próxima versión.
 
-### Para tener en cuenta
-- Los datos se guardan en `localStorage`; no cambies el nombre de claves existentes sin una migración, o se perderán datos de los usuarios
-- Si cambias archivos que usa la app sin conexión, sube la `VERSION` de `service-worker.js`
-- La app se empaqueta con Capacitor desde `www/` (copia de `index.html`); las carpetas `android/` y `www/` se actualizan al preparar la APK
-- No añadas librerías externas ni llamadas a servidores de terceros
+Los Pull Requests solo se aceptan para **datos del club**: ejercicios (`ejercicios.json`) y pizarras (`pizarras.json`), siguiendo los formatos de arriba. El mantenedor los revisa antes de publicarlos.
 
 ---
 
