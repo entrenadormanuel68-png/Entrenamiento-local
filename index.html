@@ -580,6 +580,11 @@ body.role-coach .manager-only-el{opacity:0.3;pointer-events:none;cursor:not-allo
       <option>Táctica</option><option>Juego dinámico</option><option>Portero</option><option>Otro</option>
     </select>
     <input id="bib-busca" placeholder="🔍 Buscar..." oninput="renderBiblioteca()" style="flex:1;min-width:140px;border:1px solid #E2E8F0;border-radius:8px;padding:8px 11px;font-size:13px;outline:none">
+    <select id="bib-orden" onchange="try{localStorage.setItem('bib_orden',this.value)}catch(e){}renderBiblioteca()" title="Orden de la lista" style="border:1px solid #E2E8F0;border-radius:8px;padding:8px 11px;font-size:13px;outline:none;background:white">
+      <option value="cat">🔢 Categoría y número</option>
+      <option value="num">🔢 Solo por número</option>
+      <option value="add">🕒 Orden de añadido</option>
+    </select>
   </div>
   <div id="bib-espacio" style="display:none;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:10px 12px;margin-bottom:14px"></div>
   <div id="et-ids" style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:10px;margin-bottom:12px"></div>
@@ -2838,11 +2843,28 @@ function exportarInformePartidoCSV(pid){
   downloadCSV(rows,`informe_${(p.rival||'rival').replace(/[^a-zA-Z0-9]/g,'_')}_${p.fecha||'sin_fecha'}.csv`);
 }
 
+function bibOrdenar(arr){
+  const so=document.getElementById("bib-orden");
+  let m="cat";
+  if(so){if(!so.dataset.ini){so.dataset.ini="1";try{const g=localStorage.getItem("bib_orden");if(g==="num"||g==="add"||g==="cat")so.value=g;}catch(e){}}m=so.value||"cat";}
+  if(m==="add")return arr;
+  const CATS=["Calentamiento","Físico","Técnica","Táctica","Juego dinámico","Portero","Otro"];
+  const num=e=>{const r=/(\d+)\s*$/.exec(e.id||"");return r?+r[1]:1e9;};
+  const ci=e=>{const k=CATS.indexOf(e.categoria);return k<0?99:k;};
+  return arr.map((e,k)=>[e,k]).sort((a,b)=>{
+    const x=a[0],y=b[0];
+    if(m==="cat"){const d=ci(x)-ci(y);if(d)return d;}
+    const n=num(x)-num(y);if(n)return n;
+    const d2=ci(x)-ci(y);if(d2)return d2;
+    return a[1]-b[1];
+  }).map(p=>p[0]);
+}
 function renderBiblioteca(){
   etRenderIds();
   const cat=document.getElementById("bib-cat")?.value||"";
   const bq=(document.getElementById("bib-busca")?.value||"").toLowerCase();
-  const filt=BIBLIOTECA.filter(e=>(!cat||e.categoria===cat)&&(!bq||e.nombre.toLowerCase().includes(bq)||e.descripcion.toLowerCase().includes(bq)));
+  let filt=BIBLIOTECA.filter(e=>(!cat||e.categoria===cat)&&(!bq||e.nombre.toLowerCase().includes(bq)||e.descripcion.toLowerCase().includes(bq)));
+  filt=bibOrdenar(filt);
   document.getElementById("bib-body").innerHTML=filt.length?filt.map((e,i)=>`
     <div class="ej-card" style="border-left-color:${catColor(e.categoria)}">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:5px">
