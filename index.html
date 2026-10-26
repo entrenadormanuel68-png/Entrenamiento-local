@@ -1393,7 +1393,7 @@ function renderResumen(){
       const _sj=window.extSesAlta?extSesAlta(j,sesRealizadas):sesRealizadas;const asistio=_sj.filter(s=>ASISTENCIA[s.num]&&ASISTENCIA[s.num][j.id]===true).length;
       const falta=_sj.length-asistio;
       const pct=_sj.length>0?Math.round(asistio/_sj.length*100):0;
-      return{...j,asistio,falta,pct,totalJ:_sj.length};
+      return{...j,asistio,falta,pct,totalJ:_sj.length,mot:(window.extTextoMot?extTextoMot(j,sesRealizadas):"")};
     }).sort((a,b)=>b.asistio-a.asistio);
     document.getElementById("res-asistencia").innerHTML=`
       <table style="width:100%;border-collapse:collapse;font-size:12px">
@@ -1407,7 +1407,7 @@ function renderResumen(){
         <tbody>${statsAsist.map((j,i)=>{
           const color=j.pct>=90?'#16A34A':j.pct>=70?'#F97316':'#DC2626';
           return`<tr style="border-bottom:1px solid #F1F5F9;background:${i%2===0?'white':'#FAFAFA'}">
-            <td style="padding:6px 8px;font-weight:600">${j.dorsal} ${j.nombre}</td>
+            <td style="padding:6px 8px;font-weight:600">${j.dorsal} ${j.nombre}${j.mot?'<div style="font-size:10px;font-weight:600;color:#64748B">'+j.mot+'</div>':''}</td>
             <td style="padding:6px 8px;text-align:center;font-weight:800;color:#1E3A5F">${j.asistio}/${j.totalJ}</td>
             <td style="padding:6px 8px;text-align:center;font-weight:700;color:#DC2626">${j.falta}</td>
             <td style="padding:6px 8px;text-align:center;font-weight:800;color:${color}">${j.pct}%</td>
@@ -2543,7 +2543,7 @@ function renderJugadorDetalle(){
         ${totalSesJ>0?`<div style="background:rgba(255,255,255,0.1);border-radius:8px;padding:8px 12px;text-align:center">
           <div style="font-size:11px;color:#93C5FD;margin-bottom:4px">📋 Asistencia</div>
           <div style="font-size:18px;font-weight:800;color:${colorAsistJ}">${asistioJ}/${totalSesJ}</div>
-          <div style="font-size:10px;color:${colorAsistJ}">${pctAsistJ}% · ${faltasJ} falta${faltasJ!==1?'s':''}</div>
+          <div style="font-size:10px;color:${colorAsistJ}">${pctAsistJ}% · ${faltasJ} falta${faltasJ!==1?'s':''}${window.extTextoMot&&extTextoMot(j,sesRealizadasJ)?' · '+extTextoMot(j,sesRealizadasJ):''}</div>
         </div>`:''}
       </div>
     </div>
@@ -2663,7 +2663,7 @@ function renderAsistencia(){
             <th style="padding:6px 10px;text-align:left;border-bottom:2px solid #E2E8F0"></th>
           </tr></thead>
           <tbody>${JUGADORES.filter(j=>j.activo!==false).map(j=>{
-            const sesConReg=Object.keys(ASISTENCIA).filter(n=>ASISTENCIA[n][j.id]!==undefined&&(!window.extAltaDe||+n>=extAltaDe(j.id)));
+            const sesConReg=Object.keys(ASISTENCIA).filter(n=>ASISTENCIA[n][j.id]!==undefined&&(!window.extContar||extContar(n,j.id)));
             const asistio=sesConReg.filter(n=>ASISTENCIA[n][j.id]===true).length;
             const total2=sesConReg.length;
             const pct=total2>0?Math.round(asistio/total2*100):0;
@@ -3736,7 +3736,8 @@ function asistenciaWA(){
   presentes.forEach((j,i)=>txt+=`  ${i+1}. #${j.dorsal} ${j.nombre}\n`);
   if(ausentes.length){
     txt+=`\n❌ *AUSENTES (${ausentes.length}):*\n`;
-    ausentes.forEach((j,i)=>txt+=`  ${i+1}. #${j.dorsal} ${j.nombre}\n`);
+    ausentes.forEach((j,i)=>txt+=`  ${i+1}. #${j.dorsal} ${j.nombre}${window.extMotivoTxt?extMotivoTxt(num,j.id):""}
+`);
   }
   txt+=`\n📊 Asistencia: ${presentes.length}/${JUGADORES.length} (${Math.round(presentes.length/JUGADORES.length*100)}%)`;
   window.open('https://wa.me/?text='+encodeURIComponent(txt),'_blank');
@@ -3751,14 +3752,14 @@ function asistenciaResumenWA(){
     const _sj=window.extSesAlta?extSesAlta(j,sesRealizadas):sesRealizadas;const asistio=_sj.filter(s=>ASISTENCIA[s.num]&&ASISTENCIA[s.num][j.id]===true).length;
     const falta=_sj.length-asistio;
     const pct=_sj.length>0?Math.round(asistio/_sj.length*100):0;
-    return{...j,asistio,falta,pct,totalJ:_sj.length};
+    return{...j,asistio,falta,pct,totalJ:_sj.length,mot:(window.extTextoMot?extTextoMot(j,sesRealizadas):"")};
   }).sort((a,b)=>b.asistio-a.asistio);
   let txt=`📋 *RESUMEN DE ASISTENCIA — ${CLUB.nombre||'Equipo'}*\n`;
   txt+=`📊 Total entrenamientos: ${totalSes}\n`;
   txt+=`━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
   stats.forEach(j=>{
     const emoji=j.pct>=90?'🟢':j.pct>=70?'🟡':'🔴';
-    txt+=`${emoji} #${j.dorsal} ${j.nombre}: ${j.asistio}/${j.totalJ} (${j.pct}%)`;
+    txt+=`${emoji} #${j.dorsal} ${j.nombre}: ${j.asistio}/${j.totalJ} (${j.pct}%)${j.mot?" · "+j.mot:""}`;
     if(j.falta>0)txt+=` — ${j.falta} falta${j.falta!==1?'s':''}`;
     txt+=`\n`;
   });
@@ -3808,7 +3809,7 @@ function asistenciaCSV(){
   const asist=ASISTENCIA[num]||{};
   const rows=[['Club',CLUB.nombre||''],['Sesión',num],['Tema',ses?.tema||''],['Fecha',fmtFecha(ses?.fechaReal||'')],['',''],
     ['Nº','Dorsal','Nombre','Posición','Asistencia']];
-  JUGADORES.forEach((j,i)=>rows.push([i+1,j.dorsal,j.nombre,j.posicion,asist[j.id]===true?'Presente':'Ausente']));
+  JUGADORES.forEach((j,i)=>rows.push([i+1,j.dorsal,j.nombre,j.posicion,asist[j.id]===true?'Presente':(window.extEtiqueta?extEtiqueta(num,j.id):'Ausente')]));
   const pct=Math.round(JUGADORES.filter(j=>asist[j.id]===true).length/JUGADORES.length*100);
   rows.push(['','','','','']);
   rows.push(['Total presentes',JUGADORES.filter(j=>asist[j.id]===true).length,'','','']);
@@ -7084,13 +7085,16 @@ async function msesLeerArchivo(ev){
 }
 </script>
 <script id="ext-mejoras">
-/* ext-mejoras — bloque aditivo (CSV de informe, incorporación por sesión, modo campo).
+/* ext-mejoras v2 — bloque aditivo (CSV de informe, incorporación por sesión, modo campo,
+   faltas justificadas y lesiones).
    Quitar este <script> devuelve la app a su comportamiento original
    (los ganchos mínimos del HTML tienen valor de reserva). */
 (function(){
 'use strict';
 var KEY='ext_alta';
 var ALTA={};          // { idJugador: nº de sesión desde la que cuenta }
+var MOT={};           // { nºSesión: { idJugador: 'J' (justificada) | 'L' (lesión) } } — solo vale si ASISTENCIA===false
+var KEYM='ext_motivo';
 var hooked=false, fbLoaded=false, campoAbierto=false;
 
 function warn(m,e){try{console.warn('[ext-mejoras] '+m,e||'');}catch(_){}}
@@ -7114,7 +7118,36 @@ function delAlta(id){
 }
 function altaDe(id){return ALTA[id]!=null?ALTA[id]:1;}
 window.extAltaDe=altaDe;
-window.extSesAlta=function(j,list){var a=altaDe(j.id);return list.filter(function(s){return s.num>=a;});};
+
+/* ───────── MOTIVO de la falta (justificada / lesión) ───────── */
+function normMot(v){var o={};if(v)Object.keys(v).forEach(function(n){var q=v[n];if(!q)return;var r={};Object.keys(q).forEach(function(id){if(q[id]==='J'||q[id]==='L')r[id]=q[id];});if(Object.keys(r).length)o[n]=r;});return o;}
+function loadMot(){try{MOT=normMot(JSON.parse(localStorage.getItem(KEYM)||'{}'));}catch(e){MOT={};}}
+function saveMot(){try{localStorage.setItem(KEYM,JSON.stringify(MOT));}catch(e){}}
+function motivoDe(n,id){var a=(typeof ASISTENCIA!=='undefined')&&ASISTENCIA[n];if(!a||a[id]!==false)return null;return (MOT[n]&&MOT[n][id])||null;}
+function setMot(n,id,m){
+  if(m){(MOT[n]=MOT[n]||{})[id]=m;}
+  else if(MOT[n]){delete MOT[n][id];if(!Object.keys(MOT[n]).length)delete MOT[n];}
+  saveMot();
+  var d=fb();if(d)d.ref(root()+'/'+KEYM+'/'+n+'/'+id).set(m||null).catch(function(e){warn('motivo',e);});
+}
+function limpiaMotSesion(n){
+  if(!MOT[n])return;var d=fb();
+  Object.keys(MOT[n]).forEach(function(id){if(d)d.ref(root()+'/'+KEYM+'/'+n+'/'+id).set(null).catch(function(e){warn('motivo',e);});});
+  delete MOT[n];saveMot();
+}
+/* ¿cuenta esa sesión para el porcentaje de ese jugador? (desde su alta y sin justificar/lesión) */
+function contar(n,id){return +n>=altaDe(id)&&!motivoDe(n,id);}
+window.extContar=contar;
+window.extMotivoDe=motivoDe;
+window.extSesAlta=function(j,list){return list.filter(function(s){return contar(s.num,j.id);});};
+window.extTextoMot=function(j,list){
+  var a=altaDe(j.id),nj=0,nl=0;
+  list.forEach(function(s){if(s.num<a)return;var m=motivoDe(s.num,j.id);if(m==='J')nj++;else if(m==='L')nl++;});
+  var t=[];if(nj)t.push(nj+' just.');if(nl)t.push(nl+(nl===1?' lesión':' lesiones'));
+  return t.join(' · ');
+};
+window.extEtiqueta=function(n,id){var m=motivoDe(n,id);return m==='J'?'Falta justificada':(m==='L'?'Lesión':'Ausente');};
+window.extMotivoTxt=function(n,id){var m=motivoDe(n,id);return m==='J'?' (justificada)':(m==='L'?' (lesión)':'');};
 
 function hoy(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function sesActual(){
@@ -7147,6 +7180,7 @@ function sync(before){
 function hookFb(){
   var d=fb();if(!d||hooked)return;hooked=true;
   d.ref(root()+'/'+KEY).on('value',function(s){ALTA=norm(s.val());saveLocal();fbLoaded=true;});
+  d.ref(root()+'/'+KEYM).on('value',function(s){MOT=normMot(s.val());saveMot();if(campoAbierto)setTimeout(pintar,60);});
   d.ref(root()+'/asistencia').on('value',function(){setTimeout(function(){if(campoAbierto)pintar();},60);});
 }
 
@@ -7159,6 +7193,50 @@ if(typeof _add==='function')window.addJugador=function(){
 var _del=window.eliminarJugador;
 if(typeof _del==='function')window.eliminarJugador=function(){
   var r=_del.apply(this,arguments);sync();return r;
+};
+
+/* ───────── Envoltorios: pestaña Asistencia antigua, copia de seguridad, intercambio de historial ───────── */
+var _tg=window.toggleAsist;
+if(typeof _tg==='function')window.toggleAsist=function(n,id){
+  var r=_tg.apply(this,arguments);
+  try{if(ASISTENCIA[n]&&ASISTENCIA[n][id]!==false&&MOT[n]&&MOT[n][id])setMot(n,id,null);}catch(e){warn('toggle',e);}
+  return r;
+};
+var _mt=window.marcarTodos;
+if(typeof _mt==='function')window.marcarTodos=function(n,val){
+  var r=_mt.apply(this,arguments);
+  try{if(val===true)limpiaMotSesion(n);}catch(e){warn('marcarTodos',e);}
+  return r;
+};
+var _bc=window.backupConstruir;
+if(typeof _bc==='function')window.backupConstruir=function(){
+  var d=_bc.apply(this,arguments);
+  try{d.almacen=d.almacen||{};d.almacen.ext_alta=JSON.stringify(ALTA);d.almacen.ext_motivo=JSON.stringify(MOT);}catch(e){warn('backup',e);}
+  return d;
+};
+var _ba=window.backupAplicar;
+if(typeof _ba==='function')window.backupAplicar=function(d){
+  var r=_ba.apply(this,arguments);
+  try{
+    var a=(d&&d.almacen)||{};
+    if(a.ext_alta!==undefined){ALTA=norm(JSON.parse(a.ext_alta||'{}'));saveLocal();var f=fb();if(f)f.ref(root()+'/'+KEY).set(Object.keys(ALTA).length?ALTA:null).catch(function(e){warn('alta',e);});}
+    if(a.ext_motivo!==undefined){MOT=normMot(JSON.parse(a.ext_motivo||'{}'));saveMot();var g=fb();if(g)g.ref(root()+'/'+KEYM).set(Object.keys(MOT).length?MOT:null).catch(function(e){warn('motivo',e);});}
+  }catch(e){warn('restaurar',e);}
+  return r;
+};
+var _sw=window.swapHistorial;
+if(typeof _sw==='function')window.swapHistorial=function(a,b){
+  var r=_sw.apply(this,arguments);
+  try{
+    var va=ALTA[a],vb=ALTA[b];
+    if(vb!=null)setAlta(a,vb);else delAlta(a);
+    if(va!=null)setAlta(b,va);else delAlta(b);
+    Object.keys(MOT).forEach(function(n){
+      var q=MOT[n]||{},x=q[a],y=q[b];
+      setMot(n,a,y||null);setMot(n,b,x||null);
+    });
+  }catch(e){warn('swap',e);}
+  return r;
 };
 
 /* ───────── CSV de informe de partido (corregido) ───────── */
@@ -7219,6 +7297,8 @@ function css(){
   '#ext-campo .xc-t small{display:block;font-weight:600;font-size:12px;color:#64748B;margin-top:4px}'+
   '#ext-campo .xc-p{border-color:#16A34A;background:#DCFCE7}'+
   '#ext-campo .xc-a{border-color:#DC2626;background:#FEE2E2}'+
+  '#ext-campo .xc-j{border-color:#D97706;background:#FEF3C7}#ext-campo .xc-l{border-color:#7C3AED;background:#EDE9FE}'+
+  '#ext-campo .xc-chips{display:flex;gap:6px;justify-content:center;margin-top:8px}#ext-campo .xc-chip{font-size:12px;font-weight:700;padding:6px 10px;border-radius:14px;border:1px solid #94A3B8;background:#fff;color:#475569}#ext-campo .xc-chip.on{background:#1E3A5F;color:#fff;border-color:#1E3A5F}'+
   '#ext-campo .xc-x{border-style:dashed;background:#E2E8F0;color:#94A3B8;cursor:default}'+
   '#ext-campo .xc-b{background:#fff;border:1px solid #CBD5E1;border-radius:10px;padding:10px 14px;font-weight:700;font-size:14px}';
   document.head.appendChild(s);
@@ -7228,6 +7308,7 @@ function estado(num,id){var a=ASISTENCIA&&ASISTENCIA[num];return a?a[id]:undefin
 function put(num,id,val){
   if(!ASISTENCIA[num])ASISTENCIA[num]={};
   if(val===undefined)delete ASISTENCIA[num][id];else ASISTENCIA[num][id]=val;
+  if(val!==false&&MOT[num]&&MOT[num][id])setMot(num,id,null);
   var d=fb();
   if(d){d.ref(root()+'/asistencia/'+num+'/'+id).set(val===undefined?null:val).catch(function(e){warn('asistencia',e);aviso('⚠️ No se pudo guardar. Revisa la conexión.');});}
   else{try{save('asistencia',ASISTENCIA);}catch(e){warn('save',e);}}
@@ -7249,13 +7330,20 @@ function pintar(){
   var S=sesList();if(!selNum){var sa=sesActual();selNum=sa?sa.num:null;}
   var ses=arr(SESIONES).find(function(s){return s.num===selNum;})||{};
   var J=arr(JUGADORES).filter(function(j){return j.activo!==false;});
-  var pres=0,aus=0,sin=0;
+  var pres=0,aus=0,sin=0,nj=0,nl=0;
   var tiles=J.map(function(j){
     var pre=selNum<altaDe(j.id);
     if(pre)return '<div class="xc-t xc-x">#'+E(j.dorsal)+' '+E(j.nombre)+'<small>Alta desde ses. '+altaDe(j.id)+'</small></div>';
-    var e=estado(selNum,j.id),c='',t='Sin marcar';
-    if(e===true){c='xc-p';t='✅ Presente';pres++;}else if(e===false){c='xc-a';t='❌ Ausente';aus++;}else sin++;
-    return '<div class="xc-t '+c+'" data-id="'+j.id+'">#'+E(j.dorsal)+' '+E(j.nombre)+'<small>'+t+'</small></div>';
+    var e=estado(selNum,j.id),c='',t='Sin marcar',chips='';
+    if(e===true){c='xc-p';t='✅ Presente';pres++;}
+    else if(e===false){
+      var m=motivoDe(selNum,j.id);
+      if(m==='J'){c='xc-j';t='📝 Falta justificada';nj++;}
+      else if(m==='L'){c='xc-l';t='🩹 Lesión';nl++;}
+      else{c='xc-a';t='❌ Falta';aus++;}
+      chips='<div class="xc-chips"><span class="xc-chip'+(m==='J'?' on':'')+'" data-mot="J" data-id="'+j.id+'">Justif.</span><span class="xc-chip'+(m==='L'?' on':'')+'" data-mot="L" data-id="'+j.id+'">🩹 Lesión</span></div>';
+    }else sin++;
+    return '<div class="xc-t '+c+'" data-id="'+j.id+'">#'+E(j.dorsal)+' '+E(j.nombre)+'<small>'+t+'</small>'+chips+'</div>';
   }).join('');
   var nota=(ses&&!ses.completada)?'<div style="padding:8px 12px;font-size:12px;color:#92400E;background:#FEF3C7">Esta sesión aún no está marcada como completada: la asistencia queda guardada, pero no cuenta en las estadísticas hasta que la completes.</div>':'';
   var altas='';
@@ -7273,10 +7361,10 @@ function pintar(){
   '<select id="xc-ses" style="flex:1">'+S.map(function(s){return '<option value="'+s.num+'"'+(s.num===selNum?' selected':'')+'>Ses. '+s.num+(s.fechaReal?' · '+E(s.fechaReal):'')+' · '+E(s.tema||'')+'</option>';}).join('')+'</select>'+
   '<button class="xc-b" id="xc-cerrar">✕</button></div>'+
   '<div style="padding:10px 12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">'+
-  '<span style="font-weight:800">'+pres+' presentes · '+aus+' ausentes · '+sin+' sin marcar</span>'+
+  '<span style="font-weight:800">'+pres+' presentes · '+aus+' faltas'+(nj?' · '+nj+' justif.':'')+(nl?' · '+nl+(nl===1?' lesión':' lesiones'):'')+' · '+sin+' sin marcar</span>'+
   '<button class="xc-b" id="xc-tp">Todos presentes</button><button class="xc-b" id="xc-lm">Limpiar</button>'+
   '<button class="xc-b" id="xc-al">'+(verAltas?'Ocultar':'Incorporaciones')+'</button></div>'+nota+
-  '<div style="padding:0 12px;font-size:12px;color:#64748B">Toca un jugador: presente → ausente → sin marcar. Se guarda al instante.</div>'+
+  '<div style="padding:0 12px;font-size:12px;color:#64748B">Toca un jugador: presente → falta → sin marcar. En una falta, pulsa «Justif.» o «Lesión». Se guarda al instante.</div>'+
   '<div class="xc-grid">'+tiles+'</div>'+altas;
   ov.querySelector('#xc-ses').onchange=function(){selNum=+this.value;pintar();};
   ov.querySelector('#xc-cerrar').onclick=cerrar;
@@ -7284,6 +7372,7 @@ function pintar(){
   ov.querySelector('#xc-lm').onclick=function(){if(confirm('¿Quitar todas las marcas de esta sesión?')){arr(JUGADORES).forEach(function(j){if(estado(selNum,j.id)!==undefined)put(selNum,j.id,undefined);});pintar();}};
   ov.querySelector('#xc-al').onclick=function(){verAltas=!verAltas;pintar();};
   ov.querySelectorAll('.xc-t[data-id]').forEach(function(t){t.onclick=function(){tocar(+t.getAttribute('data-id'));};});
+  ov.querySelectorAll('.xc-chip').forEach(function(c){c.onclick=function(ev){ev.stopPropagation();var id=+c.getAttribute('data-id'),m=c.getAttribute('data-mot');setMot(selNum,id,motivoDe(selNum,id)===m?null:m);pintar();};});
   ov.querySelectorAll('select[data-alta]').forEach(function(s){s.onchange=function(){setAlta(+s.getAttribute('data-alta'),+s.value);pintar();};});
   ov.querySelectorAll('input[data-altafecha]').forEach(function(i){i.onchange=function(){if(i.value){setAlta(+i.getAttribute('data-altafecha'),sesDesdeFecha(i.value));pintar();}};});
 }
@@ -7295,7 +7384,7 @@ function visible(){try{return !!(typeof currentRole!=='undefined'&&currentRole);
 
 function init(){
   try{
-    loadLocal();css();
+    loadLocal();loadMot();css();
     btn=document.createElement('button');btn.id='ext-campo-btn';btn.textContent='⚡ Campo';btn.onclick=abrir;document.body.appendChild(btn);
     ov=document.createElement('div');ov.id='ext-campo';document.body.appendChild(ov);
     setInterval(function(){btn.style.display=(visible()&&!campoAbierto)?'block':'none';},1200);
