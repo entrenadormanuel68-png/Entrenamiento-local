@@ -7515,6 +7515,8 @@ function init(){
     if(typeof window.renderResumen!=='function')return;
     var orig=window.renderResumen;
     window.renderResumen=function(){var r=orig.apply(this,arguments);pintar();return r;};
+    /* primer dibujo: la app pinta Resumen antes de cargar este bloque */
+    setInterval(function(){try{if(document.getElementById('res-minutos')&&!document.getElementById('ext-porteros-card'))pintar();}catch(e){}},1200);
   }catch(e){}
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
@@ -7857,7 +7859,9 @@ function pintar(){
 }
 function init(){
   try{if(typeof window.renderResumen!=='function')return;var orig=window.renderResumen;
-    window.renderResumen=function(){var r=orig.apply(this,arguments);pintar();return r;};}catch(e){}
+    window.renderResumen=function(){var r=orig.apply(this,arguments);pintar();return r;};
+    /* primer dibujo: la app pinta Resumen antes de cargar este bloque */
+    setInterval(function(){try{if(document.getElementById('res-minutos')&&!document.getElementById('ext-informes-card'))pintar();}catch(e){}},1200);}catch(e){}
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
