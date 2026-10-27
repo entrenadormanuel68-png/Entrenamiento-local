@@ -4640,7 +4640,7 @@ function etDataURL(json,w,tipo){
 }
 function etImgHTML(json){
   const u=etDataURL(json,700);if(!u)return '';
-  return `<div style="aspect-ratio:1000/650;background:#2F7D32;border-radius:8px;border:1px solid #E2E8F0;margin-top:8px;overflow:hidden"><img src="${u}" alt="Dibujo del ejercicio" style="width:100%;height:100%;object-fit:contain;display:block"></div>`;
+  return `<div style="aspect-ratio:1000/650;width:100%;max-width:520px;background:#2F7D32;border-radius:8px;border:1px solid #E2E8F0;margin-top:8px;overflow:hidden"><img src="${u}" alt="Dibujo del ejercicio" style="width:100%;height:100%;object-fit:contain;display:block"></div>`;
 }
 function etDibBloque(kind,id,n,json){
   const has=!!etParse(json);
