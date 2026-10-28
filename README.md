@@ -36,7 +36,7 @@ Está construida en un único archivo HTML con JavaScript vanilla. Sin framework
 | ✅ Asistencia | Control de presencia por jugador y sesión (solo jugadores activos) |
 | 🎮 Juegos | Ejercicios y juegos de entrenamiento |
 | 👥 Jugadores | Ficha de cada jugador con valoración, minutos y cuartos jugados |
-| 📚 Biblioteca | **286 ejercicios del club** en 7 categorías (se actualiza sola al abrir la app con internet), más los ejercicios propios de cada entrenador |
+| 📚 Biblioteca | **308 ejercicios del club** en 7 categorías (se actualiza sola al abrir la app con internet), con buscador y orden por número, más los ejercicios propios de cada entrenador |
 | 🖊️ Pizarra | Pizarra táctica vectorial: dibujo, figuras, guardado y envío (ver abajo) |
 
 **Roles de acceso:**
@@ -55,7 +55,7 @@ Está construida en un único archivo HTML con JavaScript vanilla. Sin framework
 - **Nombre editable** de cada pizarra, que se mantiene al exportar y al importar
 - **Guardar** pizarras en el dispositivo; las miniaturas de la lista tienen todas el mismo tamaño
 - **Compartir:** enviar como imagen por WhatsApp, descargar en **PDF**, **SVG** o **JSON**
-- **Importar** pizarras desde archivos JSON y **exportar todas** de una vez
+- **Importar** pizarras desde archivos JSON y **exportar todas** de una vez. Al importar solo se añaden las **nuevas**: las que ya tienes (mismo nombre o mismo dibujo) se omiten y la app avisa de cuántas eran nuevas y cuántas ya existían
 - Los trazos a lápiz se **simplifican al guardar** (sin perder aspecto), así los archivos pesan menos
 
 ### 🎨 Usar una pizarra en un ejercicio
@@ -64,10 +64,15 @@ Está construida en un único archivo HTML con JavaScript vanilla. Sin framework
 - El dibujo **se copia** al ejercicio: después puedes editarlo sin cambiar la pizarra original
 - En la Biblioteca, al editar un ejercicio con imagen aparece **«🗑 Quitar imagen»**
 
+### 📚 Biblioteca: orden y búsqueda
+- **Selector de orden:** por categoría y número (por defecto), solo por número, o por orden de añadido; la app recuerda tu elección
+- **Buscador** por nombre, código (por ejemplo `tec-037`), descripción, material o regla de provocación; no distingue mayúsculas ni acentos y admite varias palabras
+- En las sesiones, el dibujo del ejercicio tiene un tamaño máximo para que no se vea enorme en pantallas anchas
+
 ### 🌐 Pizarras del club (`pizarras.json`)
 - Al abrir la app con internet, descarga `pizarras.json` y **añade las pizarras que falten**
 - Nunca borra ni pisa las tuyas; si borras o renombras una pizarra del club, **no vuelve a aparecer**
-- Cada pizarra se identifica por su **nombre**: usa nombres únicos (`Pizarra-11`, `Rondo 4x2`…). Una pizarra ya descargada no se actualiza aunque cambies su dibujo; publícala con otro nombre
+- Cada pizarra se identifica por su **nombre**: usa nombres únicos (`Pizarra-33`, `Rondo 4x2`…). Una pizarra ya descargada no se actualiza aunque cambies su dibujo; publícala con otro nombre
 
 ### 💾 Copias de seguridad
 - **Guardar copia / Restaurar copia** de todos los datos (club, jugadores, sesiones, partidos, biblioteca, pizarras…) en un único archivo JSON
