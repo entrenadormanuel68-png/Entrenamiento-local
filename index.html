@@ -6987,11 +6987,22 @@ W.pizImportar=async function(files){
     if(f.size>5e6){malos++;continue;}
     try{norm(JSON.parse(await f.text()),f.name.replace(/\.[^.]+$/,''),out,false);}catch(e){malos++;}
   }
-  out=out.slice(0,50);
   if(!out.length){alert('No se encontró ninguna pizarra válida en el archivo.'+(malos?' ('+malos+' archivo(s) no se pudieron leer.)':''));return;}
+  /* solo se importan las nuevas: se omiten las que ya existen por nombre o por dibujo idéntico */
+  var nrm=function(t){return String(t||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toLowerCase();};
+  var nomV={},dibV={};
+  PIZ.forEach(function(p){nomV[nrm(p.nombre)]=1;try{dibV[typeof p.dibujo==='string'?p.dibujo:JSON.stringify(p.dibujo)]=1;}catch(e){}});
+  var nuevas=[],repes=0;
+  out.forEach(function(x){
+    var n=nrm(x.nombre),d;try{d=typeof x.dibujo==='string'?x.dibujo:JSON.stringify(x.dibujo);}catch(e){d='';}
+    if(nomV[n]||(d&&dibV[d])){repes++;return;}
+    nomV[n]=1;if(d)dibV[d]=1;nuevas.push(x);
+  });
+  nuevas=nuevas.slice(0,100);
+  if(!nuevas.length){etToast('📥 Ninguna pizarra nueva: las '+repes+' ya estaban'+(malos?' · '+malos+' con error':''));return;}
   var t=Date.now();
-  out.reverse().forEach(function(x,k){PIZ.unshift({id:t+k,nombre:x.nombre,fecha:x.fecha,dibujo:x.dibujo});});
-  if(pizSave()){pizRender();etToast('📥 '+out.length+' pizarra(s) importada(s)'+(malos?' · '+malos+' con error':''));}
+  nuevas.reverse().forEach(function(x,k){PIZ.unshift({id:t+k,nombre:x.nombre,fecha:x.fecha,dibujo:x.dibujo});});
+  if(pizSave()){pizRender();etToast('📥 '+nuevas.length+' pizarra(s) nueva(s)'+(repes?' · '+repes+' ya existían':'')+(malos?' · '+malos+' con error':''));}
 };
 
 /* ---------- Interfaz ---------- */
