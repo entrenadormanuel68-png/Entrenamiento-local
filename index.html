@@ -5856,7 +5856,55 @@ function entregar(filename,mime,b64){
   var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=filename;document.body.appendChild(a);a.click();
   setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},1500);
 }
+function esTableta(){
+  try{
+    var ua=navigator.userAgent||'',tt=(navigator.maxTouchPoints||0)>1;
+    return /iPad/i.test(ua)||(/Macintosh/i.test(ua)&&tt)||(/Android/i.test(ua)&&!/Mobile/i.test(ua))||(tt&&/X11|Linux/i.test(ua)&&!/Windows/i.test(ua));
+  }catch(e){return false;}
+}
+/* Pantalla "archivo listo" para tablets: el menú de compartir del sistema puede quedarse cargando, así que se ofrece también Descargar y Abrir */
+window.etArchivoListo=function(filename,mime,b64){
+  try{
+    var bin=atob(b64),u8=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)u8[i]=bin.charCodeAt(i);
+    var blob=new Blob([u8],{type:mime}),url=URL.createObjectURL(blob);
+    var old=document.getElementById('et-arch-ov');if(old)old.remove();
+    var ov=document.createElement('div');ov.id='et-arch-ov';
+    ov.style.cssText='position:fixed;inset:0;background:rgba(15,23,42,.65);z-index:100000;display:flex;align-items:center;justify-content:center;padding:16px';
+    var bs='border:none;border-radius:8px;padding:11px 16px;font-size:14px;font-weight:700;cursor:pointer;color:#fff;font-family:inherit;';
+    var esImg=/^image\//.test(mime);
+    ov.innerHTML='<div style="background:#fff;border-radius:14px;max-width:520px;width:100%;max-height:92vh;overflow:auto;padding:16px;box-shadow:0 10px 40px rgba(0,0,0,.4)">'
+      +'<div style="font-size:15px;font-weight:800;color:#0F172A;margin-bottom:4px">✅ Archivo listo</div>'
+      +'<div style="font-size:12px;color:#64748B;margin-bottom:10px;word-break:break-all"></div>'
+      +(esImg?'<img alt="Vista previa" src="'+url+'" style="width:100%;max-height:48vh;object-fit:contain;border:1px solid #E2E8F0;border-radius:8px;margin-bottom:10px">':'<div style="font-size:42px;text-align:center;margin:6px 0 10px">📄</div>')
+      +'<div style="display:flex;gap:8px;flex-wrap:wrap">'
+      +'<button data-a="s" style="'+bs+'background:#128C7E">📤 Compartir</button>'
+      +'<button data-a="d" style="'+bs+'background:#2563EB">⬇ Descargar</button>'
+      +'<button data-a="o" style="'+bs+'background:#475569">🔎 Abrir</button>'
+      +'<button data-a="c" style="'+bs+'background:#94A3B8">Cerrar</button></div>'
+      +'<div style="font-size:11px;color:#64748B;margin-top:10px">Si «Compartir» se queda cargando, usa «Descargar» o «Abrir». En iPad, el archivo descargado queda en la app Archivos.</div></div>';
+    ov.firstChild.children[1].textContent=filename;
+    document.body.appendChild(ov);
+    function cerrar(){try{URL.revokeObjectURL(url);}catch(e){}ov.remove();}
+    ov.addEventListener('click',function(ev){
+      if(ev.target===ov){cerrar();return;}
+      var b=ev.target.closest&&ev.target.closest('button[data-a]');if(!b)return;
+      var a=b.getAttribute('data-a');
+      if(a==='c')cerrar();
+      else if(a==='d'){var l=document.createElement('a');l.href=url;l.download=filename;document.body.appendChild(l);l.click();setTimeout(function(){l.remove();},500);}
+      else if(a==='o'){window.open(url,'_blank');}
+      else if(a==='s'){
+        try{
+          var file=new File([u8],filename,{type:mime});
+          if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]}))navigator.share({files:[file],title:filename}).catch(function(e){if(e&&e.name!=='AbortError')alert('No se pudo abrir el menú de compartir: '+(e.message||e)+'\nUsa «Descargar» o «Abrir».');});
+          else alert('Este navegador no permite compartir archivos. Usa «Descargar» o «Abrir».');
+        }catch(e){alert('No se pudo compartir: '+(e.message||e)+'\nUsa «Descargar» o «Abrir».');}
+      }
+    });
+    return true;
+  }catch(e){console.error(e);return false;}
+}
 function compartir(filename,mime,b64){
+  if(!esNativo()&&esTableta()&&window.etArchivoListo&&window.etArchivoListo(filename,mime,b64))return;
   try{
     if(!esNativo()&&esMovil()&&navigator.canShare&&navigator.share){
       var bin=atob(b64),u8=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)u8[i]=bin.charCodeAt(i);
@@ -6548,7 +6596,10 @@ function entregar(nombre,mime,b64){
     return;
   }
   var u8=b64Bytes(b64);
+  try{if(typeof esTableta==="function"?esTableta():false){}}catch(e){}
   try{
+    var _tab=false;try{var _ua=navigator.userAgent||"",_tt=(navigator.maxTouchPoints||0)>1;_tab=/iPad/i.test(_ua)||(/Macintosh/i.test(_ua)&&_tt)||(/Android/i.test(_ua)&&!/Mobile/i.test(_ua))||(_tt&&/X11|Linux/i.test(_ua)&&!/Windows/i.test(_ua));}catch(e){}
+    if(_tab&&window.etArchivoListo&&window.etArchivoListo(nombre,mime,b64))return;
     if(esMovil()&&navigator.canShare&&navigator.share){
       var file=new File([u8],nombre,{type:mime});
       if(navigator.canShare({files:[file]})){navigator.share({files:[file],title:nombre}).catch(function(){});return;}
