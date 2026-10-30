@@ -250,7 +250,7 @@ body.role-coach .manager-only-el{opacity:0.3;pointer-events:none;cursor:not-allo
       <button class="nav-btn" onclick="goSection('partidos')">🏆 Partidos</button>
       <button class="nav-btn" onclick="goSection('sesiones')">📋 Sesiones</button>
       <button class="nav-btn" onclick="goSection('asistencia')">✅ Asistencia</button>
-      <button class="nav-btn" onclick="goSection('juegos')">🎮 Juegos</button>
+      <button class="nav-btn" onclick="goSection('juegos')" style="display:none">🎮 Juegos</button>
       <button class="nav-btn" onclick="goSection('jugadores')">👥 Jugadores</button>
       <button class="nav-btn" onclick="goSection('biblioteca')">📚 Biblioteca</button>
       <button class="nav-btn" onclick="goSection('missesiones')">📝 Mis Sesiones</button>
@@ -2868,7 +2868,30 @@ function bibOrdenar(arr){
     return a[1]-b[1];
   }).map(p=>p[0]);
 }
+/* Los juegos propios de la antigua pestaña «Juegos» pasan a la Biblioteca como «Juego dinámico» (una sola vez por juego) */
+function etMigrarJuegos(){
+  try{
+    if(!Array.isArray(JUEGOS)||!JUEGOS.length)return;
+    let cambios=false;
+    JUEGOS.forEach(j=>{
+      if(!j||j.migrado)return;
+      const id='jue-mi-'+j.id;
+      if(!BIBLIOTECA.some(e=>e&&e.id===id)){
+        const ok=v=>v&&v!=='—';
+        let d='';
+        if(ok(j.objetivo))d+='Objetivo: '+j.objetivo+'\n';
+        if(ok(j.descripcion))d+='1. '+j.descripcion+'\n';
+        const meta=[ok(j.jugadores)?'Jugadores: '+j.jugadores:'',ok(j.espacio)?'Espacio: '+j.espacio:'',ok(j.duracion)?'Duración: '+j.duracion:''].filter(Boolean).join(' · ');
+        d+=meta;
+        BIBLIOTECA.push({id:id,nombre:j.nombre||'Juego',categoria:'Juego dinámico',descripcion:d.trim(),provocacion:ok(j.variante)?'Variante: '+j.variante:'',material:'',etiquetas:j.categoria||'',origen:'mío'});
+      }
+      j.migrado=true;cambios=true;
+    });
+    if(cambios){save('biblioteca',BIBLIOTECA);save('juegos',JUEGOS);}
+  }catch(e){console.error('migrar juegos',e);}
+}
 function renderBiblioteca(){
+  etMigrarJuegos();
   etRenderIds();
   const cat=document.getElementById("bib-cat")?.value||"";
   const bqRaw=(document.getElementById("bib-busca")?.value||"").trim();
