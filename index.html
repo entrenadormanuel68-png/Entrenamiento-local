@@ -1987,6 +1987,10 @@ function renderPartidoDetalle(){
           <div style="font-weight:700;font-size:12px;color:#DC2626;margin-bottom:6px">❌ No convocados (${noConv.length})</div>
           ${noConv.map(j=>`<div style="font-size:12px;padding:2px 0">#${j.dorsal} ${j.nombre}</div>`).join("")}
         </div>
+        <div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:12px;margin-top:10px">
+          <div style="font-weight:700;font-size:12px;color:#B45309;margin-bottom:6px">📝 Observaciones</div>
+          <textarea rows="3" oninput="updPartSilent(${p.id},'observaciones',this.value)" placeholder="Ej.: traer segunda equipación… (si lo dejas vacío no sale en el mensaje)" style="width:100%;box-sizing:border-box;border:1px solid #FCD34D;border-radius:7px;padding:8px;font-size:12px;font-family:inherit;resize:vertical">${esc(p.observaciones||"")}</textarea>
+        </div>
       </div>
     </div>`;
   }
@@ -2317,6 +2321,11 @@ function convocatoriaWA(pid){
   if(noConv.length>0){
     txt+=`\n❌ *NO CONVOCADOS (${noConv.length}):*\n`;
     txt+=`  ${noConv.map(j=>j.nombre).join(", ")}\n`;
+  }
+
+  if(String(p.observaciones||"").trim()){
+    txt+=`\n📝 *Observaciones:*\n`;
+    String(p.observaciones).trim().split(/\r?\n/).forEach(l=>{if(l.trim())txt+=`  ${l.trim()}\n`;});
   }
 
   txt+=`\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
