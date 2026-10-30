@@ -36,7 +36,7 @@ Está construida en un único archivo HTML con JavaScript vanilla. Sin framework
 | ✅ Asistencia | Control de presencia por jugador y sesión (solo jugadores activos) |
 | 🎮 Juegos | Ejercicios y juegos de entrenamiento |
 | 👥 Jugadores | Ficha de cada jugador con valoración, minutos y cuartos jugados |
-| 📚 Biblioteca | **328 ejercicios del club** en 7 categorías (se actualiza sola al abrir la app con internet), con buscador y orden por número, más los ejercicios propios de cada entrenador |
+| 📚 Biblioteca | **334 ejercicios del club** en 7 categorías (se actualiza sola al abrir la app con internet), con buscador y orden por número, más los ejercicios propios de cada entrenador |
 | 🖊️ Pizarra | Pizarra táctica vectorial: dibujo, figuras, guardado y envío (ver abajo) |
 
 **Roles de acceso:**
