@@ -8493,5 +8493,38 @@ window.shPDF=function(id){
 
 })();
 </script>
+<script id="piz-orden">
+(function(){
+"use strict";
+var KEY='piz_orden';
+function modo(){try{return localStorage.getItem(KEY)||'asc';}catch(e){return 'asc';}}
+function num(p){var n=String((p&&p.nombre)||'').trim();var m=/^pizarra[\s-]*(\d+)$/i.exec(n);return m?+m[1]:null;}
+function ordenar(){
+  var m=modo();if(m==='fecha'||typeof PIZ==='undefined'||!Array.isArray(PIZ))return;
+  PIZ.sort(function(a,b){
+    var x=num(a),y=num(b);
+    if(x===null&&y===null)return String(b.fecha||'').localeCompare(String(a.fecha||''));
+    if(x===null)return -1;if(y===null)return 1;
+    return m==='asc'?x-y:y-x;
+  });
+}
+function etiqueta(){var m=modo();return m==='asc'?'↕ Orden: 1 → 83':(m==='desc'?'↕ Orden: 83 → 1':'↕ Orden: por fecha');}
+function pintaBtn(){var b=document.getElementById('piz-orden-btn');if(b)b.textContent=etiqueta();}
+var orig=window.pizRender;
+if(typeof orig!=='function')return;
+window.pizRender=function(){ordenar();pintaBtn();return orig.apply(this,arguments);};
+window.pizCambiarOrden=function(){
+  var m=modo(),n=m==='asc'?'desc':(m==='desc'?'fecha':'asc');
+  try{localStorage.setItem(KEY,n);}catch(e){}
+  window.pizRender();
+};
+var nb=document.querySelector('#sec-pizarra button[onclick="pizNueva(\'espacio\')"]');
+if(nb&&!document.getElementById('piz-orden-btn')){
+  var b=document.createElement('button');b.id='piz-orden-btn';b.className='btn btn-ghost btn-sm';b.setAttribute('onclick','pizCambiarOrden()');b.textContent=etiqueta();
+  nb.parentNode.appendChild(b);
+}
+try{window.pizRender();}catch(e){}
+})();
+</script>
 </body>
 </html>
