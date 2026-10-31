@@ -7,7 +7,7 @@
 > Aplicación web de gestión de equipos de fútbol base. Funciona **100% offline** sin necesidad de servidor. Todo se guarda en el dispositivo. Con internet, descarga además las novedades de la **biblioteca** y de las **pizarras** del club. Empaquetable como app Android con Capacitor.
 
 ![Estado](https://img.shields.io/badge/estado-activo-brightgreen)
-![Versión](https://img.shields.io/badge/versión-1.4-blue)
+![Versión](https://img.shields.io/badge/versión-1.5-blue)
 ![Contribuciones](https://img.shields.io/badge/contribuciones-bienvenidas-orange)
 ![Sin dependencias](https://img.shields.io/badge/dependencias-ninguna-success)
 ![Licencia](https://img.shields.io/badge/licencia-MIT-purple)
@@ -32,7 +32,8 @@ Está construida en un único archivo HTML con JavaScript vanilla. Sin framework
 | 🏆 Partidos | Resultados, goles por jugador, alineación por cuartos, **convocatoria por WhatsApp con observaciones**, **hoja de partido** (imagen, PDF y WhatsApp) y **valoración** del partido |
 | 📋 Sesiones | Plantillas de sesiones por fases (carga, descanso, pretemporada); cada ejercicio admite dibujo o pizarra |
 | 📝 Mis Sesiones | Sesiones propias: eliges ejercicios de la biblioteca o de tus pizarras y los editas sin tocar el original |
-| 📐 Sist. Fútbol 7 | 4 sistemas y 40 sesiones, **editables**: puedes cambiar cualquiera (conserva el original), añadir las tuyas, dibujar o usar una pizarra |
+| 📐 Sist. Fútbol 7 | **9 sistemas y 90 sesiones**, **editables**: puedes cambiar cualquiera (conserva el original), añadir las tuyas, dibujar o usar una pizarra; cada sistema trae su **ficha táctica y su colocación** |
+| 📐 Sist. Fútbol 8 | **8 sistemas y 80 sesiones de 60 min** (1-3-3-1, 1-2-3-2, 1-3-2-2, 1-2-4-1, 1-4-3, 1-3-1-3, 1-2-2-3, 1-3-1-2-1), con ficha, colocación y todo editable |
 | 📐 Sist. Fútbol 11 | **8 sistemas y 80 sesiones de 90 min** (1-4-3-3, 1-4-4-2, 1-4-2-3-1, 1-4-1-4-1, 1-4-3-1-2, 1-3-5-2, 1-3-4-3, 1-5-3-2), también **editables**, con ficha de cada sistema y su colocación |
 | ✅ Asistencia | Control de presencia por jugador y sesión (solo jugadores activos) |
 | 👥 Jugadores | Ficha de cada jugador con valoración, minutos y cuartos jugados |
@@ -42,6 +43,27 @@ Está construida en un único archivo HTML con JavaScript vanilla. Sin framework
 **Roles de acceso:**
 - 🛡️ **Manager** — Control total de la app, puede cambiar contraseñas e importar ejercicios
 - 📋 **Entrenador** — Acceso limitado a las funciones de uso diario
+
+---
+
+## 🆕 Novedades v1.5
+
+### 📐 Sistemas de Fútbol 8 (nueva pestaña)
+- Nueva pestaña **Sist. Fútbol 8**, entre Fútbol 7 y Fútbol 11: **8 sistemas con 10 sesiones cada uno (80 sesiones de 60 minutos)**
+- Sistemas y descripciones de la guía de Fútbol 8 del club: con balón, sin balón, ventajas, riesgos e «ideal para aprender», más su **colocación en pizarra**
+- La guía señala que el 1-2-3-1-1 suma nueve jugadores y no es de Fútbol 8; se sustituye por el **1-3-1-2-1**, que sí suma ocho. La descripción de sus roles es una propuesta
+- Las 80 sesiones son una **propuesta** redactada a partir de la guía; son editables igual que las de Fútbol 11 (copia propia, restaurar original, dibujo o pizarra, WhatsApp, PDF)
+- Panel de metodología con principios comunes, ficha de evaluación y preguntas de cierre
+
+### 📐 Fútbol 7 mejorado
+- **Ficha táctica y colocación** en cada sistema, como en Fútbol 11
+- **5 sistemas nuevos** de la guía de Fútbol 7: 1-3-1-2, 1-2-1-3, 1-3-3, 1-1-3-2 (variante situacional) y 1-4-2 (variante situacional), con 10 sesiones propuestas cada uno
+- Las 40 sesiones anteriores no se tocan. El «1-3-3-1» suma ocho jugadores con el portero, es una estructura de Fútbol 8; se conserva con un aviso en su ficha
+- Panel de metodología ampliado con la ficha de evaluación y las preguntas de cierre
+
+### 🖊️ Más pizarras del club
+- `pizarras.json` pasa a **83 pizarras**: Pizarra-71 a 78 son la colocación de los 8 sistemas de Fútbol 8 y Pizarra-79 a 83, la de los 5 sistemas nuevos de Fútbol 7
+- Las sesiones de Fútbol 8 entran en la **copia de seguridad**
 
 ---
 
@@ -210,6 +232,7 @@ npx cap open android
 ### 📋 Sesiones de entrenamiento
 - [x] Sesiones propias con ejercicios de la biblioteca (v1.3)
 - [x] Sistemas de Fútbol 7 y Fútbol 11 con sesiones editables (v1.4)
+- [x] Sistemas de Fútbol 8 y fichas tácticas en Fútbol 7 (v1.5)
 - [ ] Guardar las sesiones de sistemas en la nube (versión Firebase)
 - [ ] Más plantillas predefinidas (por semana de temporada, por rival, por fase)
 - [ ] Constructor de sesión arrastrando ejercicios
