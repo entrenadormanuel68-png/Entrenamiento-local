@@ -62,7 +62,7 @@ Está construida en un único archivo HTML con JavaScript vanilla. Sin framework
 - Panel de metodología ampliado con la ficha de evaluación y las preguntas de cierre
 
 ### 🖊️ Más pizarras del club
-- `pizarras.json` pasa a **83 pizarras**: Pizarra-71 a 78 son la colocación de los 8 sistemas de Fútbol 8 y Pizarra-79 a 83, la de los 5 sistemas nuevos de Fútbol 7
+- `pizarras.json` pasa a **82 pizarras** (se retira la Pizarra-67, un «1-3-3-1» de 8 jugadores que estaba en Fútbol 7): Pizarra-71 a 78 son la colocación de los 8 sistemas de Fútbol 8 y Pizarra-79 a 83, la de los 5 sistemas nuevos de Fútbol 7
 - Las sesiones de Fútbol 8 entran en la **copia de seguridad**
 
 ---
