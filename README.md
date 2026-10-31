@@ -32,7 +32,7 @@ Está construida en un único archivo HTML con JavaScript vanilla. Sin framework
 | 🏆 Partidos | Resultados, goles por jugador, alineación por cuartos, **convocatoria por WhatsApp con observaciones**, **hoja de partido** (imagen, PDF y WhatsApp) y **valoración** del partido |
 | 📋 Sesiones | Plantillas de sesiones por fases (carga, descanso, pretemporada); cada ejercicio admite dibujo o pizarra |
 | 📝 Mis Sesiones | Sesiones propias: eliges ejercicios de la biblioteca o de tus pizarras y los editas sin tocar el original |
-| 📐 Sist. Fútbol 7 | **9 sistemas y 90 sesiones**, **editables**: puedes cambiar cualquiera (conserva el original), añadir las tuyas, dibujar o usar una pizarra; cada sistema trae su **ficha táctica y su colocación** |
+| 📐 Sist. Fútbol 7 | **8 sistemas y 80 sesiones**, **editables**: puedes cambiar cualquiera (conserva el original), añadir las tuyas, dibujar o usar una pizarra; cada sistema trae su **ficha táctica y su colocación** |
 | 📐 Sist. Fútbol 8 | **8 sistemas y 80 sesiones de 60 min** (1-3-3-1, 1-2-3-2, 1-3-2-2, 1-2-4-1, 1-4-3, 1-3-1-3, 1-2-2-3, 1-3-1-2-1), con ficha, colocación y todo editable |
 | 📐 Sist. Fútbol 11 | **8 sistemas y 80 sesiones de 90 min** (1-4-3-3, 1-4-4-2, 1-4-2-3-1, 1-4-1-4-1, 1-4-3-1-2, 1-3-5-2, 1-3-4-3, 1-5-3-2), también **editables**, con ficha de cada sistema y su colocación |
 | ✅ Asistencia | Control de presencia por jugador y sesión (solo jugadores activos) |
@@ -58,7 +58,7 @@ Está construida en un único archivo HTML con JavaScript vanilla. Sin framework
 ### 📐 Fútbol 7 mejorado
 - **Ficha táctica y colocación** en cada sistema, como en Fútbol 11
 - **5 sistemas nuevos** de la guía de Fútbol 7: 1-3-1-2, 1-2-1-3, 1-3-3, 1-1-3-2 (variante situacional) y 1-4-2 (variante situacional), con 10 sesiones propuestas cada uno
-- Las 40 sesiones anteriores no se tocan. El «1-3-3-1» suma ocho jugadores con el portero, es una estructura de Fútbol 8; se conserva con un aviso en su ficha
+- Las 30 sesiones anteriores no se tocan. Se retira el «1-3-3-1» de esta pestaña: suma ocho jugadores con el portero, es una estructura de Fútbol 8 y ya está en su pestaña
 - Panel de metodología ampliado con la ficha de evaluación y las preguntas de cierre
 
 ### 🖊️ Más pizarras del club
