@@ -7,7 +7,7 @@
 > Aplicación web de gestión de equipos de fútbol base. Funciona **100% offline** sin necesidad de servidor. Todo se guarda en el dispositivo. Con internet, descarga además las novedades de la **biblioteca** y de las **pizarras** del club. Empaquetable como app Android con Capacitor.
 
 ![Estado](https://img.shields.io/badge/estado-activo-brightgreen)
-![Versión](https://img.shields.io/badge/versión-1.3-blue)
+![Versión](https://img.shields.io/badge/versión-1.4-blue)
 ![Contribuciones](https://img.shields.io/badge/contribuciones-bienvenidas-orange)
 ![Sin dependencias](https://img.shields.io/badge/dependencias-ninguna-success)
 ![Licencia](https://img.shields.io/badge/licencia-MIT-purple)
@@ -29,19 +29,47 @@ Está construida en un único archivo HTML con JavaScript vanilla. Sin framework
 | 📊 Resumen | Dashboard con estadísticas, progreso por fase, top jugadores y goleadores |
 | ⚽ Club | Datos del club, plantilla flexible de jugadores, sistemas de juego (F7/F8/F11), estructura semanal, festivos |
 | 📅 Calendario | Planificación con fechas reales automáticas, adaptado a 2-5 días de entrenamiento semanales |
-| 🏆 Partidos | Resultados, goles por jugador, alineación por cuartos, **hoja de partido** (imagen, PDF y WhatsApp) y **valoración** del partido |
+| 🏆 Partidos | Resultados, goles por jugador, alineación por cuartos, **convocatoria por WhatsApp con observaciones**, **hoja de partido** (imagen, PDF y WhatsApp) y **valoración** del partido |
 | 📋 Sesiones | Plantillas de sesiones por fases (carga, descanso, pretemporada); cada ejercicio admite dibujo o pizarra |
 | 📝 Mis Sesiones | Sesiones propias: eliges ejercicios de la biblioteca o de tus pizarras y los editas sin tocar el original |
-| 📐 Sist. Fútbol 7 | Sesiones y esquemas para el sistema de juego de Fútbol 7 |
+| 📐 Sist. Fútbol 7 | 4 sistemas y 40 sesiones, **editables**: puedes cambiar cualquiera (conserva el original), añadir las tuyas, dibujar o usar una pizarra |
+| 📐 Sist. Fútbol 11 | **8 sistemas y 80 sesiones de 90 min** (1-4-3-3, 1-4-4-2, 1-4-2-3-1, 1-4-1-4-1, 1-4-3-1-2, 1-3-5-2, 1-3-4-3, 1-5-3-2), también **editables**, con ficha de cada sistema y su colocación |
 | ✅ Asistencia | Control de presencia por jugador y sesión (solo jugadores activos) |
-| 🎮 Juegos | Ejercicios y juegos de entrenamiento |
 | 👥 Jugadores | Ficha de cada jugador con valoración, minutos y cuartos jugados |
-| 📚 Biblioteca | **334 ejercicios del club** en 7 categorías (se actualiza sola al abrir la app con internet), con buscador y orden por número, más los ejercicios propios de cada entrenador |
+| 📚 Biblioteca | **334 ejercicios del club** en 7 categorías (los juegos incluidos) (se actualiza sola al abrir la app con internet), con buscador y orden por número, más los ejercicios propios de cada entrenador |
 | 🖊️ Pizarra | Pizarra táctica vectorial: dibujo, figuras, guardado y envío (ver abajo) |
 
 **Roles de acceso:**
 - 🛡️ **Manager** — Control total de la app, puede cambiar contraseñas e importar ejercicios
 - 📋 **Entrenador** — Acceso limitado a las funciones de uso diario
+
+---
+
+## 🆕 Novedades v1.4
+
+### 📐 Sistemas de Fútbol 11
+- Nueva pestaña **Sist. Fútbol 11**, después de Fútbol 7: **8 sistemas con 10 sesiones cada uno (80 sesiones de 90 minutos)**
+- Cada sistema trae su ficha (estructura, fortalezas, riesgos, principios ofensivos y defensivos, consignas) y su **colocación en pizarra**
+- Cada sesión incluye objetivo, organización, desarrollo, consignas y correcciones, progresión, indicador de éxito y el horario de 90 min en 6 bloques
+- **Todo editable**: cambia cualquier sesión (se guarda tu copia y puedes **restaurar el original**), añade sesiones nuevas, **dibuja un esquema o usa una pizarra**, envíalas por **WhatsApp** o descárgalas en **PDF**
+- Panel de **metodología** con las categorías (Infantiles, Cadetes, Juveniles), los principios comunes, una ficha de evaluación y preguntas de cierre
+- Basado en un manual táctico de Fútbol 11 aportado por el club
+- Las sesiones de Fútbol 7 y de Fútbol 11 se guardan en el dispositivo y entran en la **copia de seguridad**
+
+### 🎮 Los juegos pasan a la Biblioteca
+- La antigua pestaña **Juegos** desaparece del menú: ahora son ejercicios de la categoría **Juego dinámico** (con dibujo, edición, buscador y exportar/importar)
+- Los juegos propios que tenías se **copian solos** a la Biblioteca la primera vez que la abres
+
+### 📝 Convocatoria con observaciones
+- Debajo de los no convocados hay un cuadro de **Observaciones** por partido
+- Si tiene texto, sale en el mensaje de WhatsApp de la convocatoria; si está vacío, no sale nada
+
+### 📱 PDF e imagen en tablets
+- En la versión web para tablet, al generar el PDF o la imagen de la hoja de partido sale una pantalla **«Archivo listo»** con **Compartir, Descargar y Abrir**, para no depender del menú de compartir del sistema, que en algunas tablets se quedaba cargando
+- En móviles y en la app Android no cambia nada
+
+### 🖊️ Más pizarras del club
+- `pizarras.json` ya tiene **70 pizarras**, incluidas la **colocación de los 8 sistemas de Fútbol 11** y de los **4 de Fútbol 7**
 
 ---
 
@@ -173,6 +201,7 @@ npx cap open android
 ### 📚 Biblioteca de ejercicios
 - [x] Biblioteca del club con actualización automática (v1.2)
 - [x] Ejercicios con dibujo propio o tomado de una pizarra (v1.3)
+- [x] Juegos integrados en la Biblioteca como «Juego dinámico» (v1.4)
 - [ ] Ampliar con más ejercicios técnicos (conducción, pase, tiro, regate)
 - [ ] Añadir ejercicios tácticos por categoría (presión, salida de balón, ataque posicional)
 - [ ] Filtros por dificultad, número de jugadores y material
@@ -180,6 +209,8 @@ npx cap open android
 
 ### 📋 Sesiones de entrenamiento
 - [x] Sesiones propias con ejercicios de la biblioteca (v1.3)
+- [x] Sistemas de Fútbol 7 y Fútbol 11 con sesiones editables (v1.4)
+- [ ] Guardar las sesiones de sistemas en la nube (versión Firebase)
 - [ ] Más plantillas predefinidas (por semana de temporada, por rival, por fase)
 - [ ] Constructor de sesión arrastrando ejercicios
 - [ ] Temporizador integrado por bloque de sesión
