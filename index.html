@@ -5684,7 +5684,8 @@ async function clubSync(){
 document.addEventListener('DOMContentLoaded',()=>{setTimeout(clubSync,600);});
 
 // ═══════════ PIZARRAS DEL CLUB — carga automática desde pizarras.json ═══════════
-function _pizKey(n){return String(n||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,' ').trim();}
+function _pizKey(n){return String(n||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s*\([^)]*\)\s*$/,'').replace(/\s+/g,' ').trim();}
+function _pizDib(d){try{return typeof d==='string'?d:JSON.stringify(d);}catch(e){return '';}}
 function _pizVistas(){try{return new Set(JSON.parse(localStorage.getItem('pizarra_sync_vistas')||'[]'));}catch(e){return new Set();}}
 async function pizSync(){
   let data=null;
@@ -5698,7 +5699,7 @@ async function pizSync(){
   if(!data)return;                       // sin conexión o sin archivo: se usan las pizarras locales
   const arr=Array.isArray(data)?data:(data&&Array.isArray(data.pizarras)?data.pizarras:[]);
   if(!arr.length)return;
-  const vistas=_pizVistas(),presentes=new Set(PIZ.map(p=>_pizKey(p.nombre)));
+  const vistas=_pizVistas(),presentes=new Set(PIZ.map(p=>_pizKey(p.nombre))),dibujos=new Set(PIZ.map(p=>_pizDib(p.dibujo)));
   const nuevas=[];
   arr.slice(0,200).forEach(o=>{
     if(!o||typeof o!=='object'||!o.dibujo)return;
@@ -5706,6 +5707,8 @@ async function pizSync(){
     if(vistas.has(k)||presentes.has(k))return;    // ya importada antes (aunque la hayas borrado o renombrado)
     const j=etSanDibujo(o.dibujo);if(!j)return;
     vistas.add(k);presentes.add(k);
+    if(dibujos.has(_pizDib(j)))return;      // mismo dibujo ya guardado con otro nombre (p. ej. con la referencia entre paréntesis)
+    dibujos.add(_pizDib(j));
     nuevas.push({nombre:nom,fecha:(o.fecha&&!isNaN(new Date(o.fecha)))?new Date(o.fecha).toISOString():new Date().toISOString(),dibujo:j});
   });
   try{localStorage.setItem('pizarra_sync_vistas',JSON.stringify([...vistas]));}catch(e){}
@@ -8498,7 +8501,7 @@ window.shPDF=function(id){
 "use strict";
 var KEY='piz_orden';
 function modo(){try{return localStorage.getItem(KEY)||'asc';}catch(e){return 'asc';}}
-function num(p){var n=String((p&&p.nombre)||'').trim();var m=/^pizarra[\s-]*(\d+)$/i.exec(n);return m?+m[1]:null;}
+function num(p){var n=String((p&&p.nombre)||'').trim();var m=/^pizarra[\s-]*(\d+)(?:\s*\([^)]*\))?$/i.exec(n);return m?+m[1]:null;}
 function ordenar(){
   var m=modo();if(m==='fecha'||typeof PIZ==='undefined'||!Array.isArray(PIZ))return;
   PIZ.sort(function(a,b){
