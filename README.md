@@ -62,7 +62,7 @@ Está construida en un único archivo HTML con JavaScript vanilla. Sin framework
 - Panel de metodología ampliado con la ficha de evaluación y las preguntas de cierre
 
 ### 🖊️ Más pizarras del club
-- `pizarras.json` pasa a **87 pizarras** con el nombre `Pizarra-N (referencia)`, donde la referencia es el ejercicio que usa ese dibujo (por ejemplo `Pizarra-84 (tac-034)`) o el sistema (`F8 1-3-3-1`). La Pizarra-67 es ahora un rondo propio del club; el «1-3-3-1» de 8 jugadores que ocupaba ese número se retiró de Fútbol 7): Pizarra-71 a 78 son la colocación de los 8 sistemas de Fútbol 8 y Pizarra-79 a 83, la de los 5 sistemas nuevos de Fútbol 7
+- `pizarras.json` pasa a **87 pizarras** con el nombre `Pizarra-N (referencia)`, donde la referencia es el ejercicio que usa ese dibujo (por ejemplo `Pizarra-84 (tac-034)`) o el sistema (`F8 1-3-3-1`). La Pizarra-67 es ahora un rondo propio del club; el «1-3-3-1» de 8 jugadores que ocupaba ese número se retiró de Fútbol 7. Pizarra-71 a 78 son la colocación de los 8 sistemas de Fútbol 8 y Pizarra-79 a 83, la de los 5 sistemas nuevos de Fútbol 7
 - Las sesiones de Fútbol 8 entran en la **copia de seguridad**
 
 ---
