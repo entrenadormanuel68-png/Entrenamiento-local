@@ -5699,6 +5699,21 @@ async function pizSync(){
   if(!data)return;                       // sin conexión o sin archivo: se usan las pizarras locales
   const arr=Array.isArray(data)?data:(data&&Array.isArray(data.pizarras)?data.pizarras:[]);
   if(!arr.length)return;
+  // Renombra las pizarras que ya tienes cuando el club les añade la referencia «(ref)» al nombre
+  try{
+    const porK=new Map(),porD=new Map(),repoK=new Set(arr.map(o=>_pizKey(o&&o.nombre)));
+    PIZ.forEach(p=>{porK.set(_pizKey(p.nombre),p);porD.set(_pizDib(p.dibujo),p);});
+    let ren=0;
+    arr.slice(0,200).forEach(o=>{
+      if(!o||typeof o!=='object'||!o.dibujo)return;
+      const nom=String(o.nombre||'').slice(0,60);if(!nom)return;
+      let loc=porK.get(_pizKey(nom));
+      if(loc&&String(loc.nombre).indexOf('(')>=0)loc=null;           // no pisa nombres con tu propia referencia
+      if(!loc){const j0=etSanDibujo(o.dibujo);if(j0){loc=porD.get(_pizDib(j0))||null;if(loc&&repoK.has(_pizKey(loc.nombre)))loc=null;}}
+      if(loc&&loc.nombre!==nom){loc.nombre=nom;ren++;}
+    });
+    if(ren&&pizSave()){try{pizRender();}catch(e){}try{etToast('✏️ '+ren+' pizarras renombradas con su referencia');}catch(e){}}
+  }catch(e){}
   const vistas=_pizVistas(),presentes=new Set(PIZ.map(p=>_pizKey(p.nombre))),dibujos=new Set(PIZ.map(p=>_pizDib(p.dibujo)));
   const nuevas=[];
   arr.slice(0,200).forEach(o=>{
