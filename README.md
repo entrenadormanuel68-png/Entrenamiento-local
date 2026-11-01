@@ -2,6 +2,8 @@
 
 🌐 **Prueba la app en directo:** https://entrenadormanuel68-png.github.io/Entrenamiento-local/
 
+📣 **Presentación y novedades:** https://entrenadormanuel68-png.github.io/Entrenamiento-local/promo.html · 🤝 **Colabora:** [proponer ejercicio](https://github.com/entrenadormanuel68-png/Entrenamiento-local/issues/new?template=ejercicio.md) · [compartir pizarra](https://github.com/entrenadormanuel68-png/Entrenamiento-local/issues/new?template=pizarra.md) · [sugerir mejora](https://github.com/entrenadormanuel68-png/Entrenamiento-local/issues/new?template=propuesta.md)
+
 ---
 
 > Aplicación web de gestión de equipos de fútbol base. Funciona **100% offline** sin necesidad de servidor. Todo se guarda en el dispositivo. Con internet, descarga además las novedades de la **biblioteca** y de las **pizarras** del club. Empaquetable como app Android con Capacitor.
@@ -37,7 +39,7 @@ Está construida en un único archivo HTML con JavaScript vanilla. Sin framework
 | 📐 Sist. Fútbol 11 | **8 sistemas y 80 sesiones de 90 min** (1-4-3-3, 1-4-4-2, 1-4-2-3-1, 1-4-1-4-1, 1-4-3-1-2, 1-3-5-2, 1-3-4-3, 1-5-3-2), también **editables**, con ficha de cada sistema y su colocación |
 | ✅ Asistencia | Control de presencia por jugador y sesión (solo jugadores activos) |
 | 👥 Jugadores | Ficha de cada jugador con valoración, minutos y cuartos jugados |
-| 📚 Biblioteca | **334 ejercicios del club** en 7 categorías (los juegos incluidos) (se actualiza sola al abrir la app con internet), con buscador y orden por número, más los ejercicios propios de cada entrenador |
+| 📚 Biblioteca | **338 ejercicios del club** en 7 categorías (los juegos incluidos) (se actualiza sola al abrir la app con internet), con buscador y orden por número, más los ejercicios propios de cada entrenador |
 | 🖊️ Pizarra | Pizarra táctica vectorial: dibujo, figuras, guardado y envío (ver abajo) |
 
 **Roles de acceso:**
