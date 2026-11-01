@@ -8508,7 +8508,8 @@ function ordenar(){
     return m==='asc'?x-y:y-x;
   });
 }
-function etiqueta(){var m=modo();return m==='asc'?'↕ Orden: 1 → 83':(m==='desc'?'↕ Orden: 83 → 1':'↕ Orden: por fecha');}
+function maxNum(){var x=0;if(typeof PIZ!=='undefined'&&Array.isArray(PIZ))PIZ.forEach(function(p){var n=num(p);if(n!==null&&n>x)x=n;});return x||'N';}
+function etiqueta(){var m=modo(),n=maxNum();return m==='asc'?'↕ Orden: 1 → '+n:(m==='desc'?'↕ Orden: '+n+' → 1':'↕ Orden: por fecha');}
 function pintaBtn(){var b=document.getElementById('piz-orden-btn');if(b)b.textContent=etiqueta();}
 var orig=window.pizRender;
 if(typeof orig!=='function')return;
