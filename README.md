@@ -182,6 +182,36 @@ Si el cambio es de **imagen o dibujo** y quieres que se aplique también a quien
 
 ---
 
+## 🔍 Comprobar el espacio usado (mantenimiento)
+
+**Esta app (versión local, IndexedDB):** en **Biblioteca** aparece el medidor «Espacio usado», que usa la cuota real del navegador. Si quieres verlo en la consola:
+
+1. Abre la app en el navegador y pulsa **F12** → pestaña **Consola**.
+2. Si Chrome bloquea el pegado, escribe `allow pasting` y pulsa Enter.
+3. Pega y pulsa Enter:
+
+```js
+navigator.storage.estimate().then(e => console.log((e.usage/1e6).toFixed(1) + ' MB de ' + (e.quota/1e9).toFixed(1) + ' GB'))
+```
+
+**Versión Firebase (`mp-coach`)**, que guarda una copia local en `localStorage` (límite de unos 5.000.000 de caracteres):
+
+```js
+JSON.stringify(Object.assign({}, localStorage)).length
+```
+
+Para ver qué claves pesan más:
+
+```js
+console.table(Object.keys(localStorage).map(k => ({clave: k, caracteres: localStorage.getItem(k).length})).sort((a,b) => b.caracteres - a.caracteres))
+```
+
+- Medida de referencia (3-nov-2026): **1.988.161** caracteres, el 40 % del límite. Lo que más ocupa es la copia local de Firebase (`ext_espejo` y `ext_espejo_prev`, unos 1,5 millones entre las dos).
+- Si el número pasa de **4.000.000**, mover esa copia a IndexedDB.
+- Las fotos en los ejercicios son lo único que puede llenar el espacio de golpe. Los dibujos y pizarras casi no pesan (unos 1.000 a 2.000 caracteres cada uno).
+
+---
+
 ## 🛠️ Tecnologías
 
 - HTML5 / CSS3 / JavaScript puro — sin frameworks
