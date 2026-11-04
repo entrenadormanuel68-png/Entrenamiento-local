@@ -9,7 +9,7 @@
 > Aplicación web de gestión de equipos de fútbol base. Funciona **100% offline** sin necesidad de servidor. Todo se guarda en el dispositivo. Con internet, descarga además las novedades de la **biblioteca** y de las **pizarras** del club. Empaquetable como app Android con Capacitor.
 
 ![Estado](https://img.shields.io/badge/estado-activo-brightgreen)
-![Versión](https://img.shields.io/badge/versión-1.5-blue)
+![Versión](https://img.shields.io/badge/versión-1.6-blue)
 ![Contribuciones](https://img.shields.io/badge/contribuciones-bienvenidas-orange)
 ![Sin dependencias](https://img.shields.io/badge/dependencias-ninguna-success)
 ![Licencia](https://img.shields.io/badge/licencia-MIT-purple)
@@ -42,9 +42,26 @@ Está construida en un único archivo HTML con JavaScript vanilla. Sin framework
 | 📚 Biblioteca | **338 ejercicios del club** en 7 categorías (los juegos incluidos) (se actualiza sola al abrir la app con internet), con buscador y orden por número, más los ejercicios propios de cada entrenador |
 | 🖊️ Pizarra | Pizarra táctica vectorial: dibujo, figuras, guardado y envío (ver abajo) |
 
-**Roles de acceso:**
-- 🛡️ **Manager** — Control total de la app, puede cambiar contraseñas e importar ejercicios
-- 📋 **Entrenador** — Acceso limitado a las funciones de uso diario
+**Acceso:** cada entrenador usa su **propia copia** de la app, así que entra directamente como **Manager** de sus datos (sin pantalla de roles ni contraseña por defecto). Si quiere, puede proteger la app con su propia contraseña (ver «Novedades v1.6»).
+
+---
+
+## 🆕 Novedades v1.6
+
+### ☁️ Sincronización opcional con Google Drive
+- Para ver **tus mismos datos en el móvil, la tablet y el ordenador**. Cada entrenador usa su propia cuenta de Google: los datos van a una carpeta oculta de **su** Drive (`drive.appdata`, no puede ver el resto de sus archivos).
+- **El desarrollador no tiene servidor ni accede a los datos.** Es totalmente opcional: sin conectar Drive, la app sigue guardando solo en el dispositivo.
+- Se activa en **Club → «Sincronizar con Google Drive»**. Si dos dispositivos tienen datos distintos, la app pregunta cuáles conservar y guarda una copia de seguridad antes de aplicar los de Drive.
+- Guía para entrenadores: [guia.html](https://entrenadormanuel68-png.github.io/Entrenamiento-local/guia.html) · [Política de privacidad](https://entrenadormanuel68-png.github.io/Entrenamiento-local/privacidad.html)
+
+### 🔒 Entrada directa y contraseña opcional
+- La app abre directamente, sin pantalla de roles ni la antigua contraseña por defecto.
+- En **Club → «Bloqueo con contraseña»** se puede crear una contraseña propia (mínimo 4 caracteres) que se pide al abrir y al volver tras más de un minuto en segundo plano, por si alguien coge el móvil.
+- **Es por dispositivo** (no se sincroniza con Drive) y es una protección básica: no cifra los datos. Si se olvida, la pantalla de bloqueo permite borrar los datos del dispositivo y recuperarlos desde Drive o una copia de seguridad.
+
+### 📱 APK con inicio de sesión de Google
+- Dentro del APK, Google bloquea el login web, así que se usa el plugin nativo `@capawesome/capacitor-google-sign-in`. El permiso de Google dura una hora: si caduca, la app muestra «Pulsa Sincronizar ahora para reconectar».
+- Nuevo comando `npm run apk`, que copia todos los archivos a `www`, comprueba que son idénticos a la raíz y sincroniza con Android.
 
 ---
 
@@ -238,13 +255,15 @@ Abre `index.html` directamente en Chrome, Firefox o Edge. ¡Listo!
 # Instala dependencias
 npm install
 
-# Copia index.html a la carpeta www (webDir de Capacitor)
-# y sincroniza con Android
-npx cap sync android
+# Copia TODOS los archivos de la app a www (webDir de Capacitor),
+# comprueba que son idénticos a la raíz y sincroniza con Android
+npm run apk
 
 # Abre en Android Studio
 npx cap open android
 ```
+
+> **Probar sin pisar la app instalada:** añade `appIdSuffix=.beta` en `android/gradle.properties` (sin hacer commit) para que se instale como `com.mpcoach.local.beta`, y quítalo antes de compilar la definitiva. Para iniciar sesión con Google dentro del APK hace falta un cliente OAuth de tipo **Android** (nombre de paquete + huella SHA-1 de la clave de firma) en el mismo proyecto de Google Cloud que el cliente web.
 
 > Requiere Android Studio instalado y configurado. Antes de generar una APK que vaya a **actualizar** otra, sube el `versionCode` en `android/app/build.gradle` y fírmala con la misma clave. La APK de debug se genera en `android/app/build/outputs/apk/debug/`.
 
@@ -286,10 +305,12 @@ npx cap open android
 - [ ] Comparativa entre jugadores
 
 ### 🔒 Seguridad
-- [ ] Cifrado de contraseñas en localStorage
-- [ ] PIN de bloqueo con timeout automático
+- [ ] Cifrado de los datos locales (hoy el bloqueo es básico: no cifra)
+- [x] Contraseña de bloqueo opcional con bloqueo automático (v1.6)
 
 ### 🌟 Mejoras generales
+- [x] Sincronización opcional entre dispositivos con Google Drive (v1.6)
+- [ ] Renovación silenciosa del permiso de Google en el APK
 - [x] Backup y restore de todos los datos en JSON (v1.3)
 - [x] Instalable como app (PWA) y como APK Android
 - [x] Compartir por WhatsApp (pizarras, hoja de partido, valoración)
