@@ -52,7 +52,19 @@
   var gsi = null, gsiInit = null;
   function pedirTokenNativo(interactivo) {
     if (!interactivo) return Promise.reject(new Error('Sesión caducada'));   // sin ventanas por sorpresa: pide pulsar «Sincronizar ahora»
-    try { gsi = gsi || window.Capacitor.registerPlugin('GoogleSignIn'); } catch (e) { return Promise.reject(new Error('Plugin de Google no disponible')); }
+    // Sin empaquetador no existe Capacitor.registerPlugin: se llama al puente nativo directamente.
+    var cap = window.Capacitor;
+    if (!gsi) {
+      if (cap && typeof cap.registerPlugin === 'function') { try { gsi = cap.registerPlugin('GoogleSignIn'); } catch (e) {} }
+      if (!gsi && cap && typeof cap.nativePromise === 'function') {
+        gsi = {
+          initialize: function (o) { return cap.nativePromise('GoogleSignIn', 'initialize', o); },
+          signIn: function (o) { return cap.nativePromise('GoogleSignIn', 'signIn', o || {}); },
+          signOut: function () { return cap.nativePromise('GoogleSignIn', 'signOut', {}); }
+        };
+      }
+      if (!gsi) return Promise.reject(new Error('Plugin de Google no disponible'));
+    }
     gsiInit = gsiInit || gsi.initialize({ clientId: CLIENT_ID, scopes: [SCOPE] });   // clientId = cliente WEB, también en Android
     return gsiInit.then(function () { return gsi.signIn(); }).then(function (r) {
       if (!r || !r.accessToken) throw new Error('Google no dio permiso para Drive');
