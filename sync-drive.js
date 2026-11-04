@@ -43,7 +43,26 @@
     });
     return gisPromise;
   }
+  // ───────── APK (Capacitor): inicio de sesión nativo de Android ─────────
+  // Google bloquea el login web dentro del WebView de una APK; ahí se usa el plugin nativo.
+  // En el navegador / PWA nada de esto se ejecuta.
+  function esNativo() {
+    try { return !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()); } catch (e) { return false; }
+  }
+  var gsi = null, gsiInit = null;
+  function pedirTokenNativo(interactivo) {
+    if (!interactivo) return Promise.reject(new Error('Sesión caducada'));   // sin ventanas por sorpresa: pide pulsar «Sincronizar ahora»
+    try { gsi = gsi || window.Capacitor.registerPlugin('GoogleSignIn'); } catch (e) { return Promise.reject(new Error('Plugin de Google no disponible')); }
+    gsiInit = gsiInit || gsi.initialize({ clientId: CLIENT_ID, scopes: [SCOPE] });   // clientId = cliente WEB, también en Android
+    return gsiInit.then(function () { return gsi.signIn(); }).then(function (r) {
+      if (!r || !r.accessToken) throw new Error('Google no dio permiso para Drive');
+      token = r.accessToken; tokenExp = Date.now() + 3300 * 1000; setCfg({ conectado: true });
+      return token;
+    }).catch(function (e) { gsiInit = null; throw new Error((e && (e.message || e.code)) || 'Acceso cancelado'); });
+  }
+
   function pedirToken(interactivo) {
+    if (esNativo()) return (token && Date.now() < tokenExp - 60000) ? Promise.resolve(token) : pedirTokenNativo(interactivo);
     return cargarGIS().then(function () {
       if (token && Date.now() < tokenExp - 60000) return token;
       return new Promise(function (ok, ko) {
@@ -170,6 +189,7 @@
   function desconectar() {
     if (!confirm('¿Desconectar Google Drive en este dispositivo?\n\nLos datos de este dispositivo no se borran. La copia en tu Drive tampoco.')) return;
     try { if (token && window.google) google.accounts.oauth2.revoke(token, function () {}); } catch (e) {}
+    try { if (esNativo() && gsi) gsi.signOut(); } catch (e) {}
     token = null; tokenExp = 0;
     try { localStorage.removeItem(CFG_KEY); } catch (e) {}
     clearInterval(timer); timer = null;
