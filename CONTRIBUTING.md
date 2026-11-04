@@ -78,7 +78,7 @@ Los Pull Requests solo se aceptan para **datos del club**: ejercicios (`ejercici
 
 ## 🐛 Reportar un error
 
-Incluye: qué hacías, qué esperabas, qué ocurrió, dispositivo y navegador (o "APK Android"), y una captura si puedes.
+Incluye: qué hacías, qué esperabas, qué ocurrió, dispositivo y navegador (o "APK Android"), si usas la web, la web instalada o el APK, si tienes la sincronización con Google Drive conectada, y una captura si puedes (sin datos de menores visibles).
 
 ---
 

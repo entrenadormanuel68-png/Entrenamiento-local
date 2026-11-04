@@ -18,3 +18,6 @@ labels: bug
 ## Entorno
 - Navegador:
 - Sistema operativo:
+- Uso la app como: web / web instalada / APK
+- ¿Sincronización con Google Drive conectada? sí / no
+- Captura (sin datos de menores visibles):
