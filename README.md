@@ -52,6 +52,7 @@ Está construida en un único archivo HTML con JavaScript vanilla. Sin framework
 - Para ver **tus mismos datos en el móvil, la tablet y el ordenador**. Cada entrenador usa su propia cuenta de Google: los datos van a una carpeta oculta de **su** Drive (`drive.appdata`, no puede ver el resto de sus archivos).
 - **El desarrollador no tiene servidor ni accede a los datos.** Es totalmente opcional: sin conectar Drive, la app sigue guardando solo en el dispositivo.
 - Se activa en **Club → «Sincronizar con Google Drive»**. Si dos dispositivos tienen datos distintos, la app pregunta cuáles conservar y guarda una copia de seguridad antes de aplicar los de Drive.
+- **Versiones anteriores:** antes de sustituir el archivo de Drive se guarda la versión previa (se conservan 5) y se puede restaurar desde «🕓 Versiones anteriores». Si se resetea la app con Drive conectado, Drive se desconecta antes para no vaciar la copia. La tarjeta muestra la última sincronización y avisa si hay cambios sin subir.
 - Guía para entrenadores: [guia.html](https://entrenadormanuel68-png.github.io/Entrenamiento-local/guia.html) · [Política de privacidad](https://entrenadormanuel68-png.github.io/Entrenamiento-local/privacidad.html)
 
 ### 🔒 Entrada directa y contraseña opcional
