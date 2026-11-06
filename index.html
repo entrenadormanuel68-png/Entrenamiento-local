@@ -7757,7 +7757,7 @@ window.extAvisosAsist=function(stats,list){
       if(j.totalJ>=window.EXT_ALERTA_MINSES&&j.pct<window.EXT_ALERTA_PCT)m.push('asistencia real '+j.pct+'%');
       if(m.length)out.push('<div>• <b>'+esc(j.dorsal+' '+j.nombre)+'</b>: '+m.join(' · ')+'</div>');
     });
-    if(!out.length)return'';
+    if(!out.length)return '<div style="margin:0 0 10px;font-size:11px;font-weight:600;color:#15803D">✅ Sin alertas de asistencia</div>';
     return '<div style="margin:0 0 12px;padding:8px 12px;border-radius:8px;font-size:12px;line-height:1.6;background:#FEF3C7;border:1px solid #FDE68A;color:#92400E"><b>⚠️ Atención: asistencia</b>'+out.join('')+'</div>';
   }catch(e){return'';}
 };
