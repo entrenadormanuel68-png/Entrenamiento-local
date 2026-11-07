@@ -6024,11 +6024,15 @@ async function pizSync(){
     dibujos.add(_pizDib(j));
     nuevas.push({nombre:nom,fecha:(o.fecha&&!isNaN(new Date(o.fecha)))?new Date(o.fecha).toISOString():new Date().toISOString(),dibujo:j});
   });
-  try{EtStore.setItem('pizarra_sync_vistas',JSON.stringify([...vistas]));}catch(e){}
-  if(!nuevas.length)return;
+  const marcarVistas=()=>{try{EtStore.setItem('pizarra_sync_vistas',JSON.stringify([...vistas]));}catch(e){}};
+  if(!nuevas.length){marcarVistas();return;}
+  // Primero se guardan las pizarras nuevas y solo después se anotan como «vistas»: si el guardado se interrumpe
+  // (recarga, sincronización con Drive...), la próxima vez la app vuelve a intentarlo en vez de darlas por recibidas.
   const t=Date.now();
   nuevas.reverse().forEach((x,i)=>PIZ.unshift({id:t+i,nombre:x.nombre,fecha:x.fecha,dibujo:x.dibujo}));
   if(pizSave()){
+    try{if(EtStore.flush)await EtStore.flush();}catch(e){}
+    marcarVistas();
     try{pizRender();}catch(e){}
     try{etToast('🎨 Pizarras del club: '+nuevas.length+' nuevas');}catch(e){}
   }
