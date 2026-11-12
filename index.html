@@ -2672,7 +2672,7 @@ function chgGolesRival(pid,pi,d){
 function convocatoriaWA(pid){
   const p=PARTIDOS.find(x=>x.id===pid);if(!p)return;
   const conv=p.convocados.map(id=>JUGADORES.find(j=>j.id===id)).filter(Boolean);
-  const noConv=JUGADORES.filter(j=>!p.convocados.includes(j.id));
+  const noConv=JUGADORES.filter(j=>j.activo!==false&&!p.convocados.includes(j.id));
 
   // Format date nicely
   let fechaFmt=p.fecha||"—";
@@ -4050,7 +4050,7 @@ function exportPartidoCSV(pid){
   const suplSet=new Set(toArr(p.suplentes).map(id=>+id));
   const convIds=toArr(p.convocados).map(id=>+id);
   // Jugadores NO convocados
-  const noConvIds=JUGADORES.map(j=>j.id).filter(id=>!convIds.includes(id));
+  const noConvIds=JUGADORES.filter(j=>j.activo!==false).map(j=>j.id).filter(id=>!convIds.includes(id));
   const rows=[
     ['Club',CLUB.nombre],['Rival',p.rival||''],['Fecha',fmtFecha(p.fecha)],['Hora',p.hora||''],
     ['Local/Visitante',p.local?'Local':'Visitante'],['Tipo',p.tipo||''],
