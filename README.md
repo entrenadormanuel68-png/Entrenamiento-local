@@ -9,7 +9,7 @@
 > Aplicación web de gestión de equipos de fútbol base. Funciona **100% offline** sin necesidad de servidor. Todo se guarda en el dispositivo. Con internet, descarga además las novedades de la **biblioteca** y de las **pizarras** del club. Empaquetable como app Android con Capacitor.
 
 ![Estado](https://img.shields.io/badge/estado-activo-brightgreen)
-![Versión](https://img.shields.io/badge/versión-1.6-blue)
+![Versión](https://img.shields.io/badge/versión-2.2-blue)
 ![Contribuciones](https://img.shields.io/badge/contribuciones-bienvenidas-orange)
 ![Sin dependencias](https://img.shields.io/badge/dependencias-ninguna-success)
 ![Licencia](https://img.shields.io/badge/licencia-MIT-purple)
@@ -28,21 +28,52 @@ Está construida en un único archivo HTML con JavaScript vanilla. Sin framework
 
 | Sección | Descripción |
 |---|---|
-| 📊 Resumen | Dashboard con estadísticas, progreso por fase, top jugadores y goleadores |
+| 📊 Resumen | Dashboard con estadísticas, progreso por fase, top jugadores y goleadores, goles encajados por portero, jugadores con lesión activa e **informes en PDF** (individual y de grupo) |
 | ⚽ Club | Datos del club, plantilla flexible de jugadores, sistemas de juego (F7/F8/F11), estructura semanal, festivos |
 | 📅 Calendario | Planificación con fechas reales automáticas, adaptado a 2-5 días de entrenamiento semanales |
-| 🏆 Partidos | Resultados, goles por jugador, alineación por cuartos, **convocatoria por WhatsApp con observaciones**, **hoja de partido** (imagen, PDF y WhatsApp) y **valoración** del partido |
-| 📋 Sesiones | Plantillas de sesiones por fases (carga, descanso, pretemporada); cada ejercicio admite dibujo o pizarra |
+| 🏆 Partidos | Resultados, goles por jugador, alineación por cuartos, **convocatoria por WhatsApp con observaciones**, **hoja de partido** (imagen, PDF y WhatsApp), **valoración** del partido y **minutos y cuartos** por jugador (WhatsApp y PDF) |
+| 📋 Sesiones | Plantillas de sesiones por fases (carga, descanso, pretemporada); cada ejercicio admite dibujo o pizarra. Se pueden **duplicar y guardar como plantilla** |
 | 📝 Mis Sesiones | Sesiones propias: eliges ejercicios de la biblioteca o de tus pizarras y los editas sin tocar el original |
 | 📐 Sist. Fútbol 7 | **8 sistemas y 80 sesiones**, **editables**: puedes cambiar cualquiera (conserva el original), añadir las tuyas, dibujar o usar una pizarra; cada sistema trae su **ficha táctica y su colocación** |
 | 📐 Sist. Fútbol 8 | **8 sistemas y 80 sesiones de 60 min** (1-3-3-1, 1-2-3-2, 1-3-2-2, 1-2-4-1, 1-4-3, 1-3-1-3, 1-2-2-3, 1-3-1-2-1), con ficha, colocación y todo editable |
 | 📐 Sist. Fútbol 11 | **8 sistemas y 80 sesiones de 90 min** (1-4-3-3, 1-4-4-2, 1-4-2-3-1, 1-4-1-4-1, 1-4-3-1-2, 1-3-5-2, 1-3-4-3, 1-5-3-2), también **editables**, con ficha de cada sistema y su colocación |
-| ✅ Asistencia | Control de presencia por jugador y sesión (solo jugadores activos) |
-| 👥 Jugadores | Ficha de cada jugador con valoración, minutos y cuartos jugados |
-| 📚 Biblioteca | **338 ejercicios del club** en 7 categorías (los juegos incluidos) (se actualiza sola al abrir la app con internet), con buscador y orden por número, más los ejercicios propios de cada entrenador |
+| ✅ Asistencia | Control de presencia por jugador y sesión (solo jugadores activos), faltas justificadas, incorporación por sesión y **alertas** (3 faltas seguidas sin justificar o asistencia real por debajo del 70 %) |
+| ⏱️ Reloj y Campo | **Cronómetro de partido** (cuartos, cuenta atrás) y **de sesión** (plan estándar de 90 min); **modo Campo** para marcar la asistencia con botones grandes |
+| 👥 Jugadores | Ficha de cada jugador con valoración, minutos y cuartos, **evolución por período** y **registro de lesiones y molestias** |
+| 📚 Biblioteca | **367 ejercicios del club** en 7 categorías (porteros y juegos incluidos) y **118 pizarras** (se actualizan solas al abrir la app con internet), con buscador y orden por número, más los ejercicios propios de cada entrenador |
 | 🖊️ Pizarra | Pizarra táctica vectorial: dibujo, figuras, guardado y envío (ver abajo) |
 
 **Acceso:** cada entrenador usa su **propia copia** de la app, así que entra directamente como **Manager** de sus datos (sin pantalla de roles ni contraseña por defecto). Si quiere, puede proteger la app con su propia contraseña (ver «Novedades v1.6»).
+
+---
+
+## 🆕 Novedades v2.2 (noviembre 2026)
+
+### 👤 Evolución del jugador en su ficha
+- Gráfico de **evolución por período** de la valoración (técnica, táctica, físico y mental), con los cambios de habilidades respecto al período anterior y la **asistencia por mes**, más una tabla con los datos
+- Es solo lectura: sale de las valoraciones y la asistencia que ya registras, no hay que rellenar nada nuevo
+
+### 🩹 Registro de lesiones y molestias
+- En la ficha de cada jugador: **lesión o molestia**, zona, nota, fecha y estado (**activa / alta**), con historial
+- Insignia roja en la lista de jugadores y tarjeta en **Resumen** con quién tiene algo activo
+- Los datos se quedan **en tu dispositivo** y entran en tu copia de seguridad; no se envían a ningún sitio
+
+### 📋 Plantillas de sesión reutilizables
+- **Duplicar** una sesión, **guardarla como plantilla** y **aplicar** una plantilla a otra sesión, elegiendo qué campos copiar
+
+### ⏱️ Reloj de partido y de sesión
+- **Partido:** 4 cuartos, cuenta atrás, minutos por cuarto ajustables (15 por defecto); cada cuarto empieza de cero
+- **Sesión:** cronómetro por bloques. **Plan estándar de 90 minutos: 10 · 15 · 15 · 15 · 30 · 5**, que se puede variar y se recuerda para cada sesión. Se carga desde las sesiones del calendario o de «Mis Sesiones» con los nombres reales de sus ejercicios
+- Aviso al llegar a cero con **sonido de unos 10 segundos y vibración** (con botón para silenciarlo) y la pantalla se mantiene encendida mientras corre. El tiempo se calcula con la hora real, así que sigue bien aunque el móvil se bloquee
+- Botón flotante pequeño (verde azulado) junto al de **Campo** (naranja). El estado del reloj es por dispositivo y no se sincroniza
+
+### 📊 Minutos y cuartos más claros
+- Semáforo con **leyenda visible** y columna «Reparto»; en móvil, solo jugador, cuartos, minutos y barra
+- El mensaje de **WhatsApp** de minutos y cuartos añade la **leyenda de demarcaciones**, y hay un botón **PDF** con esos mismos datos
+- Resumen con progreso por fase y porcentaje, tarjetas 2×2 en móvil y gráficos ajustados al ancho
+
+### 📱 APK
+- La letra ya no se agranda con el tamaño de fuente del sistema: se ve igual que en la web
 
 ---
 
@@ -288,9 +319,9 @@ npx cap open android
 - [ ] Guardar las sesiones de sistemas en la nube (versión Firebase)
 - [ ] Más plantillas predefinidas (por semana de temporada, por rival, por fase)
 - [ ] Constructor de sesión arrastrando ejercicios
-- [ ] Temporizador integrado por bloque de sesión
+- [x] Temporizador integrado por bloque de sesión (v2.2)
 - [ ] Exportar sesión a PDF o imagen
-- [ ] Duplicar/clonar sesiones existentes
+- [x] Duplicar/clonar sesiones existentes (v2.2)
 
 ### 🖊️ Pizarra táctica
 - [x] Dibujar líneas, flechas (rectas y curvas) y zonas (rectangular, cuadrada y circular)
@@ -301,7 +332,7 @@ npx cap open android
 - [ ] Capas o varios pasos en una misma pizarra
 
 ### 📊 Estadísticas y análisis
-- [ ] Gráficos de progreso de jugadores a lo largo de la temporada
+- [x] Gráficos de progreso de jugadores a lo largo de la temporada (v2.2, en la ficha de cada jugador)
 - [ ] Evolución de resultados (racha de partidos)
 - [ ] Comparativa entre jugadores
 
@@ -325,8 +356,17 @@ npx cap open android
 
 ## 🤝 Contribuir
 
-Las contribuciones son bienvenidas. Lee [`CONTRIBUTING.md`](CONTRIBUTING.md) para empezar. El código lo mantiene solo el autor; tú puedes aportar ejercicios, pizarras e ideas. Hay plantillas para **proponer un ejercicio**, **compartir una pizarra**, **sugerir una mejora** o **reportar un error**.
-Si es tu primera vez en open source, busca los issues con la etiqueta `good first issue`.
+**Esta app la hacemos entre todos los entrenadores, y no hace falta saber programar.** Hoy el club ya tiene 367 ejercicios, 118 pizarras, 240 sesiones por sistema de juego y reloj, informes y fichas de jugador; lo que más ayuda ahora es lo que sale de **usarla de verdad en el campo**.
+
+| Quiero… | Cómo |
+|---|---|
+| 📚 Aportar un ejercicio | Créalo en la app (**Biblioteca → Nuevo ejercicio**), **Exportar JSON** y abre un [Issue de ejercicio](https://github.com/entrenadormanuel68-png/Entrenamiento-local/issues/new?template=ejercicio.md) |
+| 🖊️ Compartir una pizarra | Guárdala con un nombre claro y adjúntala en un [Issue de pizarra](https://github.com/entrenadormanuel68-png/Entrenamiento-local/issues/new?template=pizarra.md) |
+| 💡 Sugerir una mejora | [Propuesta](https://github.com/entrenadormanuel68-png/Entrenamiento-local/issues/new?template=propuesta.md): qué te falta en el día a día de entrenos y partidos |
+| 🐛 Avisar de un fallo | [Bug](https://github.com/entrenadormanuel68-png/Entrenamiento-local/issues/new?template=bug.md): dispositivo, pasos y, si puedes, una captura sin datos de menores |
+| ⚽ Probarla en tu equipo | Úsala una semana y cuéntanos **tres cosas**: qué te gustó, qué falla o no se entiende y qué añadirías (en **Discussions**) |
+
+Lee [`CONTRIBUTING.md`](CONTRIBUTING.md) para los formatos. El código lo mantiene solo el autor; tú aportas ejercicios, pizarras, ideas y avisos. Si es tu primera vez en open source, busca los issues con la etiqueta `good first issue`.
 
 ---
 
