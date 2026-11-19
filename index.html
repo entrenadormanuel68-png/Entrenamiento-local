@@ -3655,6 +3655,7 @@ function guardarSesLibre(){
     notas:editSesLibreId?(SES_LIBRES.find(x=>x.id===editSesLibreId)?.notas||''):'',
     creadaEn:editSesLibreId?(SES_LIBRES.find(x=>x.id===editSesLibreId)?.creadaEn||Date.now()):Date.now()
   };
+  if(editSesLibreId){const _o=SES_LIBRES.find(x=>x.id===editSesLibreId);if(_o)Object.keys(_o).forEach(k=>{if(/_g2/.test(k))sesion[k]=_o[k];});}
   if(editSesLibreId){const idx=SES_LIBRES.findIndex(x=>x.id===editSesLibreId);if(idx!==-1)SES_LIBRES[idx]=sesion;}
   else{SES_LIBRES.unshift(sesion);}
   saveSesLibres();
@@ -9237,7 +9238,7 @@ function pintarResumen(){
 wrap('renderResumen',pintarResumen);
 
 /* ───────── plantillas de sesión ───────── */
-var CAMPOS=['tema','objetivo','calentamiento','cal_min','ej1_nom','ej1_desc','ej1_prov','ej1_min','ej2_nom','ej2_desc','ej2_prov','ej2_min','ej3_nom','ej3_desc','ej3_prov','ej3_min','partido','partido_min','vuelta','vuelta_min','material','cal_dib','ej1_dib','ej2_dib','ej3_dib','partido_dib','vuelta_dib'];
+var CAMPOS=['tema','objetivo','calentamiento','cal_min','ej1_nom','ej1_desc','ej1_prov','ej1_min','ej2_nom','ej2_desc','ej2_prov','ej2_min','ej3_nom','ej3_desc','ej3_prov','ej3_min','partido','partido_min','vuelta','vuelta_min','material','cal_dib','ej1_dib','ej2_dib','ej3_dib','partido_dib','vuelta_dib','cal_g2on','cal_g2desc','cal_g2dib','ej1_g2on','ej1_g2nom','ej1_g2desc','ej1_g2prov','ej1_g2dib','ej2_g2on','ej2_g2nom','ej2_g2desc','ej2_g2prov','ej2_g2dib','ej3_g2on','ej3_g2nom','ej3_g2desc','ej3_g2prov','ej3_g2dib'];
 window.extSesDuplicar=function(id){
   var s=SES_LIBRES.find(function(x){return x.id===id;});if(!s)return;
   var c=JSON.parse(JSON.stringify(s));c.id='sl_'+Date.now();c.tema=(s.tema||'Sesión')+' (copia)';c.fecha='';c.notas='';c.creadaEn=Date.now();
@@ -9267,7 +9268,7 @@ window.extSesAplicar=function(id){
   var s=SES_LIBRES.find(function(x){return x.id===id;}),sel=document.getElementById('ext-apl-sel');if(!s||!sel)return;
   var t=SESIONES.find(function(x){return x.num===+sel.value;});if(!t)return;
   if(!confirm('¿Sustituir el contenido de la sesión '+String(t.num).padStart(3,'0')+' por esta plantilla?'))return;
-  CAMPOS.forEach(function(k){if(s[k]!==undefined&&s[k]!=='')t[k]=s[k];else if(/_dib$/.test(k))t[k]='';});
+  CAMPOS.forEach(function(k){if(s[k]!==undefined&&s[k]!=='')t[k]=s[k];else if(/_dib$/.test(k))t[k]='';else if(/_g2/.test(k))t[k]=/on$/.test(k)?false:'';});
   save('sesiones',SESIONES);
   var ov=document.getElementById('ext-apl-ov');if(ov)ov.remove();
   try{updateHeader();}catch(e){}
