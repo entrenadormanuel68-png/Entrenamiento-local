@@ -9,7 +9,7 @@
 > Aplicación web de gestión de equipos de fútbol base. Funciona **100% offline** sin necesidad de servidor. Todo se guarda en el dispositivo. Con internet, descarga además las novedades de la **biblioteca** y de las **pizarras** del club. Empaquetable como app Android con Capacitor.
 
 ![Estado](https://img.shields.io/badge/estado-activo-brightgreen)
-![Versión](https://img.shields.io/badge/versión-2.2-blue)
+![Versión](https://img.shields.io/badge/versión-2.7-blue)
 ![Contribuciones](https://img.shields.io/badge/contribuciones-bienvenidas-orange)
 ![Sin dependencias](https://img.shields.io/badge/dependencias-ninguna-success)
 ![Licencia](https://img.shields.io/badge/licencia-MIT-purple)
@@ -32,18 +32,35 @@ Está construida en un único archivo HTML con JavaScript vanilla. Sin framework
 | ⚽ Club | Datos del club, plantilla flexible de jugadores, sistemas de juego (F7/F8/F11), estructura semanal, festivos |
 | 📅 Calendario | Planificación con fechas reales automáticas, adaptado a 2-5 días de entrenamiento semanales |
 | 🏆 Partidos | Resultados, goles por jugador, alineación por cuartos, **convocatoria por WhatsApp con observaciones**, **hoja de partido** (imagen, PDF y WhatsApp), **valoración** del partido y **minutos y cuartos** por jugador (WhatsApp y PDF) |
-| 📋 Sesiones | **150 sesiones planificadas en 6 fases, listas para empezar** (carga, descanso, pretemporada…); cada ejercicio admite dibujo o pizarra. Se pueden **duplicar y guardar como plantilla** |
+| 📋 Sesiones | **150 sesiones planificadas en 6 fases, listas para empezar** (carga, descanso, pretemporada…); cada ejercicio admite dibujo o pizarra. Se pueden **duplicar y guardar como plantilla**, y llevan un **Grupo 2** opcional para trabajar dos ejercicios a la vez |
 | 📝 Mis Sesiones | Sesiones propias: eliges ejercicios de la biblioteca o de tus pizarras y los editas sin tocar el original |
 | 📐 Sist. Fútbol 7 | **8 sistemas y 80 sesiones**, **editables**: puedes cambiar cualquiera (conserva el original), añadir las tuyas, dibujar o usar una pizarra; cada sistema trae su **ficha táctica y su colocación** |
 | 📐 Sist. Fútbol 8 | **8 sistemas y 80 sesiones de 60 min** (1-3-3-1, 1-2-3-2, 1-3-2-2, 1-2-4-1, 1-4-3, 1-3-1-3, 1-2-2-3, 1-3-1-2-1), con ficha, colocación y todo editable |
 | 📐 Sist. Fútbol 11 | **8 sistemas y 80 sesiones de 90 min** (1-4-3-3, 1-4-4-2, 1-4-2-3-1, 1-4-1-4-1, 1-4-3-1-2, 1-3-5-2, 1-3-4-3, 1-5-3-2), también **editables**, con ficha de cada sistema y su colocación |
 | ✅ Asistencia | Control de presencia por jugador y sesión (solo jugadores activos), faltas justificadas, incorporación por sesión y **alertas** (3 faltas seguidas sin justificar o asistencia real por debajo del 70 %) |
-| ⏱️ Reloj y Campo | **Cronómetro de partido** (cuartos, cuenta atrás) y **de sesión** (plan estándar de 90 min); **modo Campo** para marcar la asistencia con botones grandes |
+| ⏱️ Reloj y Campo | **Cronómetro de partido** (cuartos, cuenta atrás) y **de sesión** (plan estándar de 90 min); **modo Campo** para marcar la asistencia con botones grandes; **alineación rápida** para partidos de entrenamiento |
 | 👥 Jugadores | Ficha de cada jugador con valoración, minutos y cuartos, **evolución por período** y **registro de lesiones y molestias** |
-| 📚 Biblioteca | **367 ejercicios del club** en 7 categorías (porteros y juegos incluidos) y **118 pizarras** (se actualizan solas al abrir la app con internet), con buscador y orden por número, más los ejercicios propios de cada entrenador |
+| 📚 Biblioteca | **389 ejercicios del club** en 7 categorías (porteros y juegos incluidos) y **140 pizarras** (se actualizan solas al abrir la app con internet), con buscador y orden por número, más los ejercicios propios de cada entrenador |
 | 🖊️ Pizarra | Pizarra táctica vectorial: dibujo, figuras, guardado y envío (ver abajo) |
 
 **Acceso:** cada entrenador usa su **propia copia** de la app, así que entra directamente como **Manager** de sus datos (sin pantalla de roles ni contraseña por defecto). Si quiere, puede proteger la app con su propia contraseña (ver «Novedades v1.6»).
+
+---
+
+## 🆕 Novedades v2.7 (noviembre 2026)
+
+### 👥 Grupo 2: dos ejercicios a la vez
+- En las sesiones del calendario y en «Mis Sesiones» puedes añadir, de forma **opcional**, un **Grupo 2** que trabaja a la vez que el Grupo 1 en el calentamiento y en los ejercicios 1-3
+- El Grupo 2 tiene su **propia biblioteca, dibujo y pizarra**: al elegir un ejercicio se copia y la biblioteca no cambia
+- Funciona también en las **plantillas de sesión** (guardar, aplicar y editar) y sale en el **mensaje de WhatsApp** de la sesión
+
+### 🧩 Alineación rápida para partidos de entrenamiento
+- Pensada para el **partido condicionado** o un amistoso corto. Se abre desde el detalle de una sesión y desde el panel del Reloj
+- **Dos equipos** (el tuyo, con tu plantilla activa, y un rival con nombres libres o números), formaciones de **Fútbol 7, 8 y 11** y hasta **cuatro tiempos**
+- **No guarda nada** ni toca partidos, minutos o valoraciones; el resultado se copia como texto para WhatsApp
+
+### 📚 Biblioteca ampliada
+- La biblioteca del club pasa a **389 ejercicios** y **140 pizarras**, con más ejercicios físicos, tácticos, de calentamiento y juegos
 
 ---
 
@@ -356,7 +373,7 @@ npx cap open android
 
 ## 🤝 Contribuir
 
-**Esta app la hacemos entre todos los entrenadores, y no hace falta saber programar.** Hoy el club ya tiene 367 ejercicios, 118 pizarras, 240 sesiones por sistema de juego y reloj, informes y fichas de jugador; lo que más ayuda ahora es lo que sale de **usarla de verdad en el campo**.
+**Esta app la hacemos entre todos los entrenadores, y no hace falta saber programar.** Hoy el club ya tiene 389 ejercicios, 140 pizarras, 240 sesiones por sistema de juego y reloj, informes y fichas de jugador; lo que más ayuda ahora es lo que sale de **usarla de verdad en el campo**.
 
 | Quiero… | Cómo |
 |---|---|
