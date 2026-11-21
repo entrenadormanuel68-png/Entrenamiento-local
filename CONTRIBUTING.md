@@ -12,6 +12,7 @@
 | Compartir una pizarra | Abre un Issue y adjunta el JSON exportado de la pizarra |
 | Sugerir una mejora | Abre un Issue con la plantilla **Propuesta** |
 | Avisar de un error | Abre un Issue con la plantilla **Bug** |
+| Probar la app en tu equipo | Úsala una semana (sesiones, reloj, alineación rápida, Grupo 2…) y cuéntanos en **Discussions** tres cosas: qué te gustó, qué falla o no se entiende y qué añadirías |
 | Preguntar o hablar de ideas | Pestaña **Discussions** |
 | Añadir ejercicios o pizarras en el propio archivo JSON | Pull Request solo de datos (ver abajo) |
 
@@ -78,7 +79,7 @@ Los Pull Requests solo se aceptan para **datos del club**: ejercicios (`ejercici
 
 ## 🐛 Reportar un error
 
-Incluye: qué hacías, qué esperabas, qué ocurrió, dispositivo y navegador (o "APK Android"), si usas la web, la web instalada o el APK, si tienes la sincronización con Google Drive conectada, y una captura si puedes (sin datos de menores visibles).
+Incluye: en qué parte de la app estabas (por ejemplo Reloj, Alineación rápida, Grupo 2 o Biblioteca), qué hacías, qué esperabas, qué ocurrió, dispositivo y navegador (o "APK Android"), si usas la web, la web instalada o el APK, si tienes la sincronización con Google Drive conectada, y una captura si puedes (sin datos de menores visibles).
 
 ---
 
