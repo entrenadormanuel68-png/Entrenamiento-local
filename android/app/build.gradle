@@ -8,7 +8,7 @@ android {
         applicationId "com.mpcoach.local" + (project.findProperty("appIdSuffix") ?: "")
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 19
+        versionCode 20
         versionName "2.7"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {

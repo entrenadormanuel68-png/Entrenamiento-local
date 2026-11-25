@@ -999,7 +999,7 @@ body.role-coach .manager-only-el{opacity:0.3;pointer-events:none;cursor:not-allo
   var CLAVES = ['bib_club','bib_jugadores','bib_sesiones','bib_partidos','bib_biblioteca','bib_juegos','bib_asistencia',
     'bib_auth','bib_festivos','bib_club_logo','bib_pizarra_boards','bib_ses_libres','bib_club_del',
     'pizarra_boards','pizarra_v2','pizarra_sync_vistas','ses_libres',
-    'sf7_sesiones_v1','sf8_sesiones_v1','sf11_sesiones_v1','valPendiente_v1','ext_alta','ext_motivo','ext_lesiones','clubLogo'];
+    'sf7_sesiones_v1','sf8_sesiones_v1','sf11_sesiones_v1','valPendiente_v1','ext_alta','ext_motivo','ext_lesiones','ext_cedido','clubLogo'];
   var SET = {}; CLAVES.forEach(function (k) { SET[k] = 1; });
   // (bib_role, et_comp, bib_orden, piz_orden y cualquier otra clave se quedan en localStorage)
   var KEEP_BACKUPS = 5;
@@ -4192,8 +4192,9 @@ function asistenciaWA(){
   if(!num){alert('Selecciona una sesión primero');return;}
   const ses=SESIONES.find(s=>s.num===num);
   const asist=ASISTENCIA[num]||{};
-  const presentes=JUGADORES.filter(j=>asist[j.id]===true);
-  const ausentes=JUGADORES.filter(j=>asist[j.id]!==true);
+  const _activos=JUGADORES.filter(j=>j.activo!==false);   // los inactivos (bajas) no salen en el mensaje
+  const presentes=_activos.filter(j=>asist[j.id]===true);
+  const ausentes=_activos.filter(j=>asist[j.id]!==true);
   let txt=`✅ *ASISTENCIA — SESIÓN ${String(num).padStart(3,'0')}*\n`;
   txt+=`📋 *${ses?.tema||''}*\n`;
   if(ses?.fechaReal)txt+=`📅 ${ses.fechaReal}\n`;
@@ -4205,7 +4206,7 @@ function asistenciaWA(){
     ausentes.forEach((j,i)=>txt+=`  ${i+1}. #${j.dorsal} ${j.nombre}${window.extMotivoTxt?extMotivoTxt(num,j.id):""}
 `);
   }
-  txt+=`\n📊 Asistencia: ${presentes.length}/${JUGADORES.length} (${Math.round(presentes.length/JUGADORES.length*100)}%)`;
+  txt+=`\n📊 Asistencia: ${presentes.length}/${_activos.length} (${_activos.length?Math.round(presentes.length/_activos.length*100):0}%)`;
   window.open('https://wa.me/?text='+encodeURIComponent(txt),'_blank');
 }
 
@@ -9750,6 +9751,227 @@ function init(){
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
 </script>
+<script id="ext-cedido">
+/* ext-cedido — jugador «cedido / fuera temporal» (p. ej. entrena con otro equipo): desde la sesión X hasta la Y
+   (o hasta que se reactive). Esas sesiones no cuentan ni como asistencia ni como falta (% y alertas).
+   Sigue en la plantilla y en las convocatorias. Bloque aditivo: quitar este <script> devuelve la app a su comportamiento anterior. */
+(function(){
+'use strict';
+var KEY='ext_cedido';
+var CED={};   // { idJugador: { d: sesión desde, h: sesión hasta (inclusive) | null = sigue fuera, t: 'Alevín C' } }
+var hooked=false;
+function warn(m,e){try{console.warn('[ext-cedido] '+m,e||'');}catch(_){}}
+function ST(){try{return (typeof EtStore!=='undefined'&&EtStore)?EtStore:localStorage;}catch(e){return localStorage;}}
+function fb(){try{return (typeof DB!=='undefined'&&DB)?DB:null;}catch(e){return null;}}
+function root(){try{return ROOT;}catch(e){return 'biblia';}}
+function E(s){try{return esc(s);}catch(e){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}}
+function arr(x){try{return toArr(x);}catch(e){return Array.isArray(x)?x:(x?Object.values(x):[]);}}
+function toast(m){try{etToast(m);}catch(e){}}
+function mgr(){try{return typeof isManager==='function'?isManager():true;}catch(e){return true;}}
+
+function norm(v){var o={};if(v)Object.keys(v).forEach(function(k){var x=v[k];if(!x||x.d==null||isNaN(+x.d))return;
+  o[k]={d:+x.d,h:(x.h==null||isNaN(+x.h))?null:+x.h,t:String(x.t||'otro equipo').slice(0,30)};});return o;}
+function loadLocal(){try{CED=norm(JSON.parse(ST().getItem(KEY)||'{}'));}catch(e){CED={};}}
+function saveLocal(){try{ST().setItem(KEY,JSON.stringify(CED));}catch(e){}}
+function setC(id,v){
+  if(v)CED[id]=v;else delete CED[id];
+  saveLocal();
+  var d=fb();if(d)d.ref(root()+'/'+KEY+'/'+id).set(v||null).catch(function(e){warn('guardar',e);});
+}
+function fuera(n,id){var c=CED[id];if(!c)return false;n=+n;return n>=c.d&&(c.h==null||n<=c.h);}
+window.extFuera=fuera;
+function sinFuera(j,list){return arr(list).filter(function(s){return !fuera(s.num,j.id);});}
+
+/* ───── el cálculo de asistencia salta las sesiones «fuera» ───── */
+function w2(name,mk){var o=window[name];if(typeof o!=='function')return;window[name]=mk(o);}
+w2('extSesAlta',function(o){return function(j,list){return sinFuera(j,o.call(this,j,list));};});
+w2('extContar',function(o){return function(n,id){return o.apply(this,arguments)&&!fuera(n,id);};});
+['extDesglose','extTextoMot','extRachaFaltas'].forEach(function(nm){
+  w2(nm,function(o){return function(j,list){return o.call(this,j,sinFuera(j,list));};});
+});
+
+function wrap(nombre,fn){var o=window[nombre];if(typeof o!=='function')return;window[nombre]=function(){var r=o.apply(this,arguments);try{fn.apply(this,arguments);}catch(e){warn(nombre,e);}return r;};}
+
+/* ───── pestaña Asistencia: ficha del jugador cedido atenuada y no pulsable ───── */
+wrap('renderAsistencia',function(){
+  var b=document.getElementById('asist-body'),sel=document.getElementById('asist-sesion');
+  if(!b||!sel||!sel.value)return;
+  var n=+sel.value,nf=0,pf=0;
+  b.querySelectorAll('[onclick^="toggleAsist("]').forEach(function(t){
+    var m=/toggleAsist\((\d+),\s*(\d+)\)/.exec(t.getAttribute('onclick')||'');if(!m||!fuera(+m[1],+m[2]))return;
+    var c=CED[+m[2]],circ=t.firstElementChild,w=t.lastElementChild,pos=(w&&w!==circ)?w.lastElementChild:null;
+    nf++;if(circ&&circ.textContent.trim()==='✅')pf++;
+    t.removeAttribute('onclick');
+    t.style.cssText+=';cursor:default;border-style:dashed;border-color:#94A3B8;background:#E2E8F0;opacity:.8';
+    if(circ){circ.textContent='↪';circ.style.background='#CBD5E1';}
+    if(pos){pos.textContent='Con '+c.t+' · no cuenta';pos.style.color='#475569';pos.style.fontWeight='700';}
+  });
+  if(nf){
+    var divs=b.querySelectorAll('div');
+    for(var i=0;i<divs.length;i++){var m2=/^(\d+)\/(\d+) presentes$/.exec(divs[i].textContent.trim());
+      if(m2&&!divs[i].children.length){divs[i].textContent=(+m2[1]-pf)+'/'+(+m2[2]-nf)+' presentes';break;}}
+  }
+});
+
+/* ───── modo Campo: ficha gris «Con Alevín C» y contadores sin ese jugador ───── */
+function ajustaCampo(){
+  var ov=document.getElementById('ext-campo');if(!ov||ov.style.display==='none')return;
+  var sel=ov.querySelector('#xc-ses');if(!sel)return;var n=+sel.value,ch=false;
+  ov.querySelectorAll('.xc-t[data-id]').forEach(function(t){
+    var id=+t.getAttribute('data-id');if(!fuera(n,id))return;
+    var c=CED[id],nt=document.createElement('div');
+    nt.className='xc-t xc-x';nt.setAttribute('data-ced','1');
+    nt.innerHTML=E(t.firstChild?t.firstChild.textContent:'')+'<small>↪ Con '+E(c.t)+'</small>';
+    t.parentNode.replaceChild(nt,t);ch=true;
+  });
+  if(!ch)return;
+  var g=ov.querySelector('.xc-grid');if(!g)return;
+  var p=g.querySelectorAll('.xc-p').length,a=g.querySelectorAll('.xc-a').length,j=g.querySelectorAll('.xc-j').length,l=g.querySelectorAll('.xc-l').length;
+  var sin=0;g.querySelectorAll('.xc-t[data-id]').forEach(function(t){if(!/xc-(p|a|j|l)\b/.test(t.className))sin++;});
+  var sp=Array.prototype.find.call(ov.querySelectorAll('span'),function(s){return /sin marcar$/.test(s.textContent);});
+  if(sp)sp.textContent=p+' presentes · '+a+' faltas'+(j?' · '+j+' justif.':'')+(l?' · '+l+(l===1?' lesión':' lesiones'):'')+' · '+sin+' sin marcar';
+}
+function iniciaObs(){
+  var t=setInterval(function(){
+    var ov=document.getElementById('ext-campo');if(!ov)return;clearInterval(t);
+    try{new MutationObserver(ajustaCampo).observe(ov,{childList:true,subtree:true});}catch(e){warn('observer',e);}
+  },800);
+}
+
+/* ───── ficha del jugador: tarjeta «Cedido / fuera temporal» ───── */
+function sesNums(){return arr(SESIONES).slice().sort(function(a,b){return a.num-b.num;});}
+function optSes(sel,vacio){
+  return (vacio?'<option value="">'+vacio+'</option>':'')+sesNums().map(function(s){return '<option value="'+s.num+'"'+(s.num===sel?' selected':'')+'>Ses. '+s.num+(s.fechaReal?' · '+E(s.fechaReal):'')+'</option>';}).join('');
+}
+function fechaDe(n){var s=arr(SESIONES).find(function(x){return x.num===n;});return s&&s.fechaReal?' ('+E(s.fechaReal)+')':'';}
+function primeraPend(){var s=sesNums().find(function(x){return !x.completada&&!x.estado;});return s?s.num:(sesNums().length?sesNums()[sesNums().length-1].num:1);}
+/* sugerencia: primera de las últimas faltas justificadas seguidas del jugador */
+function sugerida(j){
+  try{
+    var S=sesNums().filter(function(s){return s.completada;}),d=null;
+    for(var i=S.length-1;i>=0;i--){
+      var m=window.extMotivoDe?extMotivoDe(S[i].num,j.id):null;
+      if(m==='J')d=S[i].num;else break;
+    }
+    return d;
+  }catch(e){return null;}
+}
+function cardHTML(j){
+  var c=CED[j.id],h='<div id="ext-ced-card" style="background:#F5F3FF;border:1px solid #DDD6FE;border-radius:12px;padding:14px;margin-bottom:14px">'
+   +'<div style="font-size:12px;font-weight:800;color:#5B21B6;margin-bottom:4px">↪ Cedido / fuera temporal</div>';
+  var ctl='border:1px solid #CBD5E1;border-radius:6px;padding:6px;font-size:12px;max-width:100%';
+  var btn='border:none;border-radius:6px;padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer;';
+  if(c){
+    h+='<div style="font-size:13px;color:#4C1D95;font-weight:700">Con '+E(c.t)+' desde la ses. '+c.d+fechaDe(c.d)+(c.h==null?' · <span style="color:#B45309">sigue fuera</span>':' hasta la ses. '+c.h+fechaDe(c.h))+'</div>'
+     +'<div style="font-size:11px;color:#64748B;margin:4px 0 10px">Esas sesiones no cuentan como asistencia ni como falta (ni en el % ni en las alertas). Sigue en la plantilla y en las convocatorias.</div>';
+    if(mgr()){
+      if(c.h==null)h+='<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:8px"><span style="font-size:12px">Vuelve con nosotros desde la</span>'
+        +'<select id="ext-ced-vuelve" style="'+ctl+'">'+optSes(Math.max(c.d+1,primeraPend()))+'</select>'
+        +'<button id="ext-ced-volver" style="'+btn+'background:#16A34A;color:#fff">✅ Ha vuelto</button></div>';
+      h+='<button id="ext-ced-quitar" style="'+btn+'background:#fff;color:#B91C1C;border:1px solid #FECACA">Quitar cesión</button>';
+    }
+  }else{
+    h+='<div style="font-size:11px;color:#64748B;margin-bottom:8px">Para un jugador que entrena o juega con otro equipo un tiempo. Las sesiones de ese periodo no le cuentan como falta. Si ya tienen falta justificada marcada, tampoco cuentan.</div>';
+    if(mgr()){
+      var sg=sugerida(j),def=sg!=null?sg:primeraPend();
+      h+='<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:6px"><span style="font-size:12px;width:62px">Equipo</span><input id="ext-ced-t" value="Alevín C" maxlength="30" style="'+ctl+';flex:1;min-width:120px"></div>'
+       +'<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:6px"><span style="font-size:12px;width:62px">Desde</span><select id="ext-ced-d" style="'+ctl+'">'+optSes(def)+'</select>'
+       +(sg!=null?'<span style="font-size:10px;color:#7C3AED">sugerida: inicio de sus últimas faltas justificadas</span>':'')+'</div>'
+       +'<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:10px"><span style="font-size:12px;width:62px">Hasta</span><select id="ext-ced-h" style="'+ctl+'">'+optSes(null,'Hasta que lo reactive')+'</select></div>'
+       +'<button id="ext-ced-ok" style="'+btn+'background:#7C3AED;color:#fff">Guardar</button>';
+    }
+  }
+  return h+'</div>';
+}
+function refrescar(){
+  try{if(typeof jugadorAbierto!=='undefined'&&jugadorAbierto!==null&&document.getElementById('jug-detalle')&&document.getElementById('jug-detalle').style.display!=='none')renderJugadorDetalle();}catch(e){}
+}
+wrap('renderJugadorDetalle',function(){
+  var j=JUGADORES[jugadorAbierto];if(!j)return;
+  var det=document.getElementById('jug-detalle');if(!det)return;
+  det.querySelectorAll('#ext-ced-card').forEach(function(n){n.remove();});
+  var ref=det.querySelector('#ext-les-card');
+  if(!ref){var ta=det.querySelector('textarea[oninput^="updJObj"]');ref=ta&&ta.parentElement;if(ref)ref=ref.nextSibling?ref:ref;}
+  if(!ref)return;
+  var w=document.createElement('div');w.innerHTML=cardHTML(j);var card=w.firstChild;
+  if(det.querySelector('#ext-les-card'))ref.parentNode.insertBefore(card,ref);else ref.parentNode.insertBefore(card,ref.nextSibling);
+  var q=function(i){return card.querySelector('#'+i);};
+  if(q('ext-ced-ok'))q('ext-ced-ok').onclick=function(){
+    var d=+q('ext-ced-d').value,hv=q('ext-ced-h').value,h=hv===''?null:+hv,t=(q('ext-ced-t').value||'').trim()||'otro equipo';
+    if(h!=null&&h<d){toast('⚠️ «Hasta» no puede ser antes de «Desde»');return;}
+    setC(j.id,{d:d,h:h,t:t});toast('↪ '+j.nombre+' cedido a '+t);refrescar();
+  };
+  if(q('ext-ced-volver'))q('ext-ced-volver').onclick=function(){
+    var v=+q('ext-ced-vuelve').value,c=CED[j.id];if(!c)return;
+    if(v<=c.d){toast('⚠️ Debe volver después de la sesión de salida');return;}
+    setC(j.id,{d:c.d,h:v-1,t:c.t});toast('✅ '+j.nombre+' vuelve a contar desde la ses. '+v);refrescar();
+  };
+  if(q('ext-ced-quitar'))q('ext-ced-quitar').onclick=function(){
+    if(!confirm('¿Quitar la cesión? Sus sesiones de ese periodo volverán a contar.'))return;
+    setC(j.id,null);toast('Cesión quitada');refrescar();
+  };
+});
+/* etiqueta en la lista de jugadores */
+wrap('renderJugadores',function(){
+  document.querySelectorAll('#jug-lista > div[onclick^="openJug("]').forEach(function(c){
+    var m=/openJug\((\d+)\)/.exec(c.getAttribute('onclick')||'');if(!m)return;
+    var j=JUGADORES[+m[1]];if(!j)return;var x=CED[j.id];if(!x||x.h!=null)return;
+    var blk=c.firstElementChild&&c.firstElementChild.firstElementChild;if(!blk)return;
+    var d=document.createElement('div');d.style.cssText='margin-top:3px;font-size:10px;font-weight:700;color:#5B21B6;background:#EDE9FE;border-radius:4px;padding:1px 6px;display:inline-block';
+    d.textContent='↪ Con '+x.t;blk.appendChild(d);
+  });
+});
+
+/* ───── copia de seguridad y Firebase ───── */
+var _bc=window.backupConstruir;
+if(typeof _bc==='function')window.backupConstruir=function(){
+  var d=_bc.apply(this,arguments);
+  try{d.almacen=d.almacen||{};d.almacen[KEY]=JSON.stringify(CED);}catch(e){warn('backup',e);}
+  return d;
+};
+var _ba=window.backupAplicar;
+if(typeof _ba==='function')window.backupAplicar=function(d){
+  var r=_ba.apply(this,arguments);
+  try{
+    var a=(d&&d.almacen)||{};
+    if(a[KEY]!==undefined){CED=norm(JSON.parse(a[KEY]||'{}'));saveLocal();var f=fb();if(f)f.ref(root()+'/'+KEY).set(Object.keys(CED).length?CED:null).catch(function(e){warn('restaurar',e);});}
+  }catch(e){warn('restaurar',e);}
+  return r;
+};
+function hookFb(){
+  var d=fb();if(!d||hooked)return;hooked=true;
+  d.ref(root()+'/'+KEY).on('value',function(s){CED=norm(s.val());saveLocal();refrescar();});
+}
+function init(){
+  try{loadLocal();hookFb();setTimeout(hookFb,2500);setTimeout(hookFb,6000);iniciaObs();}catch(e){warn('init',e);}
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
+
+<script id="ext-arranque">
+/* ext-arranque — repinta la sección abierta cuando ya se han cargado los datos de las mejoras
+   (altas, motivos de falta, cedidos). Sin esto, el primer pintado al abrir la app sale antes de cargarlos
+   y el Resumen muestra faltas injustificadas que luego desaparecen al cambiar de pestaña.
+   Aditivo: quitar este <script> devuelve el comportamiento anterior. */
+(function(){
+'use strict';
+function repinta(){
+  try{if(typeof renderSection==='function'&&typeof currentSection!=='undefined'&&currentSection)renderSection(currentSection);}
+  catch(e){try{console.warn('[ext-arranque]',e);}catch(_){}}
+}
+function tardio(){  // con Firebase los datos llegan después: repinta Resumen/Asistencia una vez más
+  try{if(typeof DB!=='undefined'&&DB&&(currentSection==='resumen'||currentSection==='asistencia'))repinta();}catch(e){}
+}
+function lanzar(){setTimeout(repinta,60);setTimeout(repinta,900);setTimeout(tardio,2500);setTimeout(tardio,6000);}
+try{
+  if(typeof EtStore!=='undefined'&&EtStore&&EtStore.ready&&EtStore.ready.then)EtStore.ready.then(lanzar,lanzar);
+  else if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(lanzar,300);});
+  else setTimeout(lanzar,300);
+}catch(e){}
+})();
+</script>
+
 <script id="ext-cierre">
 /* ext-cierre — cierre del partido (qué funcionó / qué mejorar / foco) y aviso en la sesión siguiente. Aditivo. */
 (function(){
