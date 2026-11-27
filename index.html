@@ -999,7 +999,7 @@ body.role-coach .manager-only-el{opacity:0.3;pointer-events:none;cursor:not-allo
   var CLAVES = ['bib_club','bib_jugadores','bib_sesiones','bib_partidos','bib_biblioteca','bib_juegos','bib_asistencia',
     'bib_auth','bib_festivos','bib_club_logo','bib_pizarra_boards','bib_ses_libres','bib_club_del',
     'pizarra_boards','pizarra_v2','pizarra_sync_vistas','ses_libres',
-    'sf7_sesiones_v1','sf8_sesiones_v1','sf11_sesiones_v1','valPendiente_v1','ext_alta','ext_motivo','ext_lesiones','ext_cedido','clubLogo'];
+    'sf7_sesiones_v1','sf8_sesiones_v1','sf11_sesiones_v1','valPendiente_v1','ext_alta','ext_motivo','ext_lesiones','ext_cedido','ext_copia','ext_prevision','ext_notas','clubLogo'];
   var SET = {}; CLAVES.forEach(function (k) { SET[k] = 1; });
   // (bib_role, et_comp, bib_orden, piz_orden y cualquier otra clave se quedan en localStorage)
   var KEEP_BACKUPS = 5;
@@ -9946,6 +9946,390 @@ function init(){
   try{loadLocal();hookFb();setTimeout(hookFb,2500);setTimeout(hookFb,6000);iniciaObs();}catch(e){warn('init',e);}
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
+
+<script id="ext-copia">
+/* ext-copia — aviso en el Resumen si llevas 14 días o más sin hacer copia de seguridad.
+   Registra la fecha cada vez que se exporta una copia (backupCompleto). Aditivo: quitar este <script> lo desactiva. */
+(function(){
+'use strict';
+var KEY='ext_copia',DIAS=14,SNOOZE=3;
+var forzar=false;
+function ST(){try{return (typeof EtStore!=='undefined'&&EtStore)?EtStore:localStorage;}catch(e){return localStorage;}}
+function ld(){try{return JSON.parse(ST().getItem(KEY)||'{}')||{};}catch(e){return {};}}
+function sv(o){try{ST().setItem(KEY,JSON.stringify(o));}catch(e){}}
+function dias(iso){var t=Date.parse(iso);return isNaN(t)?0:Math.floor((Date.now()-t)/86400000);}
+function ini(){var o=ld();if(!o.r){o.r=new Date().toISOString();sv(o);}}
+var _bc=window.backupCompleto;
+if(typeof _bc==='function')window.backupCompleto=function(){
+  var r=_bc.apply(this,arguments);
+  try{var o=ld();o.u=new Date().toISOString();o.s=null;sv(o);forzar=false;setTimeout(function(){pinta();estado();},50);}catch(e){}
+  return r;
+};
+function pinta(){
+  var sec=document.getElementById('sec-resumen');if(!sec)return;
+  var viejo=document.getElementById('ext-copia-aviso');if(viejo)viejo.remove();
+  var o=ld();if(!o.r){ini();o=ld();}
+  var base=o.u||o.r,d=dias(base);
+  if(!forzar){
+    if(d<DIAS)return;
+    if(o.s&&Date.parse(o.s)>Date.now())return;
+  }
+  var jug=0;try{jug=JUGADORES.length;}catch(e){}
+  if(!jug)return;
+  var el=document.createElement('div');el.id='ext-copia-aviso';
+  el.style.cssText='background:#FFFBEB;border:1px solid #FCD34D;border-radius:12px;padding:12px 14px;margin-bottom:12px';
+  el.innerHTML='<div style="font-weight:800;color:#92400E;font-size:13px">💾 '+(o.u?'Hace '+d+' días de tu última copia de seguridad':'Aún no has hecho ninguna copia de seguridad')+'</div>'
+   +'<div style="font-size:12px;color:#78350F;margin:4px 0 10px">Si pierdes o cambias el móvil, o se borran los datos de la app, se pierde todo (sesiones, asistencia, partidos). Una copia tarda unos segundos.</div>'
+   +'<div style="display:flex;gap:8px;flex-wrap:wrap"><button id="ext-copia-ya" style="background:#16A34A;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer">💾 Hacer copia ahora</button>'
+   +'<button id="ext-copia-luego" style="background:#fff;color:#78350F;border:1px solid #FCD34D;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer">Recordármelo en '+SNOOZE+' días</button></div>';
+  sec.insertBefore(el,sec.firstChild);
+  el.querySelector('#ext-copia-ya').onclick=function(){forzar=false;try{backupCompleto();}catch(e){}};
+  el.querySelector('#ext-copia-luego').onclick=function(){forzar=false;var x=ld();if(d>=DIAS)x.s=new Date(Date.now()+SNOOZE*86400000).toISOString();sv(x);el.remove();};
+  if(forzar&&d<DIAS){var v=document.createElement('div');v.style.cssText='font-size:10px;color:#B45309;font-weight:700;margin-top:8px';v.textContent='👁 Vista previa: así saldrá cuando lleves '+DIAS+' días sin copia.';el.appendChild(v);}
+}
+/* línea de estado junto al botón «Guardar copia» (Club) */
+function estado(){
+  var bt=document.querySelector('button[onclick="backupCompleto()"]');if(!bt||!bt.parentNode)return;
+  var o=ld(),e=document.getElementById('ext-copia-estado');
+  if(!e){e=document.createElement('div');e.id='ext-copia-estado';e.style.cssText='font-size:12px;color:#64748B;margin-top:8px;display:flex;gap:10px;align-items:center;flex-wrap:wrap';bt.parentNode.appendChild(e);}
+  var d=o.u?dias(o.u):null;
+  e.innerHTML='<span>💾 Última copia: <b style="color:'+(d==null||d>=DIAS?'#B45309':'#166534')+'">'+(o.u?(d===0?'hoy':'hace '+d+(d===1?' día':' días')):'ninguna todavía')+'</b> · el aviso sale a los '+DIAS+' días</span>'
+   +'<button id="ext-copia-ver" style="background:none;border:1px solid #CBD5E1;border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700;color:#475569;cursor:pointer">👁 Ver cómo es el aviso</button>';
+  e.querySelector('#ext-copia-ver').onclick=function(){forzar=true;try{goSection('resumen');}catch(x){}try{renderResumen();}catch(x){}try{window.scrollTo(0,0);}catch(x){}};
+}
+var _rr=window.renderResumen;
+if(typeof _rr==='function')window.renderResumen=function(){var r=_rr.apply(this,arguments);try{pinta();}catch(e){}return r;};
+var _gs=window.goSection;
+if(typeof _gs==='function')window.goSection=function(){var r=_gs.apply(this,arguments);try{estado();}catch(e){}return r;};
+function init(){try{ini();estado();}catch(e){}}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
+
+<script id="ext-prevision">
+/* ext-prevision — previsión de asistencia: quién viene / no viene / sin respuesta para un partido o una sesión,
+   con mensaje de WhatsApp para pedir confirmación. No toca la asistencia real. Aditivo: quitar este <script> lo desactiva. */
+(function(){
+'use strict';
+var KEY='ext_prevision';
+var PV={};   // { clave('P' partido | 's'+nº): { idJugador: 's'|'n' } }
+var hooked=false,sel=null;
+function warn(m,e){try{console.warn('[ext-prevision] '+m,e||'');}catch(_){}}
+function ST(){try{return (typeof EtStore!=='undefined'&&EtStore)?EtStore:localStorage;}catch(e){return localStorage;}}
+function fb(){try{return (typeof DB!=='undefined'&&DB)?DB:null;}catch(e){return null;}}
+function root(){try{return ROOT;}catch(e){return 'biblia';}}
+function E(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function arr(x){try{return toArr(x);}catch(e){return Array.isArray(x)?x:(x?Object.values(x):[]);}}
+function toast(m){try{etToast(m);}catch(e){}}
+function norm(v){var o={};if(v)Object.keys(v).forEach(function(k){var g=v[k];if(!g||typeof g!=='object')return;o[k]={};Object.keys(g).forEach(function(i){if(g[i]==='s'||g[i]==='n')o[k][i]=g[i];});});return o;}
+function loadLocal(){try{PV=norm(JSON.parse(ST().getItem(KEY)||'{}'));}catch(e){PV={};}}
+function saveLocal(){try{ST().setItem(KEY,JSON.stringify(PV));}catch(e){}}
+function put(k,id,v){
+  PV[k]=PV[k]||{};if(v)PV[k][id]=v;else delete PV[k][id];
+  if(!Object.keys(PV[k]).length)delete PV[k];
+  saveLocal();var d=fb();if(d)d.ref(root()+'/'+KEY+'/'+k+'/'+id).set(v||null).catch(function(e){warn('guardar',e);});
+}
+function limpia(k){delete PV[k];saveLocal();var d=fb();if(d)d.ref(root()+'/'+KEY+'/'+k).set(null).catch(function(e){warn('limpiar',e);});}
+function sesiones(){return arr(SESIONES).slice().sort(function(a,b){return a.num-b.num;});}
+function pendientes(){return sesiones().filter(function(x){return !x.completada&&!x.estado;}).sort(function(a,b){var fa=a.fechaReal||'9999',fb2=b.fechaReal||'9999';return fa<fb2?-1:fa>fb2?1:a.num-b.num;});}
+function proximas(){
+  var hoy=new Date(),p=function(n){return String(n).padStart(2,'0');},iso=hoy.getFullYear()+'-'+p(hoy.getMonth()+1)+'-'+p(hoy.getDate());
+  var P=pendientes(),fut=P.filter(function(x){return !x.fechaReal||x.fechaReal>=iso;});
+  var L=(fut.length?fut:P).slice(0,12);
+  if(sel&&/^s\d+$/.test(sel)&&!L.some(function(x){return 's'+x.num===sel;})){var e=P.find(function(x){return 's'+x.num===sel;});if(e)L.push(e);}
+  return L;
+}
+function primeraPend(){var s=proximas()[0];return s?s.num:null;}
+function activos(){return arr(JUGADORES).filter(function(j){return j.activo!==false;});}
+function numDe(k){return k==='P'?null:+String(k).slice(1);}
+function titulo(k){
+  if(k==='P')return 'Próximo partido';
+  var n=numDe(k),s=arr(SESIONES).find(function(x){return x.num===n;});
+  return 'Sesión '+String(n).padStart(3,'0')+(s&&s.tema?' · '+s.tema:'');
+}
+function lista(k){
+  var n=numDe(k),A=PV[k]||{},r={s:[],n:[],x:[],f:[]};
+  activos().forEach(function(j){
+    if(n!=null&&window.extFuera&&extFuera(n,j.id)){r.f.push(j);return;}
+    var v=A[j.id];(v==='s'?r.s:v==='n'?r.n:r.x).push(j);
+  });
+  return r;
+}
+function nom(j){return '#'+j.dorsal+' '+j.nombre;}
+function texto(k,tipo){
+  var r=lista(k),t='';
+  var cuando=k==='P'?'al próximo partido':'al entrenamiento (sesión '+numDe(k)+')';
+  if(tipo==='pedir'){
+    t='⚽ *Confirmación de asistencia*\n\nPor favor, confirmad si vuestro hijo podrá venir '+cuando+'. Respondedme con ✅ si viene o ❌ si no puede.\n';
+    if(r.x.length){t+='\nFalta por confirmar:\n'+r.x.map(function(j,i){return (i+1)+'. '+j.nombre;}).join('\n')+'\n';}
+    return t+'\n¡Gracias!';
+  }
+  t='📋 *PREVISIÓN — '+titulo(k).toUpperCase()+'*\n';
+  t+='\n✅ *VIENEN ('+r.s.length+'):*\n'+(r.s.length?r.s.map(function(j,i){return (i+1)+'. '+nom(j);}).join('\n'):'—');
+  t+='\n\n❌ *NO VIENEN ('+r.n.length+'):*\n'+(r.n.length?r.n.map(function(j,i){return (i+1)+'. '+nom(j);}).join('\n'):'—');
+  t+='\n\n❔ *SIN RESPUESTA ('+r.x.length+'):*\n'+(r.x.length?r.x.map(function(j,i){return (i+1)+'. '+nom(j);}).join('\n'):'—');
+  return t;
+}
+function wa(t){try{window.open('https://wa.me/?text='+encodeURIComponent(t),'_blank');}catch(e){}}
+function copia(t){
+  try{if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(function(){toast('📋 Copiado');},function(){wa(t);});return;}}catch(e){}
+  wa(t);
+}
+
+var CSS='#ext-prev-panel{position:fixed;inset:0;z-index:9600;background:rgba(15,23,42,.55);display:none;align-items:flex-end;justify-content:center}'
++'#ext-prev-panel.on{display:flex}#ext-prev-panel .pv{background:#fff;width:100%;max-width:560px;max-height:92vh;border-radius:16px 16px 0 0;display:flex;flex-direction:column;overflow:hidden}'
++'#ext-prev-panel .pv-h{padding:12px 14px;border-bottom:1px solid #E2E8F0;display:flex;justify-content:space-between;align-items:center;gap:8px}'
++'#ext-prev-panel .pv-b{padding:10px 14px;overflow:auto}#ext-prev-panel .pv-f{padding:10px 14px;border-top:1px solid #E2E8F0;display:flex;gap:6px;flex-wrap:wrap}'
++'#ext-prev-panel .pv-r{display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid #F1F5F9}#ext-prev-panel .pv-r .n{flex:1;font-size:13px;font-weight:600;min-width:0}'
++'#ext-prev-panel .pv-r .n small{display:block;font-size:10px;color:#64748B;font-weight:600}'
++'#ext-prev-panel .ch{border:1px solid #CBD5E1;background:#fff;border-radius:8px;padding:7px 10px;font-size:13px;cursor:pointer;font-weight:700}'
++'#ext-prev-panel .pv-r .ch{flex:0 0 46px;width:46px;padding:7px 0;text-align:center}'
++'#ext-prev-panel .ch.s.on{background:#16A34A;border-color:#16A34A;color:#fff}#ext-prev-panel .ch.n.on{background:#DC2626;border-color:#DC2626;color:#fff}'
++'#ext-prev-panel .bt{border:none;border-radius:8px;padding:9px 12px;font-size:12px;font-weight:700;cursor:pointer;color:#fff}'
++'#ext-prev-panel .cnt{display:flex;gap:6px;margin:8px 0}#ext-prev-panel .cnt div{flex:1;text-align:center;border-radius:8px;padding:6px;font-size:11px;font-weight:700}';
+function css(){if(document.getElementById('ext-prev-css'))return;var s=document.createElement('style');s.id='ext-prev-css';s.textContent=CSS;document.head.appendChild(s);}
+function panel(){var p=document.getElementById('ext-prev-panel');if(!p){p=document.createElement('div');p.id='ext-prev-panel';document.body.appendChild(p);
+  p.addEventListener('click',function(e){if(e.target===p)cierra();});}return p;}
+function cierra(){var p=document.getElementById('ext-prev-panel');if(p)p.classList.remove('on');}
+function render(){
+  var p=panel(),k=sel,r=lista(k),pend=primeraPend();
+  var opts='<option value="P"'+(k==='P'?' selected':'')+'>🏆 Próximo partido</option>'
+   +proximas().map(function(s){return '<option value="s'+s.num+'"'+(k==='s'+s.num?' selected':'')+'>Sesión '+s.num+(s.fechaReal?' · '+E(s.fechaReal):'')+(s.tema?' · '+E(s.tema):'')+'</option>';}).join('');
+  var n=numDe(k),A=PV[k]||{};
+  var filas=activos().map(function(j){
+    var fuera=n!=null&&window.extFuera&&extFuera(n,j.id),v=A[j.id];
+    var c=fuera&&window.extFuera?'<span style="font-size:11px;color:#5B21B6;font-weight:700">↪ otro equipo</span>'
+      :'<button class="ch s'+(v==='s'?' on':'')+'" data-i="'+j.id+'" data-v="s">✅</button><button class="ch n'+(v==='n'?' on':'')+'" data-i="'+j.id+'" data-v="n">❌</button>';
+    return '<div class="pv-r"><div class="n">'+E('#'+j.dorsal+' '+j.nombre)+'<small>'+E(j.posicion||'')+'</small></div>'+c+'</div>';
+  }).join('');
+  p.innerHTML='<div class="pv"><div class="pv-h"><div style="font-weight:800;font-size:14px">📅 Previsión de asistencia</div><button class="ch" id="pv-x">✕</button></div>'
+   +'<div class="pv-b"><select id="pv-sel" style="width:100%;border:1px solid #CBD5E1;border-radius:8px;padding:8px;font-size:13px">'+opts+'</select>'
+   +'<div class="cnt"><div style="background:#DCFCE7;color:#166534">✅ Vienen<br><span style="font-size:18px">'+r.s.length+'</span></div><div style="background:#FEE2E2;color:#991B1B">❌ No vienen<br><span style="font-size:18px">'+r.n.length+'</span></div><div style="background:#F1F5F9;color:#475569">❔ Sin respuesta<br><span style="font-size:18px">'+r.x.length+'</span></div></div>'
+   +'<div style="font-size:11px;color:#64748B;margin-bottom:6px">Toca ✅ o ❌ cuando te contesten. Toca otra vez el mismo para quitarlo. Esto no cambia la asistencia real.</div>'+filas+'</div>'
+   +'<div class="pv-f"><button class="bt" id="pv-pedir" style="background:#25D366">📱 Pedir confirmación</button><button class="bt" id="pv-res" style="background:#0F766E">📱 Enviar previsión</button><button class="bt" id="pv-cp" style="background:#475569">📋 Copiar</button><button class="bt" id="pv-lim" style="background:#fff;color:#B91C1C;border:1px solid #FECACA">Borrar respuestas</button></div></div>';
+  var q=function(i){return p.querySelector('#'+i);};
+  q('pv-x').onclick=cierra;
+  q('pv-sel').onchange=function(){sel=this.value;render();};
+  p.querySelectorAll('.ch[data-i]').forEach(function(b){b.onclick=function(){
+    var id=+b.getAttribute('data-i'),v=b.getAttribute('data-v'),act=(PV[sel]||{})[id];
+    put(sel,id,act===v?null:v);render();};});
+  q('pv-pedir').onclick=function(){wa(texto(sel,'pedir'));};
+  q('pv-res').onclick=function(){wa(texto(sel,'res'));};
+  q('pv-cp').onclick=function(){copia(texto(sel,'res'));};
+  q('pv-lim').onclick=function(){if(confirm('¿Borrar todas las respuestas de «'+titulo(sel)+'»?')){limpia(sel);render();}};
+}
+function abrir(){css();var pend=primeraPend();if(!sel||(sel!=='P'&&!/^s\d+$/.test(sel)))sel='P';
+  var tipo=sel;if(tipo==='P'&&pend==null){}
+  render();panel().classList.add('on');}
+window.extPrevisionAbrir=abrir;
+
+function botonResumen(){
+  var h=document.getElementById('res-asistencia');if(!h)return;var card=h.closest('.card');if(!card)return;
+  if(card.querySelector('#ext-prev-btn'))return;
+  var wab=card.querySelector('button[onclick^="asistenciaResumenWA"]');if(!wab||!wab.parentNode)return;
+  var b=document.createElement('button');b.id='ext-prev-btn';b.textContent='📅 Previsión';
+  b.style.cssText='background:#0F766E;color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;margin-right:6px';
+  b.onclick=abrir;wab.parentNode.insertBefore(b,wab);
+}
+var _rr=window.renderResumen;
+if(typeof _rr==='function')window.renderResumen=function(){var r=_rr.apply(this,arguments);try{botonResumen();}catch(e){warn('boton',e);}return r;};
+
+var _bc=window.backupConstruir;
+if(typeof _bc==='function')window.backupConstruir=function(){var d=_bc.apply(this,arguments);try{d.almacen=d.almacen||{};d.almacen[KEY]=JSON.stringify(PV);}catch(e){warn('backup',e);}return d;};
+var _ba=window.backupAplicar;
+if(typeof _ba==='function')window.backupAplicar=function(d){var r=_ba.apply(this,arguments);
+  try{var a=(d&&d.almacen)||{};if(a[KEY]!==undefined){PV=norm(JSON.parse(a[KEY]||'{}'));saveLocal();var f=fb();if(f)f.ref(root()+'/'+KEY).set(Object.keys(PV).length?PV:null).catch(function(e){warn('restaurar',e);});}}catch(e){warn('restaurar',e);}
+  return r;};
+function hookFb(){var d=fb();if(!d||hooked)return;hooked=true;d.ref(root()+'/'+KEY).on('value',function(s){PV=norm(s.val());saveLocal();var p=document.getElementById('ext-prev-panel');if(p&&p.classList.contains('on'))render();});}
+function init(){try{loadLocal();hookFb();setTimeout(hookFb,2500);setTimeout(hookFb,6000);}catch(e){warn('init',e);}}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
+
+<script id="ext-notas">
+/* ext-notas — nota rápida del entrenador: botón flotante para apuntar una observación (de un jugador o general),
+   con fecha. Las notas de cada jugador salen también en su ficha. Aditivo: quitar este <script> lo desactiva. */
+(function(){
+'use strict';
+var KEY='ext_notas';
+var NT={};   // { idNota: { f: ISO, j: idJugador|null, t: texto, k: etiqueta } }
+var hooked=false,jugSel=null,tagSel='';
+var TAGS=[['⭐','Destacó'],['⚠️','Atención'],['🩹','Molestia'],['🎯','A mejorar'],['💬','Hablar con la familia']];
+function warn(m,e){try{console.warn('[ext-notas] '+m,e||'');}catch(_){}}
+function ST(){try{return (typeof EtStore!=='undefined'&&EtStore)?EtStore:localStorage;}catch(e){return localStorage;}}
+function fb(){try{return (typeof DB!=='undefined'&&DB)?DB:null;}catch(e){return null;}}
+function root(){try{return ROOT;}catch(e){return 'biblia';}}
+function E(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function arr(x){try{return toArr(x);}catch(e){return Array.isArray(x)?x:(x?Object.values(x):[]);}}
+function toast(m){try{etToast(m);}catch(e){}}
+function norm(v){var o={};if(v)Object.keys(v).forEach(function(k){var x=v[k];if(!x||!x.t)return;o[k]={f:String(x.f||''),j:(x.j==null||x.j==='')?null:+x.j,t:String(x.t).slice(0,600),k:String(x.k||'').slice(0,4)};});return o;}
+function loadLocal(){try{NT=norm(JSON.parse(ST().getItem(KEY)||'{}'));}catch(e){NT={};}}
+function saveLocal(){try{ST().setItem(KEY,JSON.stringify(NT));}catch(e){}}
+function put(id,v){
+  if(v)NT[id]=v;else delete NT[id];saveLocal();
+  var d=fb();if(d)d.ref(root()+'/'+KEY+'/'+id).set(v||null).catch(function(e){warn('guardar',e);});
+}
+function fechaTxt(iso){var d=new Date(iso);if(isNaN(d))return '';var p=function(n){return String(n).padStart(2,'0');};return p(d.getDate())+'/'+p(d.getMonth()+1)+' '+p(d.getHours())+':'+p(d.getMinutes());}
+function ordenadas(fn){return Object.keys(NT).map(function(i){var n=NT[i];return {id:i,f:n.f,j:n.j,t:n.t,k:n.k};}).filter(fn||function(){return true;}).sort(function(a,b){return a.f<b.f?1:-1;});}
+function jug(id){return arr(JUGADORES).find(function(j){return j.id===id;});}
+function activos(){return arr(JUGADORES).filter(function(j){return j.activo!==false;});}
+function itemHTML(n,conJug){
+  var j=n.j!=null?jug(n.j):null;
+  return '<div style="border:1px solid #E2E8F0;border-radius:10px;padding:8px 10px;margin-bottom:6px;background:#fff">'
+   +'<div style="display:flex;justify-content:space-between;gap:6px;font-size:11px;color:#64748B;font-weight:700"><span>'+(n.k?E(n.k)+' ':'')+(conJug?E(j?j.nombre:'General'):'')+'</span><span>'+fechaTxt(n.f)+' <button data-del="'+n.id+'" style="border:none;background:none;color:#B91C1C;cursor:pointer;font-size:13px">🗑</button></span></div>'
+   +'<div style="font-size:13px;color:#0F172A;margin-top:3px;white-space:pre-wrap">'+E(n.t)+'</div></div>';
+}
+function ligaBorrar(ctx,cb){
+  ctx.querySelectorAll('[data-del]').forEach(function(b){b.onclick=function(ev){ev.stopPropagation();if(!confirm('¿Borrar esta nota?'))return;put(b.getAttribute('data-del'),null);cb();};});
+}
+
+var CSS='#ext-nota-btn{position:fixed;right:10px;bottom:calc(120px + env(safe-area-inset-bottom,0px));z-index:900;background:#7C3AED;color:#fff;border:none;border-radius:50%;width:46px;height:46px;padding:0;font-size:9px;font-weight:800;box-shadow:0 3px 10px rgba(0,0,0,.3);cursor:pointer;line-height:1.1}#ext-nota-btn span{display:block;font-size:17px}'
++'#ext-nota-panel{position:fixed;inset:0;z-index:9600;background:rgba(15,23,42,.55);display:none;align-items:flex-end;justify-content:center}#ext-nota-panel.on{display:flex}'
++'#ext-nota-panel .nt{background:#fff;width:100%;max-width:560px;max-height:92vh;border-radius:16px 16px 0 0;display:flex;flex-direction:column;overflow:hidden}'
++'#ext-nota-panel .nt-h{padding:12px 14px;border-bottom:1px solid #E2E8F0;display:flex;justify-content:space-between;align-items:center}#ext-nota-panel .nt-b{padding:10px 14px;overflow:auto}'
++'#ext-nota-panel .tg{border:1px solid #CBD5E1;background:#fff;border-radius:16px;padding:5px 10px;font-size:12px;cursor:pointer;font-weight:700}#ext-nota-panel .tg.on{background:#7C3AED;border-color:#7C3AED;color:#fff}';
+function css(){if(document.getElementById('ext-nota-css'))return;var s=document.createElement('style');s.id='ext-nota-css';s.textContent=CSS;document.head.appendChild(s);}
+function panel(){var p=document.getElementById('ext-nota-panel');if(!p){p=document.createElement('div');p.id='ext-nota-panel';document.body.appendChild(p);p.addEventListener('click',function(e){if(e.target===p)cierra();});}return p;}
+function cierra(){var p=document.getElementById('ext-nota-panel');if(p)p.classList.remove('on');}
+var vista='nueva',filtro='';
+function render(txt){
+  var p=panel(),keep=txt,total=Object.keys(NT).length;
+  var tabs='<div style="display:flex;gap:6px;margin-bottom:10px"><button class="tg'+(vista==='nueva'?' on':'')+'" data-v="nueva" style="flex:1;border-radius:8px">✏️ Nueva nota</button><button class="tg'+(vista==='todas'?' on':'')+'" data-v="todas" style="flex:1;border-radius:8px">📚 Todas las notas ('+total+')</button></div>';
+  var cuerpo='';
+  if(vista==='todas'){
+    var fo='<option value=""'+(filtro===''?' selected':'')+'>Todas</option><option value="G"'+(filtro==='G'?' selected':'')+'>📋 Solo generales</option>'
+      +arr(JUGADORES).filter(function(j){return j.activo!==false||ordenadas(function(n){return n.j===j.id;}).length;}).map(function(j){var c=ordenadas(function(n){return n.j===j.id;}).length;return '<option value="'+j.id+'"'+(String(filtro)===String(j.id)?' selected':'')+'>'+E('#'+j.dorsal+' '+j.nombre)+(c?' ('+c+')':'')+'</option>';}).join('');
+    var L=ordenadas(function(n){return filtro===''?true:(filtro==='G'?n.j==null:String(n.j)===String(filtro));});
+    cuerpo='<select id="nt-f" style="width:100%;border:1px solid #CBD5E1;border-radius:8px;padding:8px;font-size:13px;margin-bottom:8px">'+fo+'</select>'
+      +'<div style="font-size:11px;font-weight:800;color:#64748B;margin:4px 0 6px">'+L.length+(L.length===1?' NOTA':' NOTAS')+' · LAS MÁS NUEVAS PRIMERO</div>'
+      +(L.length?L.slice(0,200).map(function(n){return itemHTML(n,true);}).join(''):'<div style="font-size:12px;color:#94A3B8">No hay notas con este filtro.</div>');
+  }else{
+    var opts='<option value="">📋 General / entrenamiento</option>'+activos().map(function(j){return '<option value="'+j.id+'"'+(jugSel===j.id?' selected':'')+'>'+E('#'+j.dorsal+' '+j.nombre)+'</option>';}).join('');
+    var ult=ordenadas(jugSel!=null?function(n){return n.j===jugSel;}:null).slice(0,5);
+    cuerpo='<select id="nt-j" style="width:100%;border:1px solid #CBD5E1;border-radius:8px;padding:8px;font-size:13px;margin-bottom:8px">'+opts+'</select>'
+     +'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">'+TAGS.map(function(t){return '<button class="tg'+(tagSel===t[0]?' on':'')+'" data-t="'+t[0]+'">'+t[0]+' '+t[1]+'</button>';}).join('')+'</div>'
+     +'<textarea id="nt-t" rows="3" placeholder="Qué has visto…" style="width:100%;border:1px solid #CBD5E1;border-radius:8px;padding:8px;font-size:14px;box-sizing:border-box;resize:vertical">'+E(keep||'')+'</textarea>'
+     +'<button id="nt-ok" style="margin-top:8px;width:100%;background:#7C3AED;color:#fff;border:none;border-radius:8px;padding:11px;font-size:13px;font-weight:800;cursor:pointer">Guardar nota</button>'
+     +'<div style="display:flex;justify-content:space-between;align-items:center;margin:14px 0 6px"><div style="font-size:11px;font-weight:800;color:#64748B">'+(jugSel!=null?'ÚLTIMAS NOTAS DE ESTE JUGADOR':'ÚLTIMAS NOTAS')+'</div>'
+     +'<button id="nt-todas" style="border:none;background:none;color:#7C3AED;font-size:12px;font-weight:800;cursor:pointer">Ver todas ('+total+') ›</button></div>'
+     +(ult.length?ult.map(function(n){return itemHTML(n,jugSel==null);}).join(''):'<div style="font-size:12px;color:#94A3B8">'+(total?'Este jugador aún no tiene notas. Pulsa «Ver todas» para ver el resto.':'Aún no hay notas.')+'</div>');
+  }
+  p.innerHTML='<div class="nt"><div class="nt-h"><div style="font-weight:800;font-size:14px">📝 Notas del entrenador</div><button id="nt-x" style="border:1px solid #CBD5E1;background:#fff;border-radius:8px;padding:6px 10px;cursor:pointer;font-weight:700">✕</button></div><div class="nt-b">'+tabs+cuerpo+'</div></div>';
+  var q=function(i){return p.querySelector('#'+i);};
+  q('nt-x').onclick=cierra;
+  p.querySelectorAll('.tg[data-v]').forEach(function(b){b.onclick=function(){var t=q('nt-t');vista=b.getAttribute('data-v');render(t?t.value:keep);};});
+  if(q('nt-todas'))q('nt-todas').onclick=function(){var t=q('nt-t');vista='todas';filtro=jugSel==null?'':String(jugSel);render(t?t.value:'');};
+  if(q('nt-f'))q('nt-f').onchange=function(){filtro=this.value;render();};
+  if(q('nt-j'))q('nt-j').onchange=function(){var t=q('nt-t').value;jugSel=this.value===''?null:+this.value;render(t);};
+  p.querySelectorAll('.tg[data-t]').forEach(function(b){b.onclick=function(){var t=q('nt-t').value;tagSel=(tagSel===b.getAttribute('data-t'))?'':b.getAttribute('data-t');render(t);};});
+  if(q('nt-ok'))q('nt-ok').onclick=function(){
+    var t=q('nt-t').value.trim();if(!t){toast('⚠️ Escribe algo en la nota');return;}
+    var id='n'+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
+    put(id,{f:new Date().toISOString(),j:jugSel,t:t,k:tagSel});tagSel='';toast('📝 Nota guardada');render('');refrescaFicha();
+  };
+  ligaBorrar(p,function(){var t=q('nt-t');render(t?t.value:'');refrescaFicha();});
+}
+function abrir(id){css();jugSel=(id==null?jugSel:id);vista='nueva';render('');panel().classList.add('on');}
+window.extNotaAbrir=abrir;
+function refrescaFicha(){
+  try{if(typeof jugadorAbierto!=='undefined'&&jugadorAbierto!==null){var d=document.getElementById('jug-detalle');if(d&&d.style.display!=='none')renderJugadorDetalle();}}catch(e){}
+}
+
+/* tarjeta en la ficha del jugador */
+function wrap(nombre,fn){var o=window[nombre];if(typeof o!=='function')return;window[nombre]=function(){var r=o.apply(this,arguments);try{fn.apply(this,arguments);}catch(e){warn(nombre,e);}return r;};}
+wrap('renderJugadorDetalle',function(){
+  var j=JUGADORES[jugadorAbierto];if(!j)return;var det=document.getElementById('jug-detalle');if(!det)return;
+  det.querySelectorAll('#ext-notas-card').forEach(function(n){n.remove();});
+  var ref=det.querySelector('#ext-les-card');if(!ref)return;
+  var L=ordenadas(function(n){return n.j===j.id;}),c=document.createElement('div');c.id='ext-notas-card';
+  c.style.cssText='background:#FAF5FF;border:1px solid #E9D5FF;border-radius:12px;padding:14px;margin-bottom:14px';
+  c.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><div style="font-size:12px;font-weight:800;color:#6D28D9">📝 NOTAS DEL ENTRENADOR</div>'
+   +'<button id="ext-notas-add" style="background:#7C3AED;color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer">+ Añadir</button></div>'
+   +(L.length?L.slice(0,10).map(function(n){return itemHTML(n,false);}).join('')+(L.length>10?'<div style="font-size:11px;color:#64748B">… y '+(L.length-10)+' notas más antiguas</div>':''):'<div style="font-size:12px;color:#94A3B8">Sin notas. Pulsa «+ Añadir» o el botón 📝 durante el entreno.</div>');
+  ref.parentNode.insertBefore(c,ref);
+  c.querySelector('#ext-notas-add').onclick=function(){abrir(j.id);};
+  ligaBorrar(c,function(){renderJugadorDetalle();});
+});
+
+/* botón flotante */
+function boton(){
+  css();if(document.getElementById('ext-nota-btn'))return;
+  var b=document.createElement('button');b.id='ext-nota-btn';b.title='Nota rápida';b.innerHTML='<span>📝</span>Nota';b.onclick=function(){abrir(null);};document.body.appendChild(b);
+}
+
+/* copia de seguridad y Firebase */
+var _bc=window.backupConstruir;
+if(typeof _bc==='function')window.backupConstruir=function(){var d=_bc.apply(this,arguments);try{d.almacen=d.almacen||{};d.almacen[KEY]=JSON.stringify(NT);}catch(e){warn('backup',e);}return d;};
+var _ba=window.backupAplicar;
+if(typeof _ba==='function')window.backupAplicar=function(d){var r=_ba.apply(this,arguments);
+  try{var a=(d&&d.almacen)||{};if(a[KEY]!==undefined){NT=norm(JSON.parse(a[KEY]||'{}'));saveLocal();var f=fb();if(f)f.ref(root()+'/'+KEY).set(Object.keys(NT).length?NT:null).catch(function(e){warn('restaurar',e);});}}catch(e){warn('restaurar',e);}
+  return r;};
+function hookFb(){var d=fb();if(!d||hooked)return;hooked=true;d.ref(root()+'/'+KEY).on('value',function(s){NT=norm(s.val());saveLocal();refrescaFicha();});}
+function init(){try{loadLocal();boton();hookFb();setTimeout(hookFb,2500);setTimeout(hookFb,6000);}catch(e){warn('init',e);}}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
+
+<script id="ext-cumples">
+/* ext-cumples — próximos cumpleaños de los jugadores activos en el Resumen (usa la fecha de nacimiento de la Plantilla),
+   con botón para felicitar por WhatsApp. No guarda datos propios. Aditivo: quitar este <script> lo desactiva. */
+(function(){
+'use strict';
+var VENTANA=30,AVISO=7,MAXV=5;
+function warn(m,e){try{console.warn('[ext-cumples] '+m,e||'');}catch(_){}}
+function E(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function arr(x){try{return toArr(x);}catch(e){return Array.isArray(x)?x:(x?Object.values(x):[]);}}
+var MES=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+function proximos(){
+  var hoy=new Date();hoy=new Date(hoy.getFullYear(),hoy.getMonth(),hoy.getDate());
+  var out=[],sin=0;
+  arr(JUGADORES).filter(function(j){return j.activo!==false;}).forEach(function(j){
+    var m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(j.fechaNacimiento||'');if(!m){sin++;return;}
+    var a=+m[1],mes=+m[2]-1,dia=+m[3],y=hoy.getFullYear();
+    var f=function(yy){var d=(mes===1&&dia===29&&!((yy%4===0&&yy%100!==0)||yy%400===0))?28:dia;return new Date(yy,mes,d);};
+    var n=f(y);if(n<hoy)n=f(y+1);
+    var dd=Math.round((n-hoy)/86400000);
+    out.push({j:j,dias:dd,edad:n.getFullYear()-a,fecha:n});
+  });
+  out.sort(function(x,y){return x.dias-y.dias;});
+  return {lista:out,sin:sin};
+}
+function txtDias(d){return d===0?'¡HOY!':d===1?'mañana':'en '+d+' días';}
+function felicitar(j,edad){
+  var t='🎂 ¡Felicidades, '+(j.nombre||'').split(' ')[0]+'! Todo el equipo te desea un gran día'+(edad>0&&edad<30?' en tus '+edad+' años':'')+'. ¡A seguir disfrutando del fútbol! ⚽';
+  var tel=(j.telefono1||'').replace(/\D/g,'');
+  try{window.open((tel?'https://wa.me/34'+tel:'https://wa.me/')+'?text='+encodeURIComponent(t),'_blank');}catch(e){}
+}
+function pinta(){
+  var sec=document.getElementById('sec-resumen');if(!sec)return;
+  var v=document.getElementById('ext-cumples-card');if(v)v.remove();
+  var P=proximos(),L=P.lista.filter(function(x){return x.dias<=VENTANA;}).slice(0,MAXV);
+  var cerca=L.some(function(x){return x.dias<=AVISO;});
+  var el=document.createElement('div');el.id='ext-cumples-card';
+  el.style.cssText='border-radius:12px;padding:10px 14px;margin-bottom:12px;border:1px solid '+(cerca?'#FBCFE8':'#E2E8F0')+';background:'+(cerca?'#FDF2F8':'#fff');
+  var h='<div style="font-size:12px;font-weight:800;color:'+(cerca?'#9D174D':'#64748B')+';margin-bottom:6px">🎂 CUMPLEAÑOS</div>';
+  if(!L.length){
+    h+='<div style="font-size:12px;color:#94A3B8">'+(P.lista.length?'Ninguno en los próximos '+VENTANA+' días.':'Añade la fecha de nacimiento de los jugadores en Club → Plantilla para ver aquí sus cumpleaños.')+(P.lista.length&&P.sin?' ('+P.sin+' jugadores sin fecha)':'')+'</div>';
+  }else{
+    h+=L.map(function(x,i){
+      var hoyC=x.dias===0;
+      return '<div style="display:flex;align-items:center;gap:8px;padding:5px 0;'+(i?'border-top:1px solid #F1F5F9;':'')+'">'
+       +'<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:700;color:#0F172A">'+E(x.j.nombre)+' <span style="font-weight:600;color:#64748B">· cumple '+x.edad+'</span></div>'
+       +'<div style="font-size:11px;color:'+(hoyC?'#BE185D':'#64748B')+';font-weight:'+(hoyC?800:600)+'">'+x.fecha.getDate()+' '+MES[x.fecha.getMonth()]+' · '+txtDias(x.dias)+'</div></div>'
+       +(x.dias<=AVISO?'<button data-c="'+x.j.id+'" style="background:#25D366;color:#fff;border:none;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:700;cursor:pointer">📱 Felicitar</button>':'')+'</div>';
+    }).join('');
+    if(P.sin)h+='<div style="font-size:10px;color:#94A3B8;margin-top:4px">'+P.sin+' jugador'+(P.sin===1?'':'es')+' sin fecha de nacimiento (Club → Plantilla)</div>';
+  }
+  el.innerHTML=h;
+  var ref=document.getElementById('ext-copia-aviso');
+  if(ref&&ref.parentNode===sec)sec.insertBefore(el,ref.nextSibling);else sec.insertBefore(el,sec.firstChild);
+  el.querySelectorAll('[data-c]').forEach(function(b){b.onclick=function(){
+    var id=+b.getAttribute('data-c'),x=P.lista.find(function(y){return y.j.id===id;});if(x)felicitar(x.j,x.edad);};});
+}
+var _rr=window.renderResumen;
+if(typeof _rr==='function')window.renderResumen=function(){var r=_rr.apply(this,arguments);try{pinta();}catch(e){warn('pinta',e);}return r;};
 })();
 </script>
 
