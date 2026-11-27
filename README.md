@@ -9,7 +9,7 @@
 > Aplicación web de gestión de equipos de fútbol base. Funciona **100% offline** sin necesidad de servidor. Todo se guarda en el dispositivo. Con internet, descarga además las novedades de la **biblioteca** y de las **pizarras** del club. Empaquetable como app Android con Capacitor.
 
 ![Estado](https://img.shields.io/badge/estado-activo-brightgreen)
-![Versión](https://img.shields.io/badge/versión-2.7-blue)
+![Versión](https://img.shields.io/badge/versión-2.8-blue)
 ![Contribuciones](https://img.shields.io/badge/contribuciones-bienvenidas-orange)
 ![Sin dependencias](https://img.shields.io/badge/dependencias-ninguna-success)
 ![Licencia](https://img.shields.io/badge/licencia-MIT-purple)
@@ -28,7 +28,7 @@ Está construida en un único archivo HTML con JavaScript vanilla. Sin framework
 
 | Sección | Descripción |
 |---|---|
-| 📊 Resumen | Dashboard con estadísticas, progreso por fase, top jugadores y goleadores, goles encajados por portero, jugadores con lesión activa e **informes en PDF** (individual y de grupo) |
+| 📊 Resumen | Dashboard con estadísticas, progreso por fase, top jugadores y goleadores, goles encajados por portero, jugadores con lesión activa e **informes en PDF** (individual y de grupo), **próximos cumpleaños** y **aviso de copia de seguridad** |
 | ⚽ Club | Datos del club, plantilla flexible de jugadores, sistemas de juego (F7/F8/F11), estructura semanal, festivos |
 | 📅 Calendario | Planificación con fechas reales automáticas, adaptado a 2-5 días de entrenamiento semanales |
 | 🏆 Partidos | Resultados, goles por jugador, alineación por cuartos, **convocatoria por WhatsApp con observaciones**, **hoja de partido** (imagen, PDF y WhatsApp), **valoración** del partido y **minutos y cuartos** por jugador (WhatsApp y PDF) |
@@ -37,13 +37,42 @@ Está construida en un único archivo HTML con JavaScript vanilla. Sin framework
 | 📐 Sist. Fútbol 7 | **8 sistemas y 80 sesiones**, **editables**: puedes cambiar cualquiera (conserva el original), añadir las tuyas, dibujar o usar una pizarra; cada sistema trae su **ficha táctica y su colocación** |
 | 📐 Sist. Fútbol 8 | **8 sistemas y 80 sesiones de 60 min** (1-3-3-1, 1-2-3-2, 1-3-2-2, 1-2-4-1, 1-4-3, 1-3-1-3, 1-2-2-3, 1-3-1-2-1), con ficha, colocación y todo editable |
 | 📐 Sist. Fútbol 11 | **8 sistemas y 80 sesiones de 90 min** (1-4-3-3, 1-4-4-2, 1-4-2-3-1, 1-4-1-4-1, 1-4-3-1-2, 1-3-5-2, 1-3-4-3, 1-5-3-2), también **editables**, con ficha de cada sistema y su colocación |
-| ✅ Asistencia | Control de presencia por jugador y sesión (solo jugadores activos), faltas justificadas, incorporación por sesión y **alertas** (3 faltas seguidas sin justificar o asistencia real por debajo del 70 %) |
-| ⏱️ Reloj y Campo | **Cronómetro de partido** (cuartos, cuenta atrás) y **de sesión** (plan estándar de 90 min); **modo Campo** para marcar la asistencia con botones grandes; **alineación rápida** para partidos de entrenamiento |
-| 👥 Jugadores | Ficha de cada jugador con valoración, minutos y cuartos, **evolución por período** y **registro de lesiones y molestias** |
+| ✅ Asistencia | Control de presencia por jugador y sesión (solo jugadores activos), faltas justificadas y **faltas por lesión**, incorporación por sesión, **jugador cedido / fuera temporal** (las sesiones que entrena con otro equipo no cuentan como falta), **previsión de asistencia** antes del entreno o partido y **alertas** (3 faltas seguidas sin justificar o asistencia real por debajo del 70 %) |
+| ⏱️ Reloj y Campo | **Cronómetro de partido** (cuartos, cuenta atrás) y **de sesión** (plan estándar de 90 min); **modo Campo** para marcar la asistencia con botones grandes; **alineación rápida** para partidos de entrenamiento; **nota rápida** del entrenador (botón 📝) |
+| 👥 Jugadores | Ficha de cada jugador con valoración, minutos y cuartos, **evolución por período**, **registro de lesiones y molestias** y **notas del entrenador** |
 | 📚 Biblioteca | **389 ejercicios del club** en 7 categorías (porteros y juegos incluidos) y **140 pizarras** (se actualizan solas al abrir la app con internet), con buscador y orden por número, más los ejercicios propios de cada entrenador |
 | 🖊️ Pizarra | Pizarra táctica vectorial: dibujo, figuras, guardado y envío (ver abajo) |
 
 **Acceso:** cada entrenador usa su **propia copia** de la app, así que entra directamente como **Manager** de sus datos (sin pantalla de roles ni contraseña por defecto). Si quiere, puede proteger la app con su propia contraseña (ver «Novedades v1.6»).
+
+---
+
+## 🆕 Novedades v2.8 (noviembre 2026)
+
+### 🔁 Jugador cedido / fuera temporal
+- Para el jugador que entrena o juega un tiempo con **otro equipo** (por ejemplo, un portero que ayuda a otra categoría). En su ficha eliges el equipo, **desde qué sesión** y, si quieres, hasta cuál; cuando vuelve, un botón lo reactiva
+- Las sesiones de ese periodo **no cuentan como falta** ni en el porcentaje ni en las alertas, aunque ya tuvieran una falta justificada marcada. Sigue en la plantilla y en las convocatorias
+- Sale atenuado en la asistencia y en el modo Campo («Con Alevín C»), y la cesión entra en la copia de seguridad
+
+### 📅 Previsión de asistencia
+- En el Resumen, botón **Previsión**: para el próximo partido o una sesión pendiente marcas quién **viene**, quién **no** y quién no ha contestado, con contadores
+- **Pedir confirmación** y **Enviar previsión** abren WhatsApp con el mensaje ya redactado. No toca la asistencia real
+
+### 📝 Nota rápida del entrenador
+- Botón flotante **📝 Nota** para apuntar en el campo una observación de un jugador (o general), con etiqueta opcional (Destacó, Atención, Molestia, A mejorar, Hablar con la familia)
+- Las notas de cada jugador salen en su ficha, y hay una vista **Todas las notas** con filtro por jugador
+
+### 🎂 Cumpleaños
+- Tarjeta en el Resumen con los **próximos cumpleaños** (usa la fecha de nacimiento de la Plantilla) y botón para **felicitar por WhatsApp**
+
+### 💾 Aviso de copia de seguridad
+- Si pasan **14 días** sin exportar una copia, el Resumen te lo recuerda; en Club se ve cuándo fue la última
+
+### 🧹 Mejoras y arreglos
+- «3 lesiones» pasa a **«3 faltas por lesión»**, para no confundirlo con lesiones registradas
+- El mensaje de WhatsApp de asistencia **ya no incluye a los jugadores inactivos**
+- El Resumen sale bien **desde que se abre la app** (antes mostraba faltas injustificadas que luego desaparecían)
+- La fecha de nacimiento se puede teclear **con el año completo**
 
 ---
 
@@ -357,7 +386,15 @@ npx cap open android
 - [ ] Cifrado de los datos locales (hoy el bloqueo es básico: no cifra)
 - [x] Contraseña de bloqueo opcional con bloqueo automático (v1.6)
 
+### 👨‍👩‍👧 Equipo y familias
+- [x] Cumpleaños, previsión de asistencia y notas rápidas (v2.8)
+- [x] Jugador cedido / fuera temporal (v2.8)
+- [ ] Sesiones «plan B» (lluvia, poco espacio o pocos jugadores) con filtro
+- [ ] Clasificación y jornadas de la liga
+- [ ] Control de papeles por jugador (ficha, revisión médica, autorización)
+
 ### 🌟 Mejoras generales
+- [x] Aviso de copia de seguridad (v2.8)
 - [x] Sincronización opcional entre dispositivos con Google Drive (v1.6)
 - [ ] Renovación silenciosa del permiso de Google en el APK
 - [x] Backup y restore de todos los datos en JSON (v1.3)
