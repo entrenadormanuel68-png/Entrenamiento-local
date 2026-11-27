@@ -7841,13 +7841,13 @@ window.extSesAlta=function(j,list){return list.filter(function(s){return contar(
 window.extTextoMot=function(j,list){
   var a=altaDe(j.id),nj=0,nl=0;
   list.forEach(function(s){if(s.num<a)return;var m=motivoDe(s.num,j.id);if(m==='J')nj++;else if(m==='L')nl++;});
-  var t=[];if(nj)t.push(nj+' just.');if(nl)t.push(nl+(nl===1?' lesión':' lesiones'));
+  var t=[];if(nj)t.push(nj+' just.');if(nl)t.push(nl+(nl===1?' falta por lesión':' faltas por lesión'));
   return t.join(' · ');
 };
 window.extDesglose=function(j,list){
   var a=altaDe(j.id),nj=0,nl=0;
   list.forEach(function(s){if(s.num<a)return;var m=motivoDe(s.num,j.id);if(m==='J')nj++;else if(m==='L')nl++;});
-  return {just:nj,les:nl,lesTxt:nl?nl+(nl===1?' lesión':' lesiones'):''};
+  return {just:nj,les:nl,lesTxt:nl?nl+(nl===1?' falta por lesión':' faltas por lesión'):''};
 };
 /* ── Control de minutos: mínimo de cuartos por partido (norma 2026/27) ── */
 window.EXT_MIN_CUARTOS=2;
@@ -8129,7 +8129,7 @@ function pintar(){
   '<select id="xc-ses" style="flex:1">'+S.map(function(s){return '<option value="'+s.num+'"'+(s.num===selNum?' selected':'')+'>Ses. '+s.num+(s.fechaReal?' · '+E(s.fechaReal):'')+' · '+E(s.tema||'')+'</option>';}).join('')+'</select>'+
   '<button class="xc-b" id="xc-cerrar">✕</button></div>'+
   '<div style="padding:10px 12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">'+
-  '<span style="font-weight:800">'+pres+' presentes · '+aus+' faltas'+(nj?' · '+nj+' justif.':'')+(nl?' · '+nl+(nl===1?' lesión':' lesiones'):'')+' · '+sin+' sin marcar</span>'+
+  '<span style="font-weight:800">'+pres+' presentes · '+aus+' faltas'+(nj?' · '+nj+' justif.':'')+(nl?' · '+nl+(nl===1?' falta por lesión':' faltas por lesión'):'')+' · '+sin+' sin marcar</span>'+
   '<button class="xc-b" id="xc-tp">Todos presentes</button><button class="xc-b" id="xc-lm">Limpiar</button>'+
   '<button class="xc-b" id="xc-al">'+(verAltas?'Ocultar':'Incorporaciones')+'</button></div>'+nota+
   '<div style="padding:0 12px;font-size:12px;color:#64748B">Toca un jugador: presente → falta → sin marcar. En una falta, pulsa «Justif.» o «Lesión». Se guarda al instante.</div>'+
@@ -9829,7 +9829,7 @@ function ajustaCampo(){
   var p=g.querySelectorAll('.xc-p').length,a=g.querySelectorAll('.xc-a').length,j=g.querySelectorAll('.xc-j').length,l=g.querySelectorAll('.xc-l').length;
   var sin=0;g.querySelectorAll('.xc-t[data-id]').forEach(function(t){if(!/xc-(p|a|j|l)\b/.test(t.className))sin++;});
   var sp=Array.prototype.find.call(ov.querySelectorAll('span'),function(s){return /sin marcar$/.test(s.textContent);});
-  if(sp)sp.textContent=p+' presentes · '+a+' faltas'+(j?' · '+j+' justif.':'')+(l?' · '+l+(l===1?' lesión':' lesiones'):'')+' · '+sin+' sin marcar';
+  if(sp)sp.textContent=p+' presentes · '+a+' faltas'+(j?' · '+j+' justif.':'')+(l?' · '+l+(l===1?' falta por lesión':' faltas por lesión'):'')+' · '+sin+' sin marcar';
 }
 function iniciaObs(){
   var t=setInterval(function(){
