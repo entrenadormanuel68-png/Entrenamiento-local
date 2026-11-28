@@ -9,7 +9,7 @@
 > Aplicación web de gestión de equipos de fútbol base. Funciona **100% offline** sin necesidad de servidor. Todo se guarda en el dispositivo. Con internet, descarga además las novedades de la **biblioteca** y de las **pizarras** del club. Empaquetable como app Android con Capacitor.
 
 ![Estado](https://img.shields.io/badge/estado-activo-brightgreen)
-![Versión](https://img.shields.io/badge/versión-2.8-blue)
+![Versión](https://img.shields.io/badge/versión-2.9-blue)
 ![Contribuciones](https://img.shields.io/badge/contribuciones-bienvenidas-orange)
 ![Sin dependencias](https://img.shields.io/badge/dependencias-ninguna-success)
 ![Licencia](https://img.shields.io/badge/licencia-MIT-purple)
@@ -32,8 +32,8 @@ Está construida en un único archivo HTML con JavaScript vanilla. Sin framework
 | ⚽ Club | Datos del club, plantilla flexible de jugadores, sistemas de juego (F7/F8/F11), estructura semanal, festivos |
 | 📅 Calendario | Planificación con fechas reales automáticas, adaptado a 2-5 días de entrenamiento semanales |
 | 🏆 Partidos | Resultados, goles por jugador, alineación por cuartos, **convocatoria por WhatsApp con observaciones**, **hoja de partido** (imagen, PDF y WhatsApp), **valoración** del partido y **minutos y cuartos** por jugador (WhatsApp y PDF) |
-| 📋 Sesiones | **150 sesiones planificadas en 6 fases, listas para empezar** (carga, descanso, pretemporada…); cada ejercicio admite dibujo o pizarra. Se pueden **duplicar y guardar como plantilla**, y llevan un **Grupo 2** opcional para trabajar dos ejercicios a la vez |
-| 📝 Mis Sesiones | Sesiones propias: eliges ejercicios de la biblioteca o de tus pizarras y los editas sin tocar el original |
+| 📋 Sesiones | **150 sesiones planificadas en 6 fases, listas para empezar** (carga, descanso, pretemporada…); cada ejercicio admite dibujo o pizarra. Se pueden **duplicar y guardar como plantilla**, y llevan un **Grupo 2** opcional para trabajar dos ejercicios a la vez. Puedes **etiquetarlas como plan B** (lluvia, poco espacio, pocos jugadores), filtrarlas y **ampliar la planificación** más allá de las 150 con «Añadir semanas» |
+| 📝 Mis Sesiones | Sesiones propias: eliges ejercicios de la biblioteca o de tus pizarras y los editas sin tocar el original; con las mismas **etiquetas de plan B** y su filtro |
 | 📐 Sist. Fútbol 7 | **8 sistemas y 80 sesiones**, **editables**: puedes cambiar cualquiera (conserva el original), añadir las tuyas, dibujar o usar una pizarra; cada sistema trae su **ficha táctica y su colocación** |
 | 📐 Sist. Fútbol 8 | **8 sistemas y 80 sesiones de 60 min** (1-3-3-1, 1-2-3-2, 1-3-2-2, 1-2-4-1, 1-4-3, 1-3-1-3, 1-2-2-3, 1-3-1-2-1), con ficha, colocación y todo editable |
 | 📐 Sist. Fútbol 11 | **8 sistemas y 80 sesiones de 90 min** (1-4-3-3, 1-4-4-2, 1-4-2-3-1, 1-4-1-4-1, 1-4-3-1-2, 1-3-5-2, 1-3-4-3, 1-5-3-2), también **editables**, con ficha de cada sistema y su colocación |
@@ -44,6 +44,21 @@ Está construida en un único archivo HTML con JavaScript vanilla. Sin framework
 | 🖊️ Pizarra | Pizarra táctica vectorial: dibujo, figuras, guardado y envío (ver abajo) |
 
 **Acceso:** cada entrenador usa su **propia copia** de la app, así que entra directamente como **Manager** de sus datos (sin pantalla de roles ni contraseña por defecto). Si quiere, puede proteger la app con su propia contraseña (ver «Novedades v1.6»).
+
+---
+
+## 🆕 Novedades v2.9 (noviembre 2026)
+
+### 🌧️ Plan B de las sesiones
+- Cada sesión, tanto en **Sesiones** como en **Mis Sesiones**, se puede marcar con ☔ **lluvia / pabellón**, 📏 **poco espacio** y 👥 **pocos jugadores**, por separado o combinadas. Se marca dentro de la sesión, en la tarjeta «Plan B»
+- Encima del listado hay una **barra de filtro** con esos tres botones y el número de sesiones de cada uno. Si pulsas dos, salen solo las que cumplen las dos. En Sesiones también hay **«Solo sin hacer»**
+- **Modo ✏️ Etiquetar**: pone los tres botones bajo cada sesión del listado para clasificarlas sin abrirlas, y cada tarjeta muestra sus emojis
+- Al **guardar una sesión como plantilla** o **duplicarla**, las etiquetas se copian. Entran en la copia de seguridad y no modifican las sesiones
+
+### ➕ Más allá de las 150 sesiones
+- Botón **«Añadir semanas»** en Sesiones (1, 2, 4, 8 o 12 semanas): añade sesiones vacías al final, una por cada día de entreno configurado, para rellenarlas o aplicarles una plantilla de Mis Sesiones
+- Las sesiones nuevas llevan **fecha automática**: cada una va al siguiente día de entreno libre, saltando festivos y días ocupados
+- **«Quitar última semana añadida»** si te equivocas (solo si sus sesiones están vacías). Las añadidas **se conservan** si cambias los días de entreno en Club, y el calendario ya muestra **más de 50 semanas**
 
 ---
 
@@ -389,7 +404,8 @@ npx cap open android
 ### 👨‍👩‍👧 Equipo y familias
 - [x] Cumpleaños, previsión de asistencia y notas rápidas (v2.8)
 - [x] Jugador cedido / fuera temporal (v2.8)
-- [ ] Sesiones «plan B» (lluvia, poco espacio o pocos jugadores) con filtro
+- [x] Sesiones «plan B» (lluvia, poco espacio o pocos jugadores) con filtro (v2.9)
+- [x] Ampliar la planificación más allá de 150 sesiones, con fechas automáticas (v2.9)
 - [ ] Clasificación y jornadas de la liga
 - [ ] Control de papeles por jugador (ficha, revisión médica, autorización)
 
