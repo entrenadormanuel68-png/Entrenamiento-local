@@ -999,7 +999,7 @@ body.role-coach .manager-only-el{opacity:0.3;pointer-events:none;cursor:not-allo
   var CLAVES = ['bib_club','bib_jugadores','bib_sesiones','bib_partidos','bib_biblioteca','bib_juegos','bib_asistencia',
     'bib_auth','bib_festivos','bib_club_logo','bib_pizarra_boards','bib_ses_libres','bib_club_del',
     'pizarra_boards','pizarra_v2','pizarra_sync_vistas','ses_libres',
-    'sf7_sesiones_v1','sf8_sesiones_v1','sf11_sesiones_v1','valPendiente_v1','ext_alta','ext_motivo','ext_lesiones','ext_cedido','ext_copia','ext_prevision','ext_notas','clubLogo'];
+    'sf7_sesiones_v1','sf8_sesiones_v1','sf11_sesiones_v1','valPendiente_v1','ext_alta','ext_motivo','ext_lesiones','ext_cedido','ext_copia','ext_prevision','ext_notas','ext_planb','clubLogo'];
   var SET = {}; CLAVES.forEach(function (k) { SET[k] = 1; });
   // (bib_role, et_comp, bib_orden, piz_orden y cualquier otra clave se quedan en localStorage)
   var KEEP_BACKUPS = 5;
@@ -10330,6 +10330,144 @@ function pinta(){
 }
 var _rr=window.renderResumen;
 if(typeof _rr==='function')window.renderResumen=function(){var r=_rr.apply(this,arguments);try{pinta();}catch(e){warn('pinta',e);}return r;};
+})();
+</script>
+
+<script id="ext-planb">
+/* ext-planb — «Plan B» de las sesiones: marca cada sesión con las situaciones en que sirve
+   (☔ lluvia/pabellón, 📏 poco espacio, 👥 pocos jugadores) y filtra el listado por ellas.
+   Funciona igual en «Sesiones» y en «Mis Sesiones»; al guardar una sesión como plantilla o duplicarla, las etiquetas se copian.
+   Aditivo: quitar este <script> lo desactiva; las sesiones no se modifican (las etiquetas van en su propia clave). */
+(function(){
+'use strict';
+var KEY='ext_planb';
+var PB={};   // { clave: "LEJ" } — clave = nº de sesión (Sesiones) o id «sl_…» (Mis Sesiones)
+var TG=[['L','☔','Lluvia / pabellón'],['E','📏','Poco espacio'],['J','👥','Pocos jugadores']];
+var hooked=false;
+/* una configuración por pantalla; cada una con su propio estado de filtro */
+var SC={
+  ses:{bar:'ext-pb-bar',lista:'ses-lista',cnt:'ses-count',rx:/openSes\((\d+)\)/,abierta:function(){return sesionAbierta;},render:function(){renderSesiones();},sec:'sesiones',pend:true,fil:'',sp:false,ed:false},
+  mses:{bar:'ext-pb-bar-m',lista:'mses-lista',cnt:'mses-count',rx:/openSesLibre\('([^']+)'\)/,abierta:function(){return sesLibreAbierta;},render:function(){renderMisSesiones();},sec:'missesiones',pend:false,fil:'',sp:false,ed:false}
+};
+function warn(m,e){try{console.warn('[ext-planb] '+m,e||'');}catch(_){}}
+function ST(){try{return (typeof EtStore!=='undefined'&&EtStore)?EtStore:localStorage;}catch(e){return localStorage;}}
+function fb(){try{return (typeof DB!=='undefined'&&DB)?DB:null;}catch(e){return null;}}
+function root(){try{return ROOT;}catch(e){return 'biblia';}}
+function arr(x){try{return toArr(x);}catch(e){return Array.isArray(x)?x:(x?Object.values(x):[]);}}
+function norm(v){var o={};if(v)Object.keys(v).forEach(function(k){var s=String(v[k]||'');var r=TG.map(function(t){return t[0];}).filter(function(c){return s.indexOf(c)>=0;}).join('');if(r)o[k]=r;});return o;}
+function loadLocal(){try{PB=norm(JSON.parse(ST().getItem(KEY)||'{}'));}catch(e){PB={};}}
+function saveLocal(){try{ST().setItem(KEY,JSON.stringify(PB));}catch(e){}}
+function tags(k){return PB[String(k)]||'';}
+function fijar(k,s){
+  k=String(k);if(s)PB[k]=s;else delete PB[k];saveLocal();
+  var d=fb();if(d)d.ref(root()+'/'+KEY+'/'+k).set(s||null).catch(function(e){warn('guardar',e);});
+}
+function toggle(k,c){
+  var s=tags(k),has=s.indexOf(c)>=0;
+  fijar(k,TG.map(function(t){return t[0];}).filter(function(x){return x===c?!has:s.indexOf(x)>=0;}).join(''));
+}
+function pend(s){return !s.completada&&!s.estado;}
+function cuenta(sc,c){
+  var lista=sc===SC.ses?arr(SESIONES).map(function(s){return String(s.num);}):arr(SES_LIBRES).map(function(s){return String(s.id);});
+  return lista.filter(function(k){return tags(k).indexOf(c)>=0;}).length;
+}
+function wrap(nombre,fn){var o=window[nombre];if(typeof o!=='function')return;window[nombre]=function(){var r=o.apply(this,arguments);try{fn.apply(this,arguments);}catch(e){warn(nombre,e);}return r;};}
+var CH='border:1px solid #CBD5E1;background:#fff;color:#334155;border-radius:16px;padding:5px 10px;font-size:12px;font-weight:700;cursor:pointer';
+var CH_ON='border:1px solid #0F766E;background:#0F766E;color:#fff;border-radius:16px;padding:5px 10px;font-size:12px;font-weight:700;cursor:pointer';
+
+/* tarjeta dentro de la sesión abierta */
+function pintaCard(c,k){
+  c.innerHTML='<div style="font-size:12px;font-weight:800;color:#0F766E">🌧️ PLAN B</div>'
+   +'<div style="font-size:11px;color:#64748B;margin:2px 0 8px">Marca en qué situaciones sirve esta sesión; luego podrás filtrarlas en el listado.</div>'
+   +'<div style="display:flex;gap:6px;flex-wrap:wrap">'+TG.map(function(t){return '<button data-c="'+t[0]+'" style="'+(tags(k).indexOf(t[0])>=0?CH_ON:CH)+'">'+t[1]+' '+t[2]+'</button>';}).join('')+'</div>';
+  c.querySelectorAll('[data-c]').forEach(function(b){b.onclick=function(){toggle(k,b.getAttribute('data-c'));pintaCard(c,k);};});
+}
+function tarjeta(sc,detId,ref,k){
+  var det=document.getElementById(detId);if(!det||!ref)return;
+  var bb=document.getElementById(sc.bar);if(bb)bb.style.display='none';
+  det.querySelectorAll('#ext-pb-card').forEach(function(n){n.remove();});
+  var c=document.createElement('div');c.id='ext-pb-card';
+  c.style.cssText='background:#F0FDFA;border:1px solid #99F6E4;border-radius:12px;padding:12px 14px;margin-bottom:14px';
+  ref.insertAdjacentElement('afterend',c);pintaCard(c,k);
+}
+wrap('renderSesionDetalle',function(){
+  if(sesionAbierta===null)return;
+  var det=document.getElementById('ses-detalle');if(!det)return;
+  var inp=det.querySelector('input[oninput*="\'tema\'"]');
+  tarjeta(SC.ses,'ses-detalle',inp&&inp.parentNode,sesionAbierta);
+});
+wrap('renderSesLibreDetalle',function(){
+  if(sesLibreAbierta===null)return;
+  var det=document.getElementById('mses-detalle');if(!det)return;
+  tarjeta(SC.mses,'mses-detalle',det.querySelector('div[style*="background:#FFF7ED;border:1px solid #FED7AA;border-radius:12px"]'),sesLibreAbierta);
+});
+
+/* barra de filtro en el listado */
+function barra(sc){
+  var l=document.getElementById(sc.lista);if(!l||!l.parentNode)return;
+  var b=document.getElementById(sc.bar);
+  if(!b){b=document.createElement('div');b.id=sc.bar;b.style.cssText='margin-bottom:12px';l.parentNode.insertBefore(b,l);}
+  b.style.display=(sc.abierta()!==null)?'none':'block';
+  var h='<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"><span style="font-size:12px;font-weight:800;color:#0F766E">🌧️ Plan B:</span>'
+   +TG.map(function(t){return '<button data-f="'+t[0]+'" style="'+(sc.fil.indexOf(t[0])>=0?CH_ON:CH)+'">'+t[1]+' '+t[2]+' ('+cuenta(sc,t[0])+')</button>';}).join('')
+   +(sc.pend?'<button data-p="1" style="'+(sc.sp?CH_ON:CH)+'">⏳ Solo sin hacer</button>':'')
+   +'<button data-e="1" style="'+(sc.ed?CH_ON:CH)+'">✏️ Etiquetar</button></div>';
+  if(sc.ed)h+='<div style="font-size:11px;color:#64748B;margin-top:6px">Modo etiquetar: marca debajo de cada sesión para qué situaciones sirve, sin abrirla.</div>';
+  b.innerHTML=h;
+  b.querySelectorAll('[data-f]').forEach(function(x){x.onclick=function(){var c=x.getAttribute('data-f');sc.fil=sc.fil.indexOf(c)>=0?sc.fil.replace(c,''):sc.fil+c;sc.render();};});
+  var bp=b.querySelector('[data-p]');if(bp)bp.onclick=function(){sc.sp=!sc.sp;sc.render();};
+  b.querySelector('[data-e]').onclick=function(){sc.ed=!sc.ed;sc.render();};
+}
+function aplica(sc){
+  var l=document.getElementById(sc.lista);if(!l)return;
+  var n=0,tot=0;
+  Array.prototype.forEach.call(l.children,function(card){
+    var m=sc.rx.exec(card.getAttribute('onclick')||'');if(!m)return;
+    var k=m[1],t=tags(k),s=null;tot++;
+    if(sc.pend)s=arr(SESIONES).find(function(x){return String(x.num)===k;});
+    var ok=(!sc.fil||sc.fil.split('').every(function(c){return t.indexOf(c)>=0;}))&&(!sc.sp||(s&&pend(s)));
+    card.style.display=ok?'':'none';if(ok)n++;
+    if(t){
+      var g=card.firstElementChild&&card.firstElementChild.firstElementChild;
+      if(g){var sp=document.createElement('span');sp.style.cssText='font-size:11px;margin-left:6px';sp.textContent=TG.filter(function(x){return t.indexOf(x[0])>=0;}).map(function(x){return x[1];}).join('');if(g.tagName==='SPAN')g.insertAdjacentElement('afterend',sp);else g.appendChild(sp);}
+    }
+    if(sc.ed){
+      var r=document.createElement('div');r.style.cssText='display:flex;gap:5px;margin-top:8px;flex-wrap:wrap';
+      r.innerHTML=TG.map(function(x){return '<button data-c="'+x[0]+'" style="'+(t.indexOf(x[0])>=0?CH_ON:CH)+';padding:3px 8px;font-size:11px">'+x[1]+'</button>';}).join('');
+      r.onclick=function(ev){ev.stopPropagation();};
+      r.querySelectorAll('[data-c]').forEach(function(b){b.onclick=function(ev){ev.stopPropagation();toggle(k,b.getAttribute('data-c'));sc.render();};});
+      card.appendChild(r);
+    }
+  });
+  var cnt=document.getElementById(sc.cnt);
+  if(cnt&&(sc.fil||sc.sp))cnt.textContent=n+' de '+tot+' sesiones';
+  var old=l.querySelector('.ext-pb-vacio');if(old)old.remove();
+  if((sc.fil||sc.sp)&&!n){
+    var v=document.createElement('div');v.className='ext-pb-vacio';v.style.cssText='font-size:13px;color:#64748B;padding:14px;border:1px dashed #CBD5E1;border-radius:10px;grid-column:1/-1';
+    v.textContent=sc.fil&&!cuentaTotal()?'Aún no has marcado ninguna sesión. Pulsa «✏️ Etiquetar» para marcar para qué situaciones sirve cada una.':'Ninguna sesión cumple este filtro.';
+    l.appendChild(v);
+  }
+}
+function cuentaTotal(){return Object.keys(PB).length;}
+wrap('renderSesiones',function(){var sc=SC.ses;barra(sc);if(sc.abierta()===null)aplica(sc);});
+wrap('renderMisSesiones',function(){var sc=SC.mses;barra(sc);if(sc.abierta()===null)aplica(sc);});
+
+/* al guardar como plantilla o duplicar, las etiquetas viajan con la copia */
+wrap('extSesGuardarPlantilla',function(num){var c=arr(SES_LIBRES)[0],t=tags(num);if(c&&t&&!tags(c.id))fijar(c.id,t);});
+var _dup=window.extSesDuplicar;
+if(typeof _dup==='function')window.extSesDuplicar=function(id){var t=tags(id),r=_dup.apply(this,arguments);try{if(t&&sesLibreAbierta&&sesLibreAbierta!==id&&!tags(sesLibreAbierta)){fijar(sesLibreAbierta,t);renderSesLibreDetalle();}}catch(e){warn('duplicar',e);}return r;};
+
+/* copia de seguridad y Firebase */
+var _bc=window.backupConstruir;
+if(typeof _bc==='function')window.backupConstruir=function(){var d=_bc.apply(this,arguments);try{d.almacen=d.almacen||{};d.almacen[KEY]=JSON.stringify(PB);}catch(e){warn('backup',e);}return d;};
+var _ba=window.backupAplicar;
+if(typeof _ba==='function')window.backupAplicar=function(d){var r=_ba.apply(this,arguments);
+  try{var a=(d&&d.almacen)||{};if(a[KEY]!==undefined){PB=norm(JSON.parse(a[KEY]||'{}'));saveLocal();var f=fb();if(f)f.ref(root()+'/'+KEY).set(Object.keys(PB).length?PB:null).catch(function(e){warn('restaurar',e);});}}catch(e){warn('restaurar',e);}
+  return r;};
+function refresca(){try{Object.keys(SC).forEach(function(i){var sc=SC[i];if(typeof currentSection!=='undefined'&&currentSection===sc.sec&&sc.abierta()===null)sc.render();});}catch(e){}}
+function hookFb(){var d=fb();if(!d||hooked)return;hooked=true;d.ref(root()+'/'+KEY).on('value',function(s){PB=norm(s.val());saveLocal();refresca();});}
+function init(){try{loadLocal();hookFb();setTimeout(hookFb,2500);setTimeout(hookFb,6000);}catch(e){warn('init',e);}}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
 </script>
 
