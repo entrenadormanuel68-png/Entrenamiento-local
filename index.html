@@ -2213,7 +2213,7 @@ function renderCalendario(){
   Object.entries(FASES).forEach(([f,fi])=>{tabs+=`<button class="tab-btn ${calFiltroFase===+f?"active":""}" style="${calFiltroFase===+f?`background:${fi.c};color:#fff`:``}" onclick="setCalFase(${f})">${fi.e} F${f}</button>`;});
   document.getElementById("cal-fase-tabs").innerHTML=tabs;
 
-  const sems=Array.from({length:50},(_,i)=>i+1).filter(s=>!calFiltroFase||(s<=6?1:s<=15?2:s<=25?3:s<=35?4:s<=44?5:6)===calFiltroFase);
+  const sems=Array.from({length:Math.max(50,SESIONES.reduce((m,s)=>Math.max(m,+s.sem||0),0))},(_,i)=>i+1).filter(s=>!calFiltroFase||(s<=6?1:s<=15?2:s<=25?3:s<=35?4:s<=44?5:6)===calFiltroFase);
   let html="";
   sems.forEach(sem=>{
     const fase=sem<=6?1:sem<=15?2:sem<=25?3:sem<=35?4:sem<=44?5:6;
@@ -10468,6 +10468,88 @@ function refresca(){try{Object.keys(SC).forEach(function(i){var sc=SC[i];if(type
 function hookFb(){var d=fb();if(!d||hooked)return;hooked=true;d.ref(root()+'/'+KEY).on('value',function(s){PB=norm(s.val());saveLocal();refresca();});}
 function init(){try{loadLocal();hookFb();setTimeout(hookFb,2500);setTimeout(hookFb,6000);}catch(e){warn('init',e);}}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
+
+<script id="ext-ampliar">
+/* ext-ampliar — permite pasar de las 150 sesiones iniciales: botón «➕ Añadir semanas» en Sesiones.
+   Añade semanas completas al final (mismos días de entreno), con sesiones vacías para rellenar o recibir una plantilla de Mis Sesiones.
+   Las sesiones añadidas llevan extra:true; no se borran si se vuelve a aplicar la configuración de días.
+   Aditivo: quitar este <script> deja la lista como estaba (las sesiones ya añadidas siguen existiendo). */
+(function(){
+'use strict';
+function warn(m,e){try{console.warn('[ext-ampliar] '+m,e||'');}catch(_){}}
+function toast(m){try{etToast(m);}catch(e){try{toast0(m);}catch(_){}}}
+function arr(x){try{return toArr(x);}catch(e){return Array.isArray(x)?x:(x?Object.values(x):[]);}}
+function wrap(nombre,fn){var o=window[nombre];if(typeof o!=='function')return;window[nombre]=function(){var r=o.apply(this,arguments);try{fn.apply(this,arguments);}catch(e){warn(nombre,e);}return r;};}
+function faseDe(sem){return sem<=6?1:sem<=15?2:sem<=25?3:sem<=35?4:sem<=44?5:6;}
+function maxDe(campo){return arr(SESIONES).reduce(function(m,s){return Math.max(m,+s[campo]||0);},0);}
+function nuevaSesion(num,sem,tipo){
+  var f=faseDe(sem);
+  return {num:num,sem:sem,tipo:tipo,fase:f,tema:'Sesión '+num,objetivo:'',sistema:(typeof CLUB!=='undefined'&&CLUB.sistema)||'',
+    fechaReal:'',calentamiento:'',ej1_nom:'',ej1_desc:'',ej1_prov:'',ej2_nom:'',ej2_desc:'',ej2_prov:'',ej3_nom:'',ej3_desc:'',ej3_prov:'',
+    partido:'',vuelta:'',material:'15 balones, 20 conos, 2 porterías, 2 petos',completada:false,notas:'',extra:true};
+}
+function anadir(k){
+  var nd=(typeof CLUB!=='undefined'&&CLUB.numDias)||3,tipos=getTiposSesion(nd),num=maxDe('num'),sem=maxDe('sem'),ini=num+1;
+  for(var w=1;w<=k;w++){sem++;for(var d=0;d<nd;d++){num++;SESIONES.push(nuevaSesion(num,sem,tipos[d]));}}
+  save('sesiones',SESIONES);
+  try{calcularFechasReales();}catch(e){warn('fechas',e);}
+  try{updateHeader();}catch(e){}
+  renderSesiones();
+  toast('➕ '+(num-ini+1)+' sesiones añadidas (semana'+(k>1?'s ':' ')+(sem-k+1)+(k>1?' a '+sem:'')+')');
+}
+function quitarUltima(){
+  var ex=arr(SESIONES).filter(function(s){return s.extra;});if(!ex.length)return;
+  var sem=ex.reduce(function(m,s){return Math.max(m,s.sem);},0);
+  var sesSem=arr(SESIONES).filter(function(s){return s.sem===sem;});
+  var usadas=sesSem.some(function(s){return !s.extra||s.completada||s.estado||(ASISTENCIA&&ASISTENCIA[s.num]&&Object.keys(ASISTENCIA[s.num]).length);});
+  if(usadas){alert('La última semana añadida (semana '+sem+') ya tiene sesiones completadas, anuladas o con asistencia. No se puede quitar.');return;}
+  if(!confirm('¿Quitar la semana '+sem+' (sesiones '+sesSem[0].num+' a '+sesSem[sesSem.length-1].num+')? Se perderá lo que hayas escrito en ellas.'))return;
+  SESIONES=arr(SESIONES).filter(function(s){return s.sem!==sem;});
+  save('sesiones',SESIONES);try{updateHeader();}catch(e){}renderSesiones();toast('↩ Semana '+sem+' quitada');
+}
+function modal(){
+  var ov=document.getElementById('ext-amp-ov');if(ov)ov.remove();
+  var nd=(typeof CLUB!=='undefined'&&CLUB.numDias)||3,sem=maxDe('sem'),n=arr(SESIONES).length;
+  ov=document.createElement('div');ov.id='ext-amp-ov';ov.style.cssText='position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px';
+  ov.innerHTML='<div style="background:#fff;border-radius:12px;padding:18px;max-width:380px;width:100%"><div style="font-weight:800;font-size:15px;margin-bottom:6px">➕ Añadir semanas</div>'
+   +'<div style="font-size:12px;color:#64748B;margin-bottom:10px">Ahora tienes '+n+' sesiones (hasta la semana '+sem+'). Cada semana añade '+nd+' sesiones vacías al final, con tus días de entreno. Luego puedes rellenarlas o aplicarles una plantilla de Mis Sesiones.</div>'
+   +'<select id="ext-amp-k" style="width:100%;border:1px solid #CBD5E1;border-radius:8px;padding:9px;font-size:14px;margin-bottom:12px">'
+   +[1,2,4,8,12].map(function(k){return '<option value="'+k+'">'+k+(k===1?' semana':' semanas')+' ('+(k*nd)+' sesiones)</option>';}).join('')+'</select>'
+   +'<div style="display:flex;gap:8px"><button id="ext-amp-no" style="flex:1;border:1px solid #CBD5E1;background:#fff;border-radius:8px;padding:10px;font-weight:700;cursor:pointer">Cancelar</button>'
+   +'<button id="ext-amp-si" style="flex:1;border:none;background:#16A34A;color:#fff;border-radius:8px;padding:10px;font-weight:800;cursor:pointer">Añadir</button></div></div>';
+  document.body.appendChild(ov);
+  ov.onclick=function(e){if(e.target===ov)ov.remove();};
+  ov.querySelector('#ext-amp-no').onclick=function(){ov.remove();};
+  ov.querySelector('#ext-amp-si').onclick=function(){var k=+ov.querySelector('#ext-amp-k').value||1;ov.remove();anadir(k);};
+}
+/* botones en la cabecera de Sesiones */
+function botones(){
+  var ref=document.querySelector('#sec-sesiones button[onclick="exportPlanificacionCSV()"]');if(!ref)return;
+  var st='border:1px solid #BBF7D0;background:#F0FDF4;color:#166534;border-radius:8px;padding:5px 10px;font-size:12px;font-weight:700;cursor:pointer';
+  var b=document.getElementById('ext-amp-btn');
+  if(!b){b=document.createElement('button');b.id='ext-amp-btn';b.style.cssText=st;b.textContent='➕ Añadir semanas';b.title='Ampliar la planificación más allá de las sesiones iniciales';b.onclick=modal;ref.insertAdjacentElement('afterend',b);}
+  var q=document.getElementById('ext-amp-quitar'),hay=arr(SESIONES).some(function(s){return s.extra;});
+  if(hay&&!q){q=document.createElement('button');q.id='ext-amp-quitar';q.style.cssText=st.replace('#BBF7D0','#FECACA').replace('#F0FDF4','#FEF2F2').replace('#166534','#991B1B');q.textContent='↩ Quitar última semana añadida';q.onclick=quitarUltima;b.insertAdjacentElement('afterend',q);}
+  if(!hay&&q)q.remove();
+}
+wrap('renderSesiones',botones);
+/* aplicar la configuración de días regenera las sesiones: conservar las añadidas */
+var _acd=window.aplicarConfigDias;
+if(typeof _acd==='function')window.aplicarConfigDias=function(){
+  var extras=[];try{extras=JSON.parse(JSON.stringify(arr(SESIONES).filter(function(s){return s.extra;})));}catch(e){}
+  var r=_acd.apply(this,arguments);
+  try{
+    if(extras.length){
+      var usados={};arr(SESIONES).forEach(function(s){usados[s.num]=1;});var mx=maxDe('num'),cambio=false;
+      extras.forEach(function(s){if(usados[s.num]){mx++;s.num=mx;cambio=true;}SESIONES.push(s);});
+      save('sesiones',SESIONES);try{calcularFechasReales();}catch(e){}try{updateHeader();}catch(e){}
+      if(cambio)toast('ℹ️ Las sesiones añadidas se han renumerado al cambiar los días de entreno');
+    }
+  }catch(e){warn('conservar',e);}
+  return r;
+};
 })();
 </script>
 
