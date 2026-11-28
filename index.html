@@ -10490,14 +10490,37 @@ function nuevaSesion(num,sem,tipo){
     fechaReal:'',calentamiento:'',ej1_nom:'',ej1_desc:'',ej1_prov:'',ej2_nom:'',ej2_desc:'',ej2_prov:'',ej3_nom:'',ej3_desc:'',ej3_prov:'',
     partido:'',vuelta:'',material:'15 balones, 20 conos, 2 porterías, 2 petos',completada:false,notas:'',extra:true};
 }
+var NOM=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+function pISO(i){var p=i.split('-').map(Number);return new Date(p[0],p[1]-1,p[2]);}
+function iISO(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+/* da fecha a las sesiones nuevas (num >= ini) como hace la app al correr sesiones: cada una al siguiente día de entreno libre,
+   saltando festivos y días ocupados, empezando el día siguiente a la última sesión con fecha. Devuelve false si no pudo. */
+function fechasNuevas(ini){
+  try{
+    var dias=((typeof CLUB!=='undefined'&&CLUB.diasConfig)||[]).map(function(d){return d.dia;});
+    var S=arr(SESIONES),prev=S.filter(function(x){return x.num<ini&&x.fechaReal&&x.estado!=='anulada';});
+    if(!dias.length||!prev.length){
+      if(typeof calcularFechasReales==='function'){calcularFechasReales();return arr(SESIONES).some(function(x){return x.num>=ini&&x.fechaReal;});}
+      return false;
+    }
+    var ult=prev.reduce(function(m,x){return x.fechaReal>m?x.fechaReal:m;},'0000-00-00');
+    var fest=new Set(arr(typeof FESTIVOS!=='undefined'?FESTIVOS:[]));
+    var ocup=new Set();S.forEach(function(x){if(x.fechaReal&&x.estado!=='anulada')ocup.add(x.fechaReal);});
+    var cur=pISO(ult);cur.setDate(cur.getDate()+1);var guard=0;
+    S.filter(function(x){return x.num>=ini;}).sort(function(a,b){return a.num-b.num;}).forEach(function(x){
+      while(guard<5000){guard++;var iso=iISO(cur);var ok=dias.indexOf(NOM[cur.getDay()])>=0&&!fest.has(iso)&&!ocup.has(iso);cur.setDate(cur.getDate()+1);if(ok){x.fechaReal=iso;ocup.add(iso);break;}}
+    });
+    return true;
+  }catch(e){warn('fechas',e);return false;}
+}
 function anadir(k){
   var nd=(typeof CLUB!=='undefined'&&CLUB.numDias)||3,tipos=getTiposSesion(nd),num=maxDe('num'),sem=maxDe('sem'),ini=num+1;
   for(var w=1;w<=k;w++){sem++;for(var d=0;d<nd;d++){num++;SESIONES.push(nuevaSesion(num,sem,tipos[d]));}}
+  var conFecha=fechasNuevas(ini);
   save('sesiones',SESIONES);
-  try{calcularFechasReales();}catch(e){warn('fechas',e);}
   try{updateHeader();}catch(e){}
   renderSesiones();
-  toast('➕ '+(num-ini+1)+' sesiones añadidas (semana'+(k>1?'s ':' ')+(sem-k+1)+(k>1?' a '+sem:'')+')');
+  toast((conFecha?'':'ℹ️ Sin días de entreno o fechas previas: las sesiones nuevas no llevan fecha. ')+'➕ '+(num-ini+1)+' sesiones añadidas (semana'+(k>1?'s ':' ')+(sem-k+1)+(k>1?' a '+sem:'')+')');
 }
 function quitarUltima(){
   var ex=arr(SESIONES).filter(function(s){return s.extra;});if(!ex.length)return;
